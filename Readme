@@ -86,4 +86,10 @@ Any case remember to 'run configlina' with super user powers.
 list of ordinay users. So one may have to try 
     'sudo /usr/sbin/configlina'.
 
+Added as on 1stMar 18
+
+In Ver 1.2 a have fixed bug in setting the shell environment
+variable. Actually it was left to default, now it changed to
+the one specified in /etc/passwd, just over looked it.
+
 I appreciate your feedback.
