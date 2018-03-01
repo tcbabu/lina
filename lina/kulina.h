@@ -935,6 +935,7 @@ int  kgMoveGrp(void *Tmp,int grpid,int x1,int y1);
 int  kgShiftGrp(void *Tmp,int grpid,int xs,int ys);
 int  kgResizeGrp(void *Tmp,int grpid,int xl,int yl);
 int  kgMoveWidget(void *Tmp,int item,int x1,int y1);
+int  kgShiftWidget(void *Tmp,int item,int xsh,int ysh);
 int  kgResizeWidget(void *Tmp,int item,int xl,int yl);
 void *kgGetWidget(void *Tmp,int id);
 void * kgGetNamedWidget(void *Tmp,char *name);
@@ -1108,6 +1109,8 @@ int kgSendLinefeedKeyEvent(void *Tmp) ;
   Image related Calls
 */
 void *kgGetImageCopy(void *D,void *img);
+void *kgGetProcessedImage(void *timg,int Bsize,float rfac,
+                         int Btred,int Btgreen,int Btblue);
 void kgImage(void *Dtmp,void *tmp,int x0,int y0,int width,int height,float transparency,float highfac);
 void *kgGetImage(char *flname);
 void *kgGetInlineImage(char *encode,int length);
@@ -1133,6 +1136,7 @@ void *kgMergeImages(void  *img1,void  *img2,int Xshft,int Yshft); /* second on f
 void *kgMergeTransparentImage(void  *img1,void  *img2,int Xshft,int Yshft); /* second on first */
 void *kgMaskImage(void *png,void *mask);
 void *kgCopyImage(void *img);
+void *kgCreateImage(int xzise,int ysize);
 void *kgCleanImage(void *img);
 void *kgFlipImage(void *img); // About X refledction overwrites img
 void *kgFlopImage(void *img); // About Y refledction overwrites img
@@ -1159,6 +1163,8 @@ void *kgAddTransparency(void *Img,float transp);
 void *kgChangeBrightness(void *Img,float fac) ;
 int kgRootImage(void *tmp);
 void * kgGetRootImage(void );
+void * kgGetRootRawImage(int xo,int yo,int wd,int ht );
+void * kgMakeImageFromRaw(unsigned char *Imgdata,int wd,int ht );
 /* built in images */
 void * kgUndoImage(int size,int red,int green,int blue);
 void * kgRedoImage(int size,int red,int green,int blue);
@@ -1233,6 +1239,7 @@ void kgPointerZoom(DIG *G);
 void kgPointerAntialiasedZoom(DIG *G);
 void kgBackupGph(DIG *G,char *flname);
 void kgHardCopy(DIG *G,char *flname);
+void kgA4Copy(DIG *G,char *flname);
 void kgLandscapeCopy(DIG *G,char *flname);
 void kgOpenObject(DIG *G,int obj);
 void kgCloseObject(DIG *G);
@@ -1295,6 +1302,8 @@ void *kgGetResizedImage(void *G);
 void *kgGetSharpImage(void *G);
 void *kgGetSmoothImage(void *G);
 void kgCloseImage(void *Gtmp);
+void *kgInitGph(int width,int height);
+void kgCloseGph(void *Gtmp);
 /* end of graphics calls */
 /* wait related */
 void kgWaitButtonRelease(DIALOG *D);
