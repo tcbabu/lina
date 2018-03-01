@@ -1,0 +1,61 @@
+D      //GUI dimensions xo,yo,xl,yl,lw,rw,tw,bw,df,bor_type,bkup
+328 86 594 132
+4 4 4 4
+2 4 1 0 1 1 0 0 0 0 1 0 0.000000 0 100 100 0
+//Text Box
+t
+t     //code
+24 22  //x1,y1
+20 //Width 
+1 1  //Nx,Ny,
+//element formats
+"Select User Photo%30s"
+500 56  //x2,y2
+1 1 1 //Cursor Position
+18 9 0 //hide
+"SetPhotoWidget2"
+//Button Box
+n
+n     //code
+496 21  //x1,y1
+570 55  //x2,y2
+2 2  //xgap,ygap
+64 //length 
+24 //Width 
+1 1  //Nx,Ny,
+1 //status
+"Browse" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+4 0.150000 0  //type,fac
+0 0 //hide
+"SetPhotoWidget3"
+//Horiz bar
+h
+h     //code
+228 75  //x1,y1
+384 108  //x2,y2
+2 0  //xgap,ygap
+72 //length 
+25 //Width 
+2 1  //Nx,Ny,
+1 //status
+"Cancel" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+1 //status
+"Okay" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+5 0.500000 0  //type,fac
+0 0 //hide
+"SetPhotoWidget4"

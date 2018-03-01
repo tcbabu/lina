@@ -1,0 +1,115 @@
+D      //GUI dimensions xo,yo,xl,yl,lw,rw,tw,bw,df,bor_type,bkup
+10 10 1307 624
+4 4 4 4
+6 4 1 0 1 0 1 0 0 0 1 1 0.000000 0 100 100 0
+//Pixmap Box
+p
+p     //code
+349 198  //x1,y1
+798 424 //x2,y2
+ // XPM 
+12   // background color 
+0 0 // border hide
+"linaWidget1"
+//Text Box
+t
+t     //code
+427 285  //x1,y1
+20 //Width 
+1 1  //Nx,Ny,
+//element formats
+"Password%12s"
+673 330  //x2,y2
+1 1 0 //Cursor Position
+18 9 0 //hide
+"linaWidget3"
+//Message Box
+m
+m     //code
+446 226  //x1,y1
+""/Message
+671 267 //x2,y2
+-1 0 //justification,hide
+"linaWidget4"
+//Pixmap Box
+p
+p     //code
+385 216  //x1,y1
+443 271 //x2,y2
+ // XPM 
+2   // background color 
+3 0 // border hide
+"linaWidget5"
+//Horiz bar
+h
+h     //code
+687 247  //x1,y1
+753 311  //x2,y2
+2 0  //xgap,ygap
+56 //length 
+56 //Width 
+1 1  //Nx,Ny,
+1 //status
+"login" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-221221221 //back ground color
+ //keyboard code
+5 0.500000 0  //type,fac
+0 0 //hide
+"linaWidget6"
+//Button Box
+n
+n     //code
+508 366  //x1,y1
+638 408  //x2,y2
+2 2  //xgap,ygap
+120 //length 
+32 //Width 
+1 1  //Nx,Ny,
+1 //status
+"Switch User" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+2 0.500000 0  //type,fac
+0 0 //hide
+"linaWidget8"
+//Horiz bar
+h
+h     //code
+1137 566  //x1,y1
+1233 616  //x2,y2
+2 0  //xgap,ygap
+42 //length 
+42 //Width 
+2 1  //Nx,Ny,
+1 //status
+"Sessions" //title 
+/root/lina/sessions.png // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+1 //status
+"PowerDown" //title 
+/root/lina/stop.png // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+3 0.500000 0  //type,fac
+0 0 //hide
+"linaWidget9"
+//Pixmap Box
+p
+p     //code
+928 42  //x1,y1
+1290 531 //x2,y2
+ // XPM 
+-1   // background color 
+3 0 // border hide
+"linaWidget8"

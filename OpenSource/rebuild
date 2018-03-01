@@ -1,0 +1,126 @@
+#export PKG_CONFIG_PATH=$KULINA/lib/pkgconfig
+export LD_CONFIG_PATH=$LD_CONFIG_PATH:$KULINA/lib
+export LDFLAGS=-L$KULINA/lib
+echo $LDFLAGS
+export CFLAGS=-I$KULINA/include
+export CPPFLAGS=-I$KULINA/include
+export ZLIBLIB=$KULINA/lib
+export ZLIBINC=$KULINA/include
+echo $CFLAGS
+echo $PKG_CONFIG_PATH
+echo "$X11_LIBS"
+echo "$X11_CFLAGS"
+tar xf xz-5.0.3.tar.gz
+cd xz-5.0.3
+./configure --prefix=$KULINA --enable-static --disable-shared >out
+make -j4 >out
+make -j4 install >out
+cd ..
+rm -r -f xz-5.0.3
+echo "xz"
+tar xf bzip2-1.0.6.tar.gz
+cd bzip2-1.0.6
+#./configure --prefix=$KULINA --enable-static --disable-shared
+make -j4 >out
+make -j4 install PREFIX=$KULINA >out
+cd ..
+rm -rf bzip2-1.0.6
+echo "bzip2"
+tar xf zlib-1.2.8.tar.gz
+cd zlib-1.2.8
+./configure --prefix=$KULINA --static  >out
+make -j4  >out
+make -j4 install >out
+cd ..
+rm -r -f zlib-1.2.8
+echo "zlib"
+tar xf gzip-1.6.tar.xz >out
+cd gzip-1.6
+./configure --prefix=$KULINA  >out
+make -j4 >out
+make -j4 install  >out
+cd ..
+rm -rf gzip-1.6 >out
+echo "gzip"
+tar xf libpng-1.6.9.tar.xz
+cd libpng-1.6.9
+./configure --prefix=$KULINA --enable-static --disable-shared --with-zlib-prefix=$KULINA CFLAGS=-I$KULINA/include LDFLAGS=-L$KULINA/lib >out
+make   >out
+make  install >out
+cd ..
+rm -r -f libpng-1.6.9
+echo "libpng"
+tar xf freetype-2.4.8.tar.gz
+cd freetype-2.4.8
+./configure --prefix=$KULINA --enable-static --disable-shared >out
+make -j4 >out
+make -j4 install >out
+cd ..
+rm -r -f freetype-2.4.8
+echo "freetype"
+tar xf harfbuzz-0.9.38.tar.gz
+cd harfbuzz-0.9.38
+./configure --prefix=$KULINA --enable-static --disable-shared --without-glib  > out;
+make -j1 > out;
+make install > out;
+cd ..
+rm -rf harfbuzz-0.9.38
+tar xf freetype-2.4.8.tar.gz > out;
+cd freetype-2.4.8
+./configure --prefix=$KULINA --enable-static --disable-shared > out;
+make -j4 > out;
+make -j4 install > out;
+cd ..
+rm -r -f freetype-2.4.8
+echo "freetype again"
+tar xf jpegsrc.v8c.tar.gz
+cd jpeg-8c
+./configure --prefix=$KULINA --enable-static --disable-shared > out
+make -j4 > out
+make -j4 install > out
+cd ..
+rm -r -f jpeg-8c
+echo "jpeg"
+tar xf jasper-1.900.1.tar.gz
+cd jasper-1.900.1
+./configure --prefix=$KULINA --enable-static --disable-shared >out
+make -j4 >out
+make -j4 install >out
+cd ..
+rm -r -f jasper-1.900.1
+tar xf tiff-4.0.0.tar.gz
+cd tiff-4.0.0
+./configure --prefix=$KULINA --enable-static --disable-shared >out
+make -j4 >out
+make -j4 install >out
+cd ..
+rm -r -f tiff-4.0.0
+echo "tiff"
+echo " Entering Graphic Magic"
+tar xf GraphicsMagick-1.3.21.tar.gz >out
+cd GraphicsMagick-1.3.21 >out
+./configure --prefix=$KULINA --enable-static  --without-magick-plus-plus --without-perl   --without-lcms --without-lcms2 --without-trio --without-wmf --without-xml  --disable-openmp --with-threads --without-x >out
+make -j4  >out
+make -j4 install >out
+cd ..
+rm -r -f GraphicsMagick-1.3.21  >out
+echo "Graphic Magic"
+rm libgm.a
+mkdir tmp
+cd tmp
+ar x $KULINA/lib/libharfbuzz-icu.a
+ar x $KULINA/lib/libharfbuzz.a
+ar x $KULINA/lib/libfreetype.a
+ar x $KULINA/lib/libz.a
+ar x $KULINA/lib/libbz2.a
+ar x $KULINA/lib/liblzma.a
+ar x $KULINA/lib/libjasper.a
+ar x $KULINA/lib/libjpeg.a
+ar x $KULINA/lib/libtiff.a
+ar x $KULINA/lib/libpng.a
+ar x $KULINA/lib/libGraphicsMagickWand.a
+ar x $KULINA/lib/libGraphicsMagick.a
+ar -r ../libgm.a *.o
+cd ..
+rm -r -f tmp
+cp libgm.a $KULINA/lib

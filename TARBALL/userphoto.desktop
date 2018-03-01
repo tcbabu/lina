@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=UserPhoto
+Comment=Set user photo for Lina
+Exec=SetPhoto
+Icon=/usr/share/lina/userphoto.png
+Terminal=false
+Type=Application
+Categories=Settings;System;Utilities;
+StartupNotify=true

@@ -1,0 +1,10 @@
+int  SetPhototextbox1callback(int cellno,int i,void *Tmp);
+int  SetPhotobutton1callback(int butno,int i,void *Tmp) ;
+void  SetPhotobutton1init(DIN *B,void *pt) ;
+int  SetPhotosplbutton1callback(int butno,int i,void *Tmp) ;
+void  SetPhotosplbutton1init(DIL *B,void *pt) ;
+int SetPhotoinit(void *Tmp) ;
+int SetPhotocleanup(void *Tmp) ;
+int SetPhotoCallBack(void *Tmp,void *tmp) ;
+int SetPhotoResizeCallBack(void *Tmp) ;
+int SetPhotoWaitCallBack(void *Tmp) ;

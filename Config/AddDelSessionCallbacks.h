@@ -1,0 +1,11 @@
+int  AddDelSessionbrowser1callback(int item,int i,void *Tmp) ;
+void  AddDelSessionbrowser1init(DIX *X,void *pt) ;
+int  AddDelSessionbutton1callback(int butno,int i,void *Tmp) ;
+void  AddDelSessionbutton1init(DIN *B,void *pt) ;
+int  AddDelSessionsplbutton1callback(int butno,int i,void *Tmp) ;
+void  AddDelSessionsplbutton1init(DIL *B,void *pt) ;
+int AddDelSessioninit(void *Tmp) ;
+int AddDelSessioncleanup(void *Tmp) ;
+int AddDelSessionCallBack(void *Tmp,void *tmp) ;
+int AddDelSessionResizeCallBack(void *Tmp) ;
+int AddDelSessionWaitCallBack(void *Tmp) ;

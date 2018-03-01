@@ -1,0 +1,12 @@
+int  linatextbox1callback(int cellno,int i,void *Tmp);
+int  linasplbutton1callback(int butno,int i,void *Tmp) ;
+void  linasplbutton1init(DIL *B,void *pt) ;
+int  linabutton1callback(int butno,int i,void *Tmp) ;
+void  linabutton1init(DIN *B,void *pt) ;
+int  linasplbutton2callback(int butno,int i,void *Tmp) ;
+void  linasplbutton2init(DIL *B,void *pt) ;
+int linainit(void *Tmp) ;
+int linacleanup(void *Tmp) ;
+int linaCallBack(void *Tmp,void *tmp) ;
+int linaResizeCallBack(void *Tmp) ;
+int linaWaitCallBack(void *Tmp) ;

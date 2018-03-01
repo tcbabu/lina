@@ -1,0 +1,30 @@
+D      //GUI dimensions xo,yo,xl,yl,lw,rw,tw,bw,df,bor_type,bkup
+466 340 221 120
+4 4 4 4
+0 4 1 0 1 1 0 0 0 0 1 0 0.000000 0 100 100 0
+//Horiz bar
+h
+h     //code
+4 8  //x1,y1
+216 116  //x2,y2
+2 0  //xgap,ygap
+100 //length 
+100 //Width 
+2 1  //Nx,Ny,
+1 //status
+"ShutDown" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+1 //status
+"Restart" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+5 0.200000 0  //type,fac
+0 0 //hide
+"PgDiaWidget1"

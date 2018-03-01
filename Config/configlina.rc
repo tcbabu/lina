@@ -1,0 +1,243 @@
+D      //GUI dimensions xo,yo,xl,yl,lw,rw,tw,bw,df,bor_type,bkup
+0 0 559 373
+4 4 4 4
+-1 4 0 0 1 1 0 0 0 1 1 0 0.000000 0 100 100 0
+//Text Box
+t
+t     //code
+12 13  //x1,y1
+20 //Width 
+1 1  //Nx,Ny,
+//element formats
+"BackgroundImage%30s"
+470 47  //x2,y2
+1 1 1 //Cursor Position
+18 9 0 //hide
+"configlinaWidget2"
+//Button Box
+n
+n     //code
+471 13  //x1,y1
+545 47  //x2,y2
+2 2  //xgap,ygap
+64 //length 
+24 //Width 
+1 1  //Nx,Ny,
+1 //status
+"Browse" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+b //keyboard code
+2 0.150000 0  //type,fac
+0 0 //hide
+"configlinaWidget3"
+//Button Box
+n
+n     //code
+171 94  //x1,y1
+245 168  //x2,y2
+2 2  //xgap,ygap
+64 //length 
+64 //Width 
+1 1  //Nx,Ny,
+1 //status
+"" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-186000000 //back ground color
+ //keyboard code
+1 0.150000 0  //type,fac
+0 0 //hide
+"configlinaWidget4"
+//Button Box
+n
+n     //code
+171 168  //x1,y1
+245 242  //x2,y2
+2 2  //xgap,ygap
+64 //length 
+64 //Width 
+1 1  //Nx,Ny,
+1 //status
+"" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-118118000 //back ground color
+ //keyboard code
+1 0.150000 0  //type,fac
+0 0 //hide
+"configlinaWidget5"
+//Button Box
+n
+n     //code
+171 242  //x1,y1
+245 316  //x2,y2
+2 2  //xgap,ygap
+64 //length 
+64 //Width 
+1 1  //Nx,Ny,
+1 //status
+"" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-186186186 //back ground color
+ //keyboard code
+1 0.150000 0  //type,fac
+0 0 //hide
+"configlinaWidget6"
+//Check Box
+c
+c     //code
+6 54  //x1,y1
+550 87  //x2,y2
+8 0  //xgap, ygap
+125 25  //item length,Width 
+4     //ny 
+1 2  // offset, scroll width 
+0 0 0 0 0 // type,item hight,bordr,bkgr,hide 
+"Allow Root Login" //item
+"Add Text Session" //item
+"Add Failsafe Session" //item
+"Show Date/Time" //item
+"configlinaWidget7"
+//browser
+w
+w     //code
+301 147  //x1,y1
+503 176 //x2,y2
+4 //Size 
+"Default User" //Prompt
+"abu" //item
+"babu" //item
+"root" //item
+"thara" //item
+NULL  //  
+0 //hide
+"configlinaWidget10"
+//browser
+w
+w     //code
+287 183  //x1,y1
+516 212 //x2,y2
+4 //Size 
+"Default Session" //Prompt
+"KDE" //item
+"XFCE" //item
+"OpenBox" //item
+"LXDE" //item
+"GNOME" //item
+"Text Console" //item
+"Fail Safe" //item
+NULL  //  
+0 //hide
+"configlinaWidget11"
+//Float Slide
+f
+f     //code
+0.000000 1.000000  //min,max
+404 214  //x1,y1
+50 //length 
+NULL //prompt 
+504 260 //x2,y2
+0 //hide
+"configlinaWidget12"
+//Float Slide
+f
+f     //code
+0.000000 0.500000  //min,max
+399 259  //x1,y1
+50 //length 
+NULL //prompt 
+499 305 //x2,y2
+0 //hide
+"configlinaWidget13"
+//Horiz bar
+h
+h     //code
+204 329  //x1,y1
+360 362  //x2,y2
+2 0  //xgap,ygap
+72 //length 
+25 //Width 
+2 1  //Nx,Ny,
+1 //status
+"Cancel" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+1 //status
+"Save" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+4 0.500000 0  //type,fac
+0 0 //hide
+"configlinaWidget14"
+//Message Box
+m
+m     //code
+300 234  //x1,y1
+"Transparency"/Message
+400 258 //x2,y2
+1 0 //justification,hide
+"configlinaWidget15"
+//Message Box
+m
+m     //code
+304 278  //x1,y1
+"Roundinf Fac"/Message
+404 302 //x2,y2
+1 0 //justification,hide
+"configlinaWidget16"
+//Message Box
+m
+m     //code
+65 117  //x1,y1
+"Base Color"/Message
+165 141 //x2,y2
+1 0 //justification,hide
+"configlinaWidget17"
+//Message Box
+m
+m     //code
+65 190  //x1,y1
+"Highlight Color"/Message
+165 214 //x2,y2
+1 0 //justification,hide
+"configlinaWidget18"
+//Message Box
+m
+m     //code
+65 263  //x1,y1
+"Font Color"/Message
+165 287 //x2,y2
+1 0 //justification,hide
+"configlinaWidget19"
+//Button Box
+n
+n     //code
+325 102  //x1,y1
+490 138  //x2,y2
+0 0  //xgap,ygap
+154 //length 
+26 //Width 
+1 1  //Nx,Ny,
+1 //status
+"Add/Delete Sessions" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+4 0.500000 0  //type,fac
+0 0 //hide
+"configlinaWidget18"

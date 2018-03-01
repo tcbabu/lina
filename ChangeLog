@@ -1,0 +1,3 @@
+Ver 1.2 dated 01Mar18
+Fixed a bug in not setting SHELL env
+

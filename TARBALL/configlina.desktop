@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=ConfigLina
+Comment=Configure Lina
+Exec=configlina
+Icon=/usr/share/lina/configlina.png
+Terminal=false
+Type=Application
+Categories=Settings;System;
+StartupNotify=true

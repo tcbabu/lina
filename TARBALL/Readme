@@ -1,0 +1,89 @@
+LINA is a Login Manager or Display Manager, an alternative to
+KDM, GDM, LIGHTDM etc. In that sense it is not an ordinary
+application like other Kulina Graphics applications, 'lina'
+can affect the system. It has to do an important action,
+authenticate the user and set users environment properly.
+It comes before your Window Manager and Desktop Environment.
+In that sense it is slightly different from other graphics application,
+it not talking to any window manager but directly to the X server.
+So it is a good example for development of such applications using
+Kulina Graphics System.
+
+Since there are many applications available why do you really
+want to create a new login manager ? One simple answer is just
+for the fun, but it is actually more than that. You have a different
+aesthetic view, you need some extra things etc. While these are
+reasons, I had another reason also. I build my Linux from
+scratch with the help of LFS/BLFS. (I had used LFS to build
+the OS for SAGA Super Computer, and now SAGA is more than five
+years old). While building Linux OS, you need at least one
+Desktop Environment. GNOME was out because of its dependency
+on 'Systemd' ( and other never ending dependencies). So the 
+next option is KDE. I was a fan of KDE for many many years.
+But I feel latest KDE, in my view, is far from satisfactory.
+After using it for some time, I felt I need a  different
+DE, so I opted for XFCE( as it is more complete than LXDE).
+So, if it is needed to do away with KDE, then I will not have KDM
+also ( any case I do not like kdm). So I was looking for a
+different Display Manager, nothing was satisfactory and I
+ended up developing 'lina'. 
+
+'lina' installs 3 programs:
+
+1. lina : Kulina Login/Display Manger
+
+2. configlina : configuration tool for lina, you need Super User
+permissions to execute 'configlina'. Configlina has option
+to enable/disable 'lina', but use it your own risk.
+
+3. SetPhoto : tool for users to select their login photo. Photo of
+any size can be selected. LINA will select and resize the center portion
+of the photo.
+
+
+LINA has options for selection of user and session type. It has a button 
+for setting up wireless connection; it can manage simple wireless
+connections. However in case the distribution has a network manager
+which can setup the wireless connection, one may opt for that.
+
+LINA has an on screen keyboard.
+
+HOW TO ENABLE/DISABLE LINA
+
+'configlina' has a button for enable/disable 'lina'. However
+there are many many distributions (including my own 'Kulina Linux')
+with its own methods for setting up 'login/display manager'. 
+In general setting up of login manager is as follows:
+
+For system that use 'init' scheme it is fairly simple by setting
+up the entry in /etc/inittab for run level 5. For such systems
+'configlina' can be used safely for setting up lina.
+
+
+For systems that use 'systemd' there are variations in methods.
+
+Some systems set the 'default target' graphical. Some systems
+also use the script in /etc/init.d (eg. Debian)
+Debian also sets the file /etc/X11/default-display-manager
+
+/etc/X11/default-display-manager will have information about 
+the actual program to execute. (If you modify it, please remember
+to back it up.).
+
+If your system has a file/link by name 'display-manager.service' in /etc/systemd/system, then
+that link has to be modified to link to /lib/systemd/system/lina.service.
+
+'configlina' tries to do all these. But no guaranty, and it is at your
+own risk.  
+'Lina' was not working properly for the default DE of 'UBUNTU'. It was
+fine for Debian and CentOS. It worked fine with Ubuntu-Unity and
+Cinnamon.
+
+So if you are daring you can give a try for  LINA. If you are an Ubuntu user be bit careful.
+
+Any case remember to 'run configlina' with super user powers.
+'configlina' is installed in /usr/sbin, which may not be in the PATH
+list of ordinay users. So one may have to try 
+    'sudo /usr/sbin/configlina'.
+
+I appreciate your feedback.
