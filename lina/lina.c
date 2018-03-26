@@ -974,6 +974,7 @@ int lina( void *parent,void **v,void *pt) {
      D.xo=D.yo=0; D.xl = xres; D.yl=yres;
      xm = xres/2;
      ym = yres/2;
+     if (yres < 770) ym = yres - 385; //TCB
      t =d[0].t;
      xl = t->x2-t->x1+1;
      yl = t->y2-t->y1+1;
