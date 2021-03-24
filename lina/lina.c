@@ -1175,6 +1175,8 @@ void RunSession(int Index,char *session) {
   chdir(GetHomeDir(&lc,Index));
   setenv("HOME",GetHomeDir(&lc,Index),1);
   setenv("SHELL",GetShell(&lc,Index),1);
+  setenv("USER",GetRealName(&lc,Index),1);
+  setenv("LOGNAME",GetRealName(&lc,Index),1);
   changejob(buff);
   fprintf(stderr,"Failed To Execute : %s\n",Session);
 }
