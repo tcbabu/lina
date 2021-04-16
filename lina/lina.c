@@ -48,6 +48,52 @@ int MakekeybrdGroup(DIALOG *D,void *arg,int Red,int Green,int Blue,int Xo,int Yo
                    }\
                } while (!WIFEXITED(status) && !WIFSIGNALED(status));\
 }
+
+int isportinuse(int port) {
+  FILE *fp;
+  char buff1[100],buff2[100];
+  char *line=NULL;
+  int ret=0,no,id;
+  size_t len = 0;
+  ssize_t read;
+  fp = fopen("/proc/net/tcp","r");
+  if(fp==NULL) return -1;
+  read = getline(&line, &len, fp);
+  while ((read = getline(&line, &len, fp)) != -1) {
+//               printf("Retrieved line of length %zu :\n", read);
+//              printf("%s", line);
+               sscanf(line,"%s%s",buff1,buff2);
+               sscanf(buff2+9,"%x",&no);
+//              printf("%s\n%s\nno = %d\n",buff1,buff2,no);
+               if(no==port) {ret=1; break;}
+  }
+  fclose(fp);
+  free(line);
+  return ret;
+}
+int isunixsocketinuse(char *sock) {
+  FILE *fp;
+  char buff1[300];
+  char *line=NULL;
+  int ret=0,no,id;
+  size_t len = 0;
+  ssize_t read;
+  fp = fopen("/proc/net/unix","r");
+  if(fp==NULL) return -1;
+//  read = getline(&line, &len, fp);
+  while (fscanf(fp,"%s",buff1) > 0) {
+       if(strcmp(buff1,sock)==0){ret=1; break;}
+  }
+  fclose(fp);
+  free(line);
+  return ret;
+}
+int isdisplayinuse(int num) {
+  char buff[200];
+  sprintf(buff,"/tmp/.X11-unix/X%-d",num);
+  return isunixsocketinuse(buff);
+}
+
 int settty(void) {
  int ierr,op=0,i;
  FILE *pp;
@@ -348,9 +394,10 @@ int StartServer(void){
    char *args[100],buff[1000],pt[300],job[200];
    char *pgrpath=NULL;
    int i=0,pos=0;
-   if(CheckXserver()) return;
+//   if(CheckXserver()) return 1;
+   if(isdisplayinuse(0)) return 1;
    Sid=-1;
-   sprintf(job,"Xorg :0.0 vt7 -quiet -noreset -nopn -background none");
+   sprintf(job,"Xorg :0.0 vt7 -quiet -noreset -nopn ");
 //   sprintf(job,"Xorg  ");
    if(job==NULL) return 0;
    if( pipe(pip) < 0) return 0;
@@ -411,6 +458,7 @@ int StartServer(void){
      if(pgrpath!= NULL) free(pgrpath);
 //     pause();
      fprintf(stderr,"Started Server...\n");
+     setenv("DISPLAY",":0.0",1);
      return cid;
    }
 }
@@ -461,7 +509,7 @@ int StopServer(void){
      killpg(Sid,SIGTERM);
      printf("Waiting for pid: %d\n",Sid);
      WAIT(Sid);
-     remove("/tmp/.X0-lock");
+//     remove("/tmp/.X0-lock");
      return 1;
 #endif
 }
@@ -1172,6 +1220,7 @@ void RunSession(int Index,char *session) {
   setresuid(uid,uid,uid);
 //  setgid(gid);
 //  setuid(uid);
+  setenv("DISPLAY",":0.0",1);
   chdir(GetHomeDir(&lc,Index));
   setenv("HOME",GetHomeDir(&lc,Index),1);
   setenv("SHELL",GetShell(&lc,Index),1);
@@ -1325,9 +1374,11 @@ int Runlina(void *arg) {
    char buff[200],*Command;
    void *pt=NULL; /* pointer to send any extra information */
    FILE *pp;
-   remove("/tmp/.X0-lock");
-   runjob("killall -9 X",WaitForProcess);
-   runjob("killall -9 Xorg",WaitForProcess);
+   if(!isdisplayinuse(0)) {
+     remove("/tmp/.X0-lock");
+     runjob("killall -9 X",WaitForProcess);
+     runjob("killall -9 Xorg",WaitForProcess);
+   }
    signal(SIGUSR1,User1Signal);
    LoginId=Guest;
    UserName=Guest;
@@ -1392,7 +1443,7 @@ int Runlina(void *arg) {
        printf("%d %d %d %d %d %d  \n",Action,Session,PowerDown,Loop,TextLogin,Index);
        WAIT(cid);
      }
-#if 0
+#if 1
      if(TextLogin) StopServer();
      else CleanServer();
 #else
