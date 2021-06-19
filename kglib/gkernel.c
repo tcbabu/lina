@@ -995,52 +995,6 @@ int kgSendEscapeKeyEvent(void *Tmp) {
   free(e);
   return status;
 }
-int kgSendGreaterKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[GreaterKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
 int kgSendClearKeyEvent(void *Tmp) {
   int code;
   XEvent *e;
