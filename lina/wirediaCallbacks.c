@@ -1,6 +1,6 @@
 #include "kulina.h"
 #include "netlist.h"
-extern char Wdev[100];
+extern char *Wdev;
 extern int RetVal;
 extern int Connected;
 extern int OK;
@@ -172,7 +172,7 @@ int  wirediasplbutton2callback(int butno,int i,void *Tmp) {
             nt->sec =1;
             sprintf(buff,"wpa_cli set_network %d psk \\\"%-s\"\\",nt->id,nt->psk);
             runjob(buff,ProcessSet);
-            if(!OK) {sleep(3); runjob(buff,ProcessSet);}
+            if(!OK) {sleep(2); runjob(buff,ProcessSet);}
           } 
           fclose(fp);
         }

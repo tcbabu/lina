@@ -636,8 +636,11 @@ int kgSendKeyEvent(void *Tmp,int ch) {
   k->subwindow = wc->Win;
   k->state = KeyRelease;
   code = Revscan_code[ch];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
+  if(code < 0) {
+     fprintf(stderr,"code < 0 %c %x\n",ch,ch);
+     return 0;
+  }
+  if( (code>128)&&(code<223)) {
     code -=128;
     k->same_screen = 1;
     k->keycode = Revscan_code[ShiftKey];
@@ -965,6 +968,52 @@ int kgSendEscapeKeyEvent(void *Tmp) {
   k->subwindow = wc->Win;
   k->state = KeyRelease;
   code = Revscan_code[EscapeKey];
+  if(code < 0) return 0;
+  if( (code>128)&&(code<218)) {
+    code -=128;
+    k->same_screen = 1;
+    k->keycode = Revscan_code[ShiftKey];
+    k->type=KeyPress;
+    k->state = KeyPress;
+    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
+    k->keycode = code;
+    k->type=KeyRelease;
+    k->state = KeyRelease;
+    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
+    k->keycode = Revscan_code[ShiftKey];
+    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
+  }
+  else {
+    k->keycode = code;
+    k->same_screen = 1;
+    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
+  }
+  
+#if 0
+  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
+#endif
+  free(e);
+  return status;
+}
+int kgSendGreaterKeyEvent(void *Tmp) {
+  int code;
+  XEvent *e;
+  XKeyEvent *k;
+  DIALOG *D;
+  kgWC *wc;
+  e = (XEvent *)malloc(sizeof(XEvent));
+  k = (XKeyEvent *)e;
+  D = (DIALOG *)Tmp;
+  wc = WC(D);
+  int status;
+  k->type=KeyRelease;
+  k->send_event=1;
+  k->display=wc->Dsp;
+  k->window=wc->Win;
+  k->root = DefaultRootWindow(wc->Dsp);
+  k->subwindow = wc->Win;
+  k->state = KeyRelease;
+  code = Revscan_code[GreaterKey];
   if(code < 0) return 0;
   if( (code>128)&&(code<218)) {
     code -=128;
@@ -3936,6 +3985,7 @@ void get_scan_code(Display *Dsp) {
      }
     }
   }
+//TCB
 #if 0
   for(i=0;i<128;i++) {
     k = Revscan_code[i];
@@ -7026,6 +7076,218 @@ int kgRootImage(void *tmp) {
    XFreeGC(Dsp,Gc);
    if(imgFile)  uiFreeImage(png);
    XCloseDisplay(Dsp);
+   return 1;
+}
+int kgWindowImage(Window Root,void *tmp) {
+ 
+    int i,j,k,m,row,color,sx,sy,dx,xoffset,yoffset,xm,ym,xl,yl,xu,yu,xc,yc,xdl,xdu,ydl,ydu;
+    float rzfac;
+    float highfac=1.0,transparency=0.0;
+    unsigned long val;
+    unsigned char*Imgdata=NULL,*dest;
+    unsigned char r, g, b;
+    unsigned int  a;
+    unsigned long  lastrow = 0;
+    unsigned long pixel;
+    unsigned int red, green, blue;
+    unsigned char bg_red=0xff, bg_green=0xff, bg_blue=0xff;
+    double f,f1;
+    unsigned int ALPHA=255;
+    int EVGAX,EVGAY;
+    char *fullname=NULL;
+    PixelPacket *pixels,*src;
+    GMIMG *png=NULL,*pngrz=NULL;
+    Image *img;
+    int ximage_rowbytes;
+    int w,h,ww;
+    XImage *uiImage;
+    char *cpt;
+    int imgFile=0;
+    kgWC *wc;
+    Display *Dsp;
+//    Window Root;
+    Pixmap Pix;
+    Atom BackgroundPixmapId;
+    unsigned int Dpth=32;
+    int x0=0,y0=0, width, height,dy;
+    if(tmp== NULL) return 0;
+    Dsp = XOpenDisplay(NULL);
+//    Root = RootWindow(Dsp,DefaultScreen(Dsp));
+    Dpth =  DisplayPlanes(Dsp,DefaultScreen(Dsp));
+    EVGAX = DisplayWidth(Dsp,DefaultScreen(Dsp));
+    EVGAY = DisplayHeight(Dsp,DefaultScreen(Dsp));
+    width= EVGAX;
+    height = EVGAY;
+    cpt = (char *)tmp;
+    if( (cpt[0]=='#') &&(cpt[1]=='#')){
+         fullname = (char *)(cpt+2);
+         if(fullname[0]=='\0'){
+           XCloseDisplay(Dsp);
+           return 0;
+         }
+         else {
+           png = (GMIMG *)_uiGetFileImage(fullname);
+           if(png==NULL) {
+              printf("Failed to get %s\n",(char *)(cpt+2));
+              XCloseDisplay(Dsp);
+              return 0;
+           }
+         }
+//         else printf("Got Image\n");
+         imgFile=1;
+    }
+    else png = (GMIMG *)tmp;
+    if(x0 < 0) x0=0;
+    if(y0< 0) y0=0;
+    if((x0+width) >EVGAX ) width= EVGAX-x0-1;
+    if((y0+height) >EVGAY ) height= EVGAY-y0-1;
+    if(png==NULL) return 0;
+    ALPHA= 255*(1.-transparency);
+    rzfac = png->rzfac;
+    xoffset = png->xoffset;
+    yoffset = png->yoffset;
+    xc = x0+width/2;
+    yc = y0+height/2;
+    
+    pixels = (PixelPacket *)uiPixelsgmImage(png);
+    img = png->image;
+    w = img->columns;
+    h = img->rows;
+    xm = (w-xoffset)/2+xoffset;
+    ym = (h-yoffset)/2+yoffset;
+    xl = xm -width/2; xu = xm+width-width/2;
+    yl = ym -height/2; yu = ym+height -height/2;
+    if( (xu< 0) || (xl>w)||(yu <0) ||(yl >h ) ) {
+      if(imgFile)  uiFreeImage(png);
+      XCloseDisplay(Dsp);
+      return 0;
+    }
+// There is something to display
+    if(xl < 0) xl=0;
+    if(xu > w) xu =w;
+    if(yl < 0) yl=0;
+    if(yu > h ) yu = h;
+    dx = xm - xc;
+    dy = ym - yc;
+    xdl = xl-dx;
+    xdu = xu-dx;
+    ydl = yl -dy;
+    ydu = yu -dy;
+//    uiImage = kg_GetImage(D,xdl,ydl,xdu-xdl+1,ydu-ydl+1);
+    Pix=XCreatePixmap(Dsp, Root,(short)(xdu-xdl+1),(short)(ydu-ydl+1),Dpth);
+    uiImage = XGetImage(Dsp,Pix,xdl,ydl,xdu-xdl+1,ydu-ydl+1,0xffffffff,ZPixmap);
+    ximage_rowbytes = uiImage->bytes_per_line;
+    Imgdata = (unsigned char *)uiImage->data;
+    row = -1;
+    for (i = 0;  i < h;  ++i) {
+            if(i < (yl) ) continue;
+            if(i >= yu) break;
+            src = pixels + i*w;
+            row++;
+            dest = Imgdata + row*ximage_rowbytes;
+            m =0;
+            k=-1;
+            ww = w;
+            if (png->image_channels == 3) {
+                for (j=0;j < ww;   j++) {
+                    k++;
+                    if( (k) <(xl) ) {src++;continue;}
+                    if( (k) >= (xu)) break;
+                    red   = src->red;
+                    green = src->green;
+                    blue  = src->blue;
+                    src++;
+                    *dest = blue;  *dest++;
+                    *dest = green; *dest++;
+                    *dest = red;   *dest++;
+                    *dest = 0xff;  *dest++;
+                    m++;
+                }
+            } else /* if (image_channels == 4) */ {
+                for (j=0;j < ww;   j++) {
+                    k++;
+                    if( (k) <(xl) ) {src++;continue;}
+                    if( (k) >= (xu)) break;
+                    r = src->red;
+                    g = src->green;
+                    b = src->blue;
+                    a = 255 - src->opacity;
+                    src++;
+//                    a =a*(1.-transparency);
+                    if (a == 255) {
+                        red   = r;
+                        green = g;
+                        blue  = b;
+                    } else if (a == 0) {
+#if 1
+                        dest +=4;
+                        m++;
+                        continue;
+#else
+                        red = bg_red;
+                        green= bg_green;
+                        blue = bg_blue;
+#endif
+                    } else {
+                        f = a/255.0;
+                        f1 = 1-f;
+                        bg_red = dest[2];
+                        bg_green = dest[1];
+                        bg_blue  = dest[0];
+                        
+                        red =   f*r+f1 *bg_red;
+                        green = f*g+f1 *bg_green;
+                        blue =  f*b+f1 *bg_blue;
+                    }
+                    blue *=highfac; if(blue >255) blue=255;
+                    green *=highfac; if(green >255) green=255;
+                    red *=highfac; if(red >255) red=255;
+                    *dest = blue;  *dest++;
+                    *dest = green; *dest++;
+                    *dest = red;   *dest++;
+//TCB
+//                    *dest = 0xff;  *dest++;
+                    a +=*dest; if(a>255) a=255;
+                    *dest = a;  *dest++;
+
+
+                    m++;
+                }
+            }
+   }
+//   kgPutImage(D,uiImage,0,0,xdl,ydl,xdu-xdl+1,ydu-ydl+1);
+   GC Gc = XCreateGC(Dsp, Root, 0, NULL);
+#if 1
+   XPutImage(Dsp,Pix,Gc,uiImage,0,0,xdl,ydl,xdu-xdl+1,ydu-ydl+1);
+   BackgroundPixmapId = XInternAtom(Dsp, "_XROOTPMAP_ID", False);
+   XSetWindowBackgroundPixmap(Dsp, Root, Pix);
+   XChangeProperty(Dsp, Root, BackgroundPixmapId, XA_PIXMAP, 32,
+                        PropModeReplace, (unsigned char *)&Pix, 1);
+#endif
+   XClearWindow(Dsp, Root);
+   XFlush(Dsp);
+   XDestroyImage(uiImage);
+   XFreePixmap(Dsp,Pix);
+   XFreeGC(Dsp,Gc);
+   if(imgFile)  uiFreeImage(png);
+   XCloseDisplay(Dsp);
+   return 1;
+}
+int kgSetParentImage(void *Tmp,void *Img) {
+/* Really working yet to find a method for
+   Desktop top window 
+*/
+   DIALOG *D;
+   Display *Dsp;
+   Window  Parent;
+   D = (DIALOG *)Tmp;
+   Dsp = XOpenDisplay(NULL);
+   Parent = (Window) D->parent;
+  
+   if(Parent==0) Parent = RootWindow(Dsp,DefaultScreen(Dsp));
+   kgWindowImage(Parent,Img);
+   XCloseDisplay(Dsp);
+/* right now useless code */
    return 1;
 }
 void *kgGetBackground(void *Tmp,int x1,int y1,int x2,int y2) {

@@ -10,8 +10,9 @@
 #include "netlist.h"
 #define StrongLevel -35  // ie 100 % anything higher than -35 is 100%o
 #define WeakLevel   -95 // ie 1&
+extern int WC;
 Dlink *Scanlist=NULL;
-char Wdev[100],Edev[100];
+char *Wdev=NULL,Edev[100];
 char EnvFile[200];
 int SYSTEMD=0;
 int DBUS=0;
@@ -149,7 +150,7 @@ int ProcessStatus(int pip0,int pip1,int Pid) {
      }
      return OK;
 }
-int ProcessState(int pip0,int pip1,int Pid) {
+int ProcessState_o(int pip0,int pip1,int Pid) {
      char buff[1000];
      int ch,i=0,j;
 //   Skipa line
@@ -165,6 +166,24 @@ int ProcessState(int pip0,int pip1,int Pid) {
              OK=1;
          }
      }
+     return OK;
+}
+int ProcessState(int pip0,int pip1,int Pid) {
+     char buff[1000];
+     int ch,i=0,j;
+     FILE *fp;
+     unsigned char *pt;
+//   Skipa line
+     Curssid[0]='\0';
+     OK=0;
+     fp = fdopen(pip0,"r");
+     while( fgets(buff,1000,fp) != NULL) {
+         pt = strstr(buff,"Failed to connect");
+         if(pt!= NULL) {OK=0;break;}
+         pt = strstr(buff,"wpa_state=COMPLETED");
+         if(pt!= NULL) {OK=1;break;}
+     }
+     fclose(fp);
      return OK;
 }
 int GetState(void) {
@@ -352,7 +371,7 @@ int addnetwork(NETLIST *nt) {
       if(!OK) {sleep(3); runjob(buff,ProcessSet);}
   }
   if(nt->sig <0 ) {
-      sprintf(buff,"wpa_cli set_network %d scan_ssid 1",ID,nt->psk);
+      sprintf(buff,"wpa_cli set_network %d scan_ssid 1",ID);
       runjob(buff,ProcessSet);
       if(!OK) {sleep(3); runjob(buff,ProcessSet);}
   }
@@ -690,8 +709,8 @@ int runbin(char *job){
 int GetWdev(void) {
   char **devs,**files,buff[200];
   int i,j,OK=0;
+  if(Wdev!= NULL) return 1;
   devs=kgFolderMenu("/sys/class/net");
-  Wdev[0]='\0';
   if(devs!=NULL) {
    i=0;
    while(devs[i]!=NULL) {
@@ -702,6 +721,7 @@ int GetWdev(void) {
        j=0;
        while(files[j]!=NULL) {
           if(SearchString(files[j],"wireless")>=0) {
+            Wdev = (char *) malloc(strlen(devs[i])+1);
             strcpy(Wdev,devs[i]);
             OK=1;
             break;
@@ -945,4 +965,30 @@ int  Wireless(int key,void *Parent) {
       break;
   }
   return ret;
+}
+int InitWpa(void) {
+  unsigned char buff[300];
+  int wait=0;
+  if(GetWdev()) {
+   MakeConfigFile();
+//   MakeDhclient();
+   while(!CheckProcess("wpa_supplicant") ){
+     wait++;
+     if(wait > 10) {
+       fprintf(stderr,"Failed to start wpa_supplicant\n");
+       return 0;
+     }
+     sprintf(buff,"wpa_supplicant -i%-s -c/tmp/wpa.conf -B",Wdev);
+     runjob(buff,WaitForProcess);
+     printf("%s\n",buff);
+     runjob("wpa_cli scan",NULL);
+   }
+   WC = WirelessStatus();
+   printf("%s : %d\n",Wdev,WC);
+  }
+  else  {
+    printf("Could not get Wdev\n");
+    return 0;
+  }
+  return 1;
 }

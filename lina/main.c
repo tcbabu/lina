@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #define DISPLAY ":0.0"
+int InitWpa(void);
 void *Runlina(void *);
 int main(void) { 
    int i=0;
@@ -19,6 +20,7 @@ int main(void) {
    }
 #endif
 //  for(i=0;i<60;i++)printf("\n");
+  InitWpa();
   Runlina(NULL);
   return 1;
 }

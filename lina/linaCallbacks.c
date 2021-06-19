@@ -19,7 +19,7 @@ int GetWdev(void);
 int Wireless(int,void *);
 int WirelessStatus(void);
 int keybrdcleanup(void *Tmp,int Grpid);
-extern char Wdev[100];
+extern char *Wdev;
 extern int Session,Action,PowerDown,TextLogin;
 extern char *LoginId,*Epasswd,Passwd[50],*UserHome,*UserName;
 extern int Index;
