@@ -5,8 +5,8 @@ include config.mak
 CC	= cc    -msse3 -O3 -DUNIX -pthread $(X11_CFLAFS)  $(CFLAGS)
 #CC	= cc    -msse3 -g -DUNIX  $(CFLAGS)
 all	: libkulina.a 
-libkulina.a  : kgl.o kgui.o kgui1.o kgui2.o lowlib.o gkernel.o file_pro.o dlink.o printerdia.o shade.o PngImage.o gminterface.o makeimg.o drawimg.o  ogl.o threadtool.o hlib.o
-	ar -r libkulina.a kgl.o kgui.o kgui1.o kgui2.o lowlib.o gkernel.o file_pro.o  printerdia.o shade.o PngImage.o gminterface.o makeimg.o drawimg.o dlink.o ogl.o threadtool.o hlib.o
+libkulina.a  : kgl.o kgui.o kgui1.o kgui2.o lowlib.o gkernel.o file_pro.o dlink.o printerdia.o shade.o PngImage.o gminterface.o makeimg.o drawimg.o  ogl.o threadtool.o hlib.o keybrd.o keybrdCallbacks.o
+	ar -r libkulina.a kgl.o kgui.o kgui1.o kgui2.o lowlib.o gkernel.o file_pro.o  printerdia.o shade.o PngImage.o gminterface.o makeimg.o drawimg.o dlink.o ogl.o threadtool.o hlib.o keybrd.o keybrdCallbacks.o
 kgl.o : kgl.c kulina.h gprivate.h
 	$(CC) -c  -I$(PREFIX)/include/GraphicsMagick kgl.c
 hlib.o : hlib.c kulina.h gprivate.h
@@ -39,6 +39,13 @@ makeimg.o : makeimg.c kulina.h
 	$(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick makeimg.c 
 drawimg.o : drawimg.c kulina.h
 	$(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick drawimg.c 
+hlib.o	: hlib.c kulina.h
+	$(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick hlib.c 
+keybrd.o	: keybrd.c kulina.h
+	$(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick keybrd.c 
+keybrdCallbacks.o	: keybrdCallbacks.c kulina.h
+	       $(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick keybrdCallbacks.c 
+
 clean	:
 	 rm -f *.o gph2ps gph2eps gph2jpg ps2jpg imagetoc cleantmpdir glib.a
 install	: libkulina.a
