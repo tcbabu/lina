@@ -871,7 +871,7 @@ int linaGroup( DIALOG *D,void **v,void *pt) {
     linasplbutton2callback, /*  Callbak */
       NULL  /* any args */
   };
-  strcpy(h6.Wid,(char *)"linaWidget9");
+  strcpy(h6.Wid,(char *)"BottomLine");
   char *xpm7;// Pixmap info
   xpm7 = (char *)DateTimeImg(&lc,300,100);
   DIP p7 = { 
@@ -1050,9 +1050,18 @@ int lina( void *parent,void **v,void *pt) {
      t->x2 = t->x1 + xl;
      t->y2 = t->y1 + yl;
 //     kgShiftGrp(&D,lc.KbGrp,(xres-840)/2-5,yres-305);
+
+     lc.KbVis=0;
+#if 0
      lc.KbGrp=MakekeybrdGroup(&D,&TextBox,(int)lc.Red,(int)lc.Green,(int)lc.Blue,(xres-840)/2,yres-305);
-      lc.KbVis=0;
       kgSetGrpVisibility((void *)&D,lc.KbGrp,lc.KbVis);
+#else
+//  kgMakeDefaultKeybrd(&D,(xres-840)/2,yres-305,0);
+  kgDefineColor(501,220,220,220);
+  kgDefineColor(101,(unsigned char)(0.8*lc.Red),(unsigned char)(0.8*lc.Green),(unsigned char)(0.8*lc.Blue));
+  kgMakeKeybrd(&D,(xres-840)/2,yres-305,0,8,16,0,501,101,0.1);
+  kgSetKeybrdWidget(1);
+#endif
 //     D.StackPos = 1; // you may need it
   }    /*  end of fullscreen mode */
   printf("Calling Ui\n");

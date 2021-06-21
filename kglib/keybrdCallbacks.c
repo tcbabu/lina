@@ -1,5 +1,4 @@
-#include <kulina.h>
-#include "keybrd.h"
+#include "kulina.h"
 extern KEYBRD Kbrd;
 int ProcessShift(void *D);
 int kgSetKeybrdWidget(int CurWid) {

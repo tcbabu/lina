@@ -1,6 +1,5 @@
-#include <kulina.h>
+#include "kulina.h"
 #include "keybrdCallbacks.h"
-#include "keybrd.h"
 int RED=120,GREEN=120,BLUE=120;
 int Btype=5;
 //#define Btype 8
@@ -18,6 +17,7 @@ static int Bfont=16,Bclr=0;
 static int FillClr=101;
 static float Btrans=0.0;
 static unsigned char R=230,G=60,B=0;
+int ButClr=-1;
 KEYBRD Kbrd;
 static char *kgButtonTitle(char * str) {
   sprintf(BUFF,"!z%-s!f%2.2d!c%2.2d%-s",Sfac,Bfont,Bclr,str);
@@ -62,10 +62,16 @@ static void ModifykeybrdGc(Gclr *gc) {
 
 static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   int GrpId=0,oitems=0,i,j;
+  int Red,Green,Blue;
   DIA *d=NULL,*dtmp;
   char *xpm0;// Pixmap info
+#if 0
   xpm0 = (char *)malloc(3);
   strcpy(xpm0, (char *)"##");
+#else
+  kgGetDefaultRGB(FillClr,&Red,&Green,&Blue);
+  xpm0 = (char *)MakeLightImage( 792,254,Red,Green,Blue,0.0);
+#endif
   DIP p0 = { 
     'p',
     1,1,  
@@ -74,6 +80,8 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     FillClr, /* bkgr colour */ 
       1,0,Btrans /* border hide transparency*/ 
   };
+  p0.transparency = Btrans;
+  p0.bkgr_clr = FillClr;
   strcpy(p0.Wid,(char *)"Keybdbkgr");
   p0.item = -1;
   BUT_STR  *butn1=NULL; 
@@ -83,70 +91,70 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn1[0].xpmn=NULL;
   butn1[0].xpmp=NULL;
   butn1[0].xpmh=NULL;
-  butn1[0].bkgr=-1;
+  butn1[0].bkgr=ButClr;
   butn1[0].butncode='';
   butn1[1].sw=1;
   strcpy(butn1[1].title,kgButtonTitle((char *)"w"));
   butn1[1].xpmn=NULL;
   butn1[1].xpmp=NULL;
   butn1[1].xpmh=NULL;
-  butn1[1].bkgr=-1;
+  butn1[1].bkgr=ButClr;
   butn1[1].butncode='';
   butn1[2].sw=1;
   strcpy(butn1[2].title,kgButtonTitle((char *)"e"));
   butn1[2].xpmn=NULL;
   butn1[2].xpmp=NULL;
   butn1[2].xpmh=NULL;
-  butn1[2].bkgr=-1;
+  butn1[2].bkgr=ButClr;
   butn1[2].butncode='';
   butn1[3].sw=1;
   strcpy(butn1[3].title,kgButtonTitle((char *)"r"));
   butn1[3].xpmn=NULL;
   butn1[3].xpmp=NULL;
   butn1[3].xpmh=NULL;
-  butn1[3].bkgr=-1;
+  butn1[3].bkgr=ButClr;
   butn1[3].butncode='';
   butn1[4].sw=1;
   strcpy(butn1[4].title,kgButtonTitle((char *)"t"));
   butn1[4].xpmn=NULL;
   butn1[4].xpmp=NULL;
   butn1[4].xpmh=NULL;
-  butn1[4].bkgr=-1;
+  butn1[4].bkgr=ButClr;
   butn1[4].butncode='';
   butn1[5].sw=1;
   strcpy(butn1[5].title,kgButtonTitle((char *)"y"));
   butn1[5].xpmn=NULL;
   butn1[5].xpmp=NULL;
   butn1[5].xpmh=NULL;
-  butn1[5].bkgr=-1;
+  butn1[5].bkgr=ButClr;
   butn1[5].butncode='';
   butn1[6].sw=1;
   strcpy(butn1[6].title,kgButtonTitle((char *)"u"));
   butn1[6].xpmn=NULL;
   butn1[6].xpmp=NULL;
   butn1[6].xpmh=NULL;
-  butn1[6].bkgr=-1;
+  butn1[6].bkgr=ButClr;
   butn1[6].butncode='';
   butn1[7].sw=1;
   strcpy(butn1[7].title,kgButtonTitle((char *)"i"));
   butn1[7].xpmn=NULL;
   butn1[7].xpmp=NULL;
   butn1[7].xpmh=NULL;
-  butn1[7].bkgr=-1;
+  butn1[7].bkgr=ButClr;
   butn1[7].butncode='';
   butn1[8].sw=1;
   strcpy(butn1[8].title,kgButtonTitle((char *)"o"));
   butn1[8].xpmn=NULL;
   butn1[8].xpmp=NULL;
   butn1[8].xpmh=NULL;
-  butn1[8].bkgr=-1;
+  butn1[8].bkgr=ButClr;
   butn1[8].butncode='';
   butn1[9].sw=1;
   strcpy(butn1[9].title,kgButtonTitle((char *)"p"));
   butn1[9].xpmn=NULL;
   butn1[9].xpmp=NULL;
   butn1[9].xpmh=NULL;
-  butn1[9].bkgr=-1;
+  butn1[9].bkgr=ButClr;
   butn1[9].butncode='';
   DIN b1 = { 
     'n',
@@ -163,6 +171,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
       NULL  /* any args */
   };
   strcpy(b1.Wid,(char *)"keybrdqwrt");
+  b1.type=Btype;
   b1.item = -1;
   BUT_STR  *butn2=NULL; 
   butn2= (BUT_STR *)malloc(sizeof(BUT_STR)*6);
@@ -171,42 +180,42 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn2[0].xpmn=NULL;
   butn2[0].xpmp=NULL;
   butn2[0].xpmh=NULL;
-  butn2[0].bkgr=-1;
+  butn2[0].bkgr=ButClr;
   butn2[0].butncode='';
   butn2[1].sw=1;
   strcpy(butn2[1].title,kgButtonTitle((char *)"}"));
   butn2[1].xpmn=NULL;
   butn2[1].xpmp=NULL;
   butn2[1].xpmh=NULL;
-  butn2[1].bkgr=-1;
+  butn2[1].bkgr=ButClr;
   butn2[1].butncode='';
   butn2[2].sw=1;
   strcpy(butn2[2].title,kgButtonTitle((char *)"|"));
   butn2[2].xpmn=NULL;
   butn2[2].xpmp=NULL;
   butn2[2].xpmh=NULL;
-  butn2[2].bkgr=-1;
+  butn2[2].bkgr=ButClr;
   butn2[2].butncode='';
   butn2[3].sw=1;
   strcpy(butn2[3].title,kgButtonTitle((char *)"["));
   butn2[3].xpmn=NULL;
   butn2[3].xpmp=NULL;
   butn2[3].xpmh=NULL;
-  butn2[3].bkgr=-1;
+  butn2[3].bkgr=ButClr;
   butn2[3].butncode='';
   butn2[4].sw=1;
   strcpy(butn2[4].title,kgButtonTitle((char *)"]"));
   butn2[4].xpmn=NULL;
   butn2[4].xpmp=NULL;
   butn2[4].xpmh=NULL;
-  butn2[4].bkgr=-1;
+  butn2[4].bkgr=ButClr;
   butn2[4].butncode='';
   butn2[5].sw=1;
   strcpy(butn2[5].title,kgButtonTitle((char *)"\\"));
   butn2[5].xpmn=NULL;
   butn2[5].xpmp=NULL;
   butn2[5].xpmh=NULL;
-  butn2[5].bkgr=-1;
+  butn2[5].bkgr=ButClr;
   butn2[5].butncode='';
   DIN b2 = { 
     'n',
@@ -224,6 +233,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b2.Wid,(char *)"keybrdWidget2");
   b2.item = -1;
+  b2.type=Btype;
   BUT_STR  *butn3=NULL; 
   butn3= (BUT_STR *)malloc(sizeof(BUT_STR)*26);
   butn3[0].sw=1;
@@ -231,182 +241,182 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn3[0].xpmn=NULL;
   butn3[0].xpmp=NULL;
   butn3[0].xpmh=NULL;
-  butn3[0].bkgr=-1;
+  butn3[0].bkgr=ButClr;
   butn3[0].butncode='';
   butn3[1].sw=1;
   strcpy(butn3[1].title,kgButtonTitle((char *)"!!"));
   butn3[1].xpmn=NULL;
   butn3[1].xpmp=NULL;
   butn3[1].xpmh=NULL;
-  butn3[1].bkgr=-1;
+  butn3[1].bkgr=ButClr;
   butn3[1].butncode='';
   butn3[2].sw=1;
   strcpy(butn3[2].title,kgButtonTitle((char *)"@"));
   butn3[2].xpmn=NULL;
   butn3[2].xpmp=NULL;
   butn3[2].xpmh=NULL;
-  butn3[2].bkgr=-1;
+  butn3[2].bkgr=ButClr;
   butn3[2].butncode='';
   butn3[3].sw=1;
   strcpy(butn3[3].title,kgButtonTitle((char *)"#"));
   butn3[3].xpmn=NULL;
   butn3[3].xpmp=NULL;
   butn3[3].xpmh=NULL;
-  butn3[3].bkgr=-1;
+  butn3[3].bkgr=ButClr;
   butn3[3].butncode='';
   butn3[4].sw=1;
   strcpy(butn3[4].title,kgButtonTitle((char *)"$"));
   butn3[4].xpmn=NULL;
   butn3[4].xpmp=NULL;
   butn3[4].xpmh=NULL;
-  butn3[4].bkgr=-1;
+  butn3[4].bkgr=ButClr;
   butn3[4].butncode='';
   butn3[5].sw=1;
   strcpy(butn3[5].title,kgButtonTitle((char *)"%"));
   butn3[5].xpmn=NULL;
   butn3[5].xpmp=NULL;
   butn3[5].xpmh=NULL;
-  butn3[5].bkgr=-1;
+  butn3[5].bkgr=ButClr;
   butn3[5].butncode='';
   butn3[6].sw=1;
   strcpy(butn3[6].title,kgButtonTitle((char *)"^"));
   butn3[6].xpmn=NULL;
   butn3[6].xpmp=NULL;
   butn3[6].xpmh=NULL;
-  butn3[6].bkgr=-1;
+  butn3[6].bkgr=ButClr;
   butn3[6].butncode='';
   butn3[7].sw=1;
   strcpy(butn3[7].title,kgButtonTitle((char *)"&"));
   butn3[7].xpmn=NULL;
   butn3[7].xpmp=NULL;
   butn3[7].xpmh=NULL;
-  butn3[7].bkgr=-1;
+  butn3[7].bkgr=ButClr;
   butn3[7].butncode='';
   butn3[8].sw=1;
   strcpy(butn3[8].title,kgButtonTitle((char *)"*"));
   butn3[8].xpmn=NULL;
   butn3[8].xpmp=NULL;
   butn3[8].xpmh=NULL;
-  butn3[8].bkgr=-1;
+  butn3[8].bkgr=ButClr;
   butn3[8].butncode='';
   butn3[9].sw=1;
   strcpy(butn3[9].title,kgButtonTitle((char *)"("));
   butn3[9].xpmn=NULL;
   butn3[9].xpmp=NULL;
   butn3[9].xpmh=NULL;
-  butn3[9].bkgr=-1;
+  butn3[9].bkgr=ButClr;
   butn3[9].butncode='';
   butn3[10].sw=1;
   strcpy(butn3[10].title,kgButtonTitle((char *)")"));
   butn3[10].xpmn=NULL;
   butn3[10].xpmp=NULL;
   butn3[10].xpmh=NULL;
-  butn3[10].bkgr=-1;
+  butn3[10].bkgr=ButClr;
   butn3[10].butncode='';
   butn3[11].sw=1;
   strcpy(butn3[11].title,kgButtonTitle((char *)"_"));
   butn3[11].xpmn=NULL;
   butn3[11].xpmp=NULL;
   butn3[11].xpmh=NULL;
-  butn3[11].bkgr=-1;
+  butn3[11].bkgr=ButClr;
   butn3[11].butncode='';
   butn3[12].sw=1;
   strcpy(butn3[12].title,kgButtonTitle((char *)"+"));
   butn3[12].xpmn=NULL;
   butn3[12].xpmp=NULL;
   butn3[12].xpmh=NULL;
-  butn3[12].bkgr=-1;
+  butn3[12].bkgr=ButClr;
   butn3[12].butncode='';
   butn3[13].sw=1;
   strcpy(butn3[13].title,kgButtonTitle((char *)"`"));
   butn3[13].xpmn=NULL;
   butn3[13].xpmp=NULL;
   butn3[13].xpmh=NULL;
-  butn3[13].bkgr=-1;
+  butn3[13].bkgr=ButClr;
   butn3[13].butncode='';
   butn3[14].sw=1;
   strcpy(butn3[14].title,kgButtonTitle((char *)"1"));
   butn3[14].xpmn=NULL;
   butn3[14].xpmp=NULL;
   butn3[14].xpmh=NULL;
-  butn3[14].bkgr=-1;
+  butn3[14].bkgr=ButClr;
   butn3[14].butncode='';
   butn3[15].sw=1;
   strcpy(butn3[15].title,kgButtonTitle((char *)"2"));
   butn3[15].xpmn=NULL;
   butn3[15].xpmp=NULL;
   butn3[15].xpmh=NULL;
-  butn3[15].bkgr=-1;
+  butn3[15].bkgr=ButClr;
   butn3[15].butncode='';
   butn3[16].sw=1;
   Procpy(butn3[16].title,(char *)"3");
   butn3[16].xpmn=NULL;
   butn3[16].xpmp=NULL;
   butn3[16].xpmh=NULL;
-  butn3[16].bkgr=-1;
+  butn3[16].bkgr=ButClr;
   butn3[16].butncode='';
   butn3[17].sw=1;
   Procpy(butn3[17].title,(char *)"4");
   butn3[17].xpmn=NULL;
   butn3[17].xpmp=NULL;
   butn3[17].xpmh=NULL;
-  butn3[17].bkgr=-1;
+  butn3[17].bkgr=ButClr;
   butn3[17].butncode='';
   butn3[18].sw=1;
   Procpy(butn3[18].title,(char *)"5");
   butn3[18].xpmn=NULL;
   butn3[18].xpmp=NULL;
   butn3[18].xpmh=NULL;
-  butn3[18].bkgr=-1;
+  butn3[18].bkgr=ButClr;
   butn3[18].butncode='';
   butn3[19].sw=1;
   Procpy(butn3[19].title,(char *)"6");
   butn3[19].xpmn=NULL;
   butn3[19].xpmp=NULL;
   butn3[19].xpmh=NULL;
-  butn3[19].bkgr=-1;
+  butn3[19].bkgr=ButClr;
   butn3[19].butncode='';
   butn3[20].sw=1;
   Procpy(butn3[20].title,(char *)"7");
   butn3[20].xpmn=NULL;
   butn3[20].xpmp=NULL;
   butn3[20].xpmh=NULL;
-  butn3[20].bkgr=-1;
+  butn3[20].bkgr=ButClr;
   butn3[20].butncode='';
   butn3[21].sw=1;
   Procpy(butn3[21].title,(char *)"8");
   butn3[21].xpmn=NULL;
   butn3[21].xpmp=NULL;
   butn3[21].xpmh=NULL;
-  butn3[21].bkgr=-1;
+  butn3[21].bkgr=ButClr;
   butn3[21].butncode='';
   butn3[22].sw=1;
   Procpy(butn3[22].title,(char *)"9");
   butn3[22].xpmn=NULL;
   butn3[22].xpmp=NULL;
   butn3[22].xpmh=NULL;
-  butn3[22].bkgr=-1;
+  butn3[22].bkgr=ButClr;
   butn3[22].butncode='';
   butn3[23].sw=1;
   Procpy(butn3[23].title,(char *)"0");
   butn3[23].xpmn=NULL;
   butn3[23].xpmp=NULL;
   butn3[23].xpmh=NULL;
-  butn3[23].bkgr=-1;
+  butn3[23].bkgr=ButClr;
   butn3[23].butncode='';
   butn3[24].sw=1;
   Procpy(butn3[24].title,(char *)"-");
   butn3[24].xpmn=NULL;
   butn3[24].xpmp=NULL;
   butn3[24].xpmh=NULL;
-  butn3[24].bkgr=-1;
+  butn3[24].bkgr=ButClr;
   butn3[24].butncode='';
   butn3[25].sw=1;
   Procpy(butn3[25].title,(char *)"=");
   butn3[25].xpmn=NULL;
   butn3[25].xpmp=NULL;
   butn3[25].xpmh=NULL;
-  butn3[25].bkgr=-1;
+  butn3[25].bkgr=ButClr;
   butn3[25].butncode='';
   DIN b3 = { 
     'n',
@@ -424,6 +434,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b3.Wid,(char *)"keybrdWidget3");
   b3.item = -1;
+  b3.type=Btype;
   BUT_STR  *butn4=NULL; 
   butn4= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
   butn4[0].sw=1;
@@ -431,7 +442,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn4[0].xpmn=NULL;
   butn4[0].xpmp=NULL;
   butn4[0].xpmh=NULL;
-  butn4[0].bkgr=-1;
+  butn4[0].bkgr=ButClr;
   butn4[0].butncode='';
   DIN b4 = { 
     'n',
@@ -449,6 +460,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b4.Wid,(char *)"keybrdWidget4");
   b4.item = -1;
+  b4.type=Btype;
   BUT_STR  *butn5=NULL; 
   butn5= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
   butn5[0].sw=1;
@@ -456,7 +468,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn5[0].xpmn=NULL;
   butn5[0].xpmp=NULL;
   butn5[0].xpmh=NULL;
-  butn5[0].bkgr=-1;
+  butn5[0].bkgr=ButClr;
   butn5[0].butncode='';
   DIN b5 = { 
     'n',
@@ -474,6 +486,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b5.Wid,(char *)"keybrdWidget5");
   b5.item = -1;
+  b5.type=Btype;
   BUT_STR  *butn6=NULL; 
   butn6= (BUT_STR *)malloc(sizeof(BUT_STR)*9);
   butn6[0].sw=1;
@@ -481,63 +494,63 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn6[0].xpmn=NULL;
   butn6[0].xpmp=NULL;
   butn6[0].xpmh=NULL;
-  butn6[0].bkgr=-1;
+  butn6[0].bkgr=ButClr;
   butn6[0].butncode='';
   butn6[1].sw=1;
   Procpy(butn6[1].title,(char *)"s");
   butn6[1].xpmn=NULL;
   butn6[1].xpmp=NULL;
   butn6[1].xpmh=NULL;
-  butn6[1].bkgr=-1;
+  butn6[1].bkgr=ButClr;
   butn6[1].butncode='';
   butn6[2].sw=1;
   Procpy(butn6[2].title,(char *)"d");
   butn6[2].xpmn=NULL;
   butn6[2].xpmp=NULL;
   butn6[2].xpmh=NULL;
-  butn6[2].bkgr=-1;
+  butn6[2].bkgr=ButClr;
   butn6[2].butncode='';
   butn6[3].sw=1;
   Procpy(butn6[3].title,(char *)"f");
   butn6[3].xpmn=NULL;
   butn6[3].xpmp=NULL;
   butn6[3].xpmh=NULL;
-  butn6[3].bkgr=-1;
+  butn6[3].bkgr=ButClr;
   butn6[3].butncode='';
   butn6[4].sw=1;
   Procpy(butn6[4].title,(char *)"g");
   butn6[4].xpmn=NULL;
   butn6[4].xpmp=NULL;
   butn6[4].xpmh=NULL;
-  butn6[4].bkgr=-1;
+  butn6[4].bkgr=ButClr;
   butn6[4].butncode='';
   butn6[5].sw=1;
   Procpy(butn6[5].title,(char *)"h");
   butn6[5].xpmn=NULL;
   butn6[5].xpmp=NULL;
   butn6[5].xpmh=NULL;
-  butn6[5].bkgr=-1;
+  butn6[5].bkgr=ButClr;
   butn6[5].butncode='';
   butn6[6].sw=1;
   Procpy(butn6[6].title,(char *)"j");
   butn6[6].xpmn=NULL;
   butn6[6].xpmp=NULL;
   butn6[6].xpmh=NULL;
-  butn6[6].bkgr=-1;
+  butn6[6].bkgr=ButClr;
   butn6[6].butncode='';
   butn6[7].sw=1;
   Procpy(butn6[7].title,(char *)"k");
   butn6[7].xpmn=NULL;
   butn6[7].xpmp=NULL;
   butn6[7].xpmh=NULL;
-  butn6[7].bkgr=-1;
+  butn6[7].bkgr=ButClr;
   butn6[7].butncode='';
   butn6[8].sw=1;
   Procpy(butn6[8].title,(char *)"l");
   butn6[8].xpmn=NULL;
   butn6[8].xpmp=NULL;
   butn6[8].xpmh=NULL;
-  butn6[8].bkgr=-1;
+  butn6[8].bkgr=ButClr;
   butn6[8].butncode='';
   DIN b6 = { 
     'n',
@@ -555,6 +568,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b6.Wid,(char *)"keybrdasdfg");
   b6.item = -1;
+  b6.type=Btype;
   BUT_STR  *butn7=NULL; 
   butn7= (BUT_STR *)malloc(sizeof(BUT_STR)*7);
   butn7[0].sw=1;
@@ -562,49 +576,49 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn7[0].xpmn=NULL;
   butn7[0].xpmp=NULL;
   butn7[0].xpmh=NULL;
-  butn7[0].bkgr=-1;
+  butn7[0].bkgr=ButClr;
   butn7[0].butncode='';
   butn7[1].sw=1;
   Procpy(butn7[1].title,(char *)"x");
   butn7[1].xpmn=NULL;
   butn7[1].xpmp=NULL;
   butn7[1].xpmh=NULL;
-  butn7[1].bkgr=-1;
+  butn7[1].bkgr=ButClr;
   butn7[1].butncode='';
   butn7[2].sw=1;
   Procpy(butn7[2].title,(char *)"c");
   butn7[2].xpmn=NULL;
   butn7[2].xpmp=NULL;
   butn7[2].xpmh=NULL;
-  butn7[2].bkgr=-1;
+  butn7[2].bkgr=ButClr;
   butn7[2].butncode='';
   butn7[3].sw=1;
   Procpy(butn7[3].title,(char *)"v");
   butn7[3].xpmn=NULL;
   butn7[3].xpmp=NULL;
   butn7[3].xpmh=NULL;
-  butn7[3].bkgr=-1;
+  butn7[3].bkgr=ButClr;
   butn7[3].butncode='';
   butn7[4].sw=1;
   Procpy(butn7[4].title,(char *)"b");
   butn7[4].xpmn=NULL;
   butn7[4].xpmp=NULL;
   butn7[4].xpmh=NULL;
-  butn7[4].bkgr=-1;
+  butn7[4].bkgr=ButClr;
   butn7[4].butncode='';
   butn7[5].sw=1;
   Procpy(butn7[5].title,(char *)"n");
   butn7[5].xpmn=NULL;
   butn7[5].xpmp=NULL;
   butn7[5].xpmh=NULL;
-  butn7[5].bkgr=-1;
+  butn7[5].bkgr=ButClr;
   butn7[5].butncode='';
   butn7[6].sw=1;
   Procpy(butn7[6].title,(char *)"m");
   butn7[6].xpmn=NULL;
   butn7[6].xpmp=NULL;
   butn7[6].xpmh=NULL;
-  butn7[6].bkgr=-1;
+  butn7[6].bkgr=ButClr;
   butn7[6].butncode='';
   DIN b7 = { 
     'n',
@@ -622,6 +636,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b7.Wid,(char *)"keybrdzxcvb");
   b7.item = -1;
+  b7.type=Btype;
   BUT_STR  *butn8=NULL; 
   butn8= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
   butn8[0].sw=1;
@@ -629,7 +644,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn8[0].xpmn=NULL;
   butn8[0].xpmp=NULL;
   butn8[0].xpmh=NULL;
-  butn8[0].bkgr=-1;
+  butn8[0].bkgr=ButClr;
   butn8[0].butncode='';
   DIN b8 = { 
     'n',
@@ -647,6 +662,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b8.Wid,(char *)"CapsOff");
   b8.item = -1;
+  b8.type=Btype;
   BUT_STR  *butn9=NULL; 
   butn9= (BUT_STR *)malloc(sizeof(BUT_STR)*6);
   butn9[0].sw=1;
@@ -654,42 +670,42 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn9[0].xpmn=NULL;
   butn9[0].xpmp=NULL;
   butn9[0].xpmh=NULL;
-  butn9[0].bkgr=-1;
+  butn9[0].bkgr=ButClr;
   butn9[0].butncode='';
   butn9[1].sw=1;
   Procpy(butn9[1].title,(char *)">");
   butn9[1].xpmn=NULL;
   butn9[1].xpmp=NULL;
   butn9[1].xpmh=NULL;
-  butn9[1].bkgr=-1;
+  butn9[1].bkgr=ButClr;
   butn9[1].butncode='';
   butn9[2].sw=1;
   Procpy(butn9[2].title,(char *)"?");
   butn9[2].xpmn=NULL;
   butn9[2].xpmp=NULL;
   butn9[2].xpmh=NULL;
-  butn9[2].bkgr=-1;
+  butn9[2].bkgr=ButClr;
   butn9[2].butncode='';
   butn9[3].sw=1;
   Procpy(butn9[3].title,(char *)",");
   butn9[3].xpmn=NULL;
   butn9[3].xpmp=NULL;
   butn9[3].xpmh=NULL;
-  butn9[3].bkgr=-1;
+  butn9[3].bkgr=ButClr;
   butn9[3].butncode='';
   butn9[4].sw=1;
   Procpy(butn9[4].title,(char *)".");
   butn9[4].xpmn=NULL;
   butn9[4].xpmp=NULL;
   butn9[4].xpmh=NULL;
-  butn9[4].bkgr=-1;
+  butn9[4].bkgr=ButClr;
   butn9[4].butncode='';
   butn9[5].sw=1;
   Procpy(butn9[5].title,(char *)"/");
   butn9[5].xpmn=NULL;
   butn9[5].xpmp=NULL;
   butn9[5].xpmh=NULL;
-  butn9[5].bkgr=-1;
+  butn9[5].bkgr=ButClr;
   butn9[5].butncode='';
   DIN b9 = { 
     'n',
@@ -707,6 +723,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b9.Wid,(char *)"keybrdWidget9");
   b9.item = -1;
+  b9.type=Btype;
   BUT_STR  *butn10=NULL; 
   butn10= (BUT_STR *)malloc(sizeof(BUT_STR)*4);
   butn10[0].sw=1;
@@ -714,28 +731,28 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn10[0].xpmn=NULL;
   butn10[0].xpmp=NULL;
   butn10[0].xpmh=NULL;
-  butn10[0].bkgr=-1;
+  butn10[0].bkgr=ButClr;
   butn10[0].butncode='';
   butn10[1].sw=1;
   Procpy(butn10[1].title,(char *)"\"");
   butn10[1].xpmn=NULL;
   butn10[1].xpmp=NULL;
   butn10[1].xpmh=NULL;
-  butn10[1].bkgr=-1;
+  butn10[1].bkgr=ButClr;
   butn10[1].butncode='';
   butn10[2].sw=1;
   Procpy(butn10[2].title,(char *)":");
   butn10[2].xpmn=NULL;
   butn10[2].xpmp=NULL;
   butn10[2].xpmh=NULL;
-  butn10[2].bkgr=-1;
+  butn10[2].bkgr=ButClr;
   butn10[2].butncode='';
   butn10[3].sw=1;
   Procpy(butn10[3].title,(char *)"'");
   butn10[3].xpmn=NULL;
   butn10[3].xpmp=NULL;
   butn10[3].xpmh=NULL;
-  butn10[3].bkgr=-1;
+  butn10[3].bkgr=ButClr;
   butn10[3].butncode='';
   DIN b10 = { 
     'n',
@@ -753,6 +770,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b10.Wid,(char *)"keybrdWidget10");
   b10.item = -1;
+  b10.type=Btype;
   BUT_STR  *butn11=NULL; 
   butn11= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
   butn11[0].sw=1;
@@ -760,7 +778,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn11[0].xpmn=NULL;
   butn11[0].xpmp=NULL;
   butn11[0].xpmh=NULL;
-  butn11[0].bkgr=-1;
+  butn11[0].bkgr=ButClr;
   butn11[0].butncode='';
   DIN b11 = { 
     'n',
@@ -778,6 +796,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b11.Wid,(char *)"keybrdWidget11");
   b11.item = -1;
+  b11.type=Btype;
   BUT_STR  *butn12=NULL; 
   butn12= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
   butn12[0].sw=1;
@@ -785,7 +804,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn12[0].xpmn=NULL;
   butn12[0].xpmp=NULL;
   butn12[0].xpmh=NULL;
-  butn12[0].bkgr=-1;
+  butn12[0].bkgr=ButClr;
   butn12[0].butncode='';
   DIN b12 = { 
     'n',
@@ -803,6 +822,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b12.Wid,(char *)"keybrdWidget12");
   b12.item = -1;
+  b12.type=Btype;
   BUT_STR  *butn13=NULL; 
   butn13= (BUT_STR *)malloc(sizeof(BUT_STR)*2);
   butn13[0].sw=1;
@@ -810,14 +830,14 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn13[0].xpmn=kgRightImage(12,RED,GREEN,BLUE);
   butn13[0].xpmp=NULL;
   butn13[0].xpmh=NULL;
-  butn13[0].bkgr=-1;
+  butn13[0].bkgr=ButClr;
   butn13[0].butncode='';
   butn13[1].sw=1;
   strcpy(butn13[1].title,(char *)"");
   butn13[1].xpmn=kgLeftImage(12,RED,GREEN,BLUE);
   butn13[1].xpmp=NULL;
   butn13[1].xpmh=NULL;
-  butn13[1].bkgr=-1;
+  butn13[1].bkgr=ButClr;
   butn13[1].butncode='';
   DIN b13 = { 
     'n',
@@ -835,6 +855,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b13.Wid,(char *)"keybrdWidget14");
   b13.item = -1;
+  b13.type=Btype;
   BUT_STR  *butn14=NULL; 
   butn14= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
   butn14[0].sw=1;
@@ -842,7 +863,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn14[0].xpmn=NULL;
   butn14[0].xpmp=NULL;
   butn14[0].xpmh=NULL;
-  butn14[0].bkgr=-1;
+  butn14[0].bkgr=ButClr;
   butn14[0].butncode='';
   DIN b14 = { 
     'n',
@@ -860,6 +881,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b14.Wid,(char *)"Shift");
   b14.item = -1;
+  b14.type=Btype;
   BUT_STR  *butn15=NULL; 
   butn15= (BUT_STR *)malloc(sizeof(BUT_STR)*2);
   butn15[0].sw=1;
@@ -867,14 +889,14 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn15[0].xpmn=NULL;
   butn15[0].xpmp=NULL;
   butn15[0].xpmh=NULL;
-  butn15[0].bkgr=-1;
+  butn15[0].bkgr=ButClr;
   butn15[0].butncode='';
   butn15[1].sw=1;
   strcpy(butn15[1].title,kgButtonTitle((char *)"Home"));
   butn15[1].xpmn=NULL;
   butn15[1].xpmp=NULL;
   butn15[1].xpmh=NULL;
-  butn15[1].bkgr=-1;
+  butn15[1].bkgr=ButClr;
   butn15[1].butncode='';
   DIN b15 = { 
     'n',
@@ -892,6 +914,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b15.Wid,(char *)"keybrdWidget15");
   b15.item = -1;
+  b15.type=Btype;
   BUT_STR  *butn16=NULL; 
   butn16= (BUT_STR *)malloc(sizeof(BUT_STR)*10);
   butn16[0].sw=1;
@@ -899,70 +922,70 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn16[0].xpmn=NULL;
   butn16[0].xpmp=NULL;
   butn16[0].xpmh=NULL;
-  butn16[0].bkgr=-1;
+  butn16[0].bkgr=ButClr;
   butn16[0].butncode='';
   butn16[1].sw=1;
   Procpy(butn16[1].title,(char *)"W");
   butn16[1].xpmn=NULL;
   butn16[1].xpmp=NULL;
   butn16[1].xpmh=NULL;
-  butn16[1].bkgr=-1;
+  butn16[1].bkgr=ButClr;
   butn16[1].butncode='';
   butn16[2].sw=1;
   Procpy(butn16[2].title,(char *)"E");
   butn16[2].xpmn=NULL;
   butn16[2].xpmp=NULL;
   butn16[2].xpmh=NULL;
-  butn16[2].bkgr=-1;
+  butn16[2].bkgr=ButClr;
   butn16[2].butncode='';
   butn16[3].sw=1;
   Procpy(butn16[3].title,(char *)"R");
   butn16[3].xpmn=NULL;
   butn16[3].xpmp=NULL;
   butn16[3].xpmh=NULL;
-  butn16[3].bkgr=-1;
+  butn16[3].bkgr=ButClr;
   butn16[3].butncode='';
   butn16[4].sw=1;
   Procpy(butn16[4].title,(char *)"T");
   butn16[4].xpmn=NULL;
   butn16[4].xpmp=NULL;
   butn16[4].xpmh=NULL;
-  butn16[4].bkgr=-1;
+  butn16[4].bkgr=ButClr;
   butn16[4].butncode='';
   butn16[5].sw=1;
   Procpy(butn16[5].title,(char *)"Y");
   butn16[5].xpmn=NULL;
   butn16[5].xpmp=NULL;
   butn16[5].xpmh=NULL;
-  butn16[5].bkgr=-1;
+  butn16[5].bkgr=ButClr;
   butn16[5].butncode='';
   butn16[6].sw=1;
   Procpy(butn16[6].title,(char *)"U");
   butn16[6].xpmn=NULL;
   butn16[6].xpmp=NULL;
   butn16[6].xpmh=NULL;
-  butn16[6].bkgr=-1;
+  butn16[6].bkgr=ButClr;
   butn16[6].butncode='';
   butn16[7].sw=1;
   Procpy(butn16[7].title,(char *)"I");
   butn16[7].xpmn=NULL;
   butn16[7].xpmp=NULL;
   butn16[7].xpmh=NULL;
-  butn16[7].bkgr=-1;
+  butn16[7].bkgr=ButClr;
   butn16[7].butncode='';
   butn16[8].sw=1;
   Procpy(butn16[8].title,(char *)"O");
   butn16[8].xpmn=NULL;
   butn16[8].xpmp=NULL;
   butn16[8].xpmh=NULL;
-  butn16[8].bkgr=-1;
+  butn16[8].bkgr=ButClr;
   butn16[8].butncode='';
   butn16[9].sw=1;
   Procpy(butn16[9].title,(char *)"P");
   butn16[9].xpmn=NULL;
   butn16[9].xpmp=NULL;
   butn16[9].xpmh=NULL;
-  butn16[9].bkgr=-1;
+  butn16[9].bkgr=ButClr;
   butn16[9].butncode='';
   DIN b16 = { 
     'n',
@@ -980,6 +1003,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b16.Wid,(char *)"keybrDQWRT");
   b16.item = -1;
+  b16.type=Btype;
   BUT_STR  *butn17=NULL; 
   butn17= (BUT_STR *)malloc(sizeof(BUT_STR)*9);
   butn17[0].sw=1;
@@ -987,63 +1011,63 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn17[0].xpmn=NULL;
   butn17[0].xpmp=NULL;
   butn17[0].xpmh=NULL;
-  butn17[0].bkgr=-1;
+  butn17[0].bkgr=ButClr;
   butn17[0].butncode='';
   butn17[1].sw=1;
   Procpy(butn17[1].title,(char *)"S");
   butn17[1].xpmn=NULL;
   butn17[1].xpmp=NULL;
   butn17[1].xpmh=NULL;
-  butn17[1].bkgr=-1;
+  butn17[1].bkgr=ButClr;
   butn17[1].butncode='';
   butn17[2].sw=1;
   Procpy(butn17[2].title,(char *)"D");
   butn17[2].xpmn=NULL;
   butn17[2].xpmp=NULL;
   butn17[2].xpmh=NULL;
-  butn17[2].bkgr=-1;
+  butn17[2].bkgr=ButClr;
   butn17[2].butncode='';
   butn17[3].sw=1;
   Procpy(butn17[3].title,(char *)"F");
   butn17[3].xpmn=NULL;
   butn17[3].xpmp=NULL;
   butn17[3].xpmh=NULL;
-  butn17[3].bkgr=-1;
+  butn17[3].bkgr=ButClr;
   butn17[3].butncode='';
   butn17[4].sw=1;
   Procpy(butn17[4].title,(char *)"G");
   butn17[4].xpmn=NULL;
   butn17[4].xpmp=NULL;
   butn17[4].xpmh=NULL;
-  butn17[4].bkgr=-1;
+  butn17[4].bkgr=ButClr;
   butn17[4].butncode='';
   butn17[5].sw=1;
   Procpy(butn17[5].title,(char *)"H");
   butn17[5].xpmn=NULL;
   butn17[5].xpmp=NULL;
   butn17[5].xpmh=NULL;
-  butn17[5].bkgr=-1;
+  butn17[5].bkgr=ButClr;
   butn17[5].butncode='';
   butn17[6].sw=1;
   Procpy(butn17[6].title,(char *)"J");
   butn17[6].xpmn=NULL;
   butn17[6].xpmp=NULL;
   butn17[6].xpmh=NULL;
-  butn17[6].bkgr=-1;
+  butn17[6].bkgr=ButClr;
   butn17[6].butncode='';
   butn17[7].sw=1;
   Procpy(butn17[7].title,(char *)"K");
   butn17[7].xpmn=NULL;
   butn17[7].xpmp=NULL;
   butn17[7].xpmh=NULL;
-  butn17[7].bkgr=-1;
+  butn17[7].bkgr=ButClr;
   butn17[7].butncode='';
   butn17[8].sw=1;
   Procpy(butn17[8].title,(char *)"L");
   butn17[8].xpmn=NULL;
   butn17[8].xpmp=NULL;
   butn17[8].xpmh=NULL;
-  butn17[8].bkgr=-1;
+  butn17[8].bkgr=ButClr;
   butn17[8].butncode='';
   DIN b17 = { 
     'n',
@@ -1061,6 +1085,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b17.Wid,(char *)"keybrdASDFG");
   b17.item = -1;
+  b17.type=Btype;
   BUT_STR  *butn18=NULL; 
   butn18= (BUT_STR *)malloc(sizeof(BUT_STR)*7);
   butn18[0].sw=1;
@@ -1068,49 +1093,49 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn18[0].xpmn=NULL;
   butn18[0].xpmp=NULL;
   butn18[0].xpmh=NULL;
-  butn18[0].bkgr=-1;
+  butn18[0].bkgr=ButClr;
   butn18[0].butncode='';
   butn18[1].sw=1;
   Procpy(butn18[1].title,(char *)"X");
   butn18[1].xpmn=NULL;
   butn18[1].xpmp=NULL;
   butn18[1].xpmh=NULL;
-  butn18[1].bkgr=-1;
+  butn18[1].bkgr=ButClr;
   butn18[1].butncode='';
   butn18[2].sw=1;
   Procpy(butn18[2].title,(char *)"C");
   butn18[2].xpmn=NULL;
   butn18[2].xpmp=NULL;
   butn18[2].xpmh=NULL;
-  butn18[2].bkgr=-1;
+  butn18[2].bkgr=ButClr;
   butn18[2].butncode='';
   butn18[3].sw=1;
   Procpy(butn18[3].title,(char *)"V");
   butn18[3].xpmn=NULL;
   butn18[3].xpmp=NULL;
   butn18[3].xpmh=NULL;
-  butn18[3].bkgr=-1;
+  butn18[3].bkgr=ButClr;
   butn18[3].butncode='';
   butn18[4].sw=1;
   Procpy(butn18[4].title,(char *)"B");
   butn18[4].xpmn=NULL;
   butn18[4].xpmp=NULL;
   butn18[4].xpmh=NULL;
-  butn18[4].bkgr=-1;
+  butn18[4].bkgr=ButClr;
   butn18[4].butncode='';
   butn18[5].sw=1;
   Procpy(butn18[5].title,(char *)"N");
   butn18[5].xpmn=NULL;
   butn18[5].xpmp=NULL;
   butn18[5].xpmh=NULL;
-  butn18[5].bkgr=-1;
+  butn18[5].bkgr=ButClr;
   butn18[5].butncode='';
   butn18[6].sw=1;
   Procpy(butn18[6].title,(char *)"M");
   butn18[6].xpmn=NULL;
   butn18[6].xpmp=NULL;
   butn18[6].xpmh=NULL;
-  butn18[6].bkgr=-1;
+  butn18[6].bkgr=ButClr;
   butn18[6].butncode='';
   DIN b18 = { 
     'n',
@@ -1128,6 +1153,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b18.Wid,(char *)"keybrdZXCVB");
   b18.item = -1;
+  b18.type=Btype;
   BUT_STR  *butn19=NULL; 
   butn19= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
   butn19[0].sw=1;
@@ -1135,7 +1161,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   butn19[0].xpmn=NULL;
   butn19[0].xpmp=NULL;
   butn19[0].xpmh=NULL;
-  butn19[0].bkgr=-1;
+  butn19[0].bkgr=ButClr;
   butn19[0].butncode='';
   DIN b19 = { 
     'n',
@@ -1153,6 +1179,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(b19.Wid,(char *)"CapsOn");
   b19.item = -1;
+  b19.type=Btype;
   char *xpm20;// Pixmap info
 #if 0
   xpm20 = (char *)malloc(3);
@@ -1286,7 +1313,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
 
 /* One can also use the following code to add Widgets to an existing Dialog */
 
-int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr,float transparency) {
+int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr,int butclr,int bkgrclr,float transparency) {
    int GrpId;
    int i=0,offset;
    DIA *dtmp,*d;
@@ -1298,18 +1325,23 @@ int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr
 *************************************************/
    void **v=NULL;
    void *pt=NULL; /* pointer to send any extra information */
+   int Red,Green,Blue;
 #if 0
    kgDefineColor(93,R,G,B);
    kgDefineColor(3,250,230,00);
    kgDefineColor(101,210,210,210);
 #endif
    gc = D->gc;
-   FillClr = gc.fill_clr;
+   FillClr = bkgrclr;
    Btype=btype;
    Bfont=bfont;
    Bclr = fontclr;
    Btrans = transparency;
+   ButClr = butclr;
+   kgGetDefaultRGB(butclr,&Red,&Green,&Blue);
+   ButClr = -(Red*1000000+Green*1000+Blue);
    Kbrd.Btype=Btype;
+   if(Bclr >= 100) Bclr =0;
    dtmp = D->d;
    i=0;
    if(dtmp!= NULL) while(dtmp[i].t!=NULL)i++;
@@ -1376,9 +1408,8 @@ int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int Vis) {
    Bfont=gc.ButtonFont;
    Bclr = gc.but_char;
    Btrans = 0.0;
-   kgDefineColor(93,R,G,B);
-   kgDefineColor(3,250,30,00);
-   kgDefineColor(101,210,210,210);
+   if(Bclr >= 100) Bclr =0;
+   ButClr = -1;
    Kbrd.Btype=Btype;
    dtmp = D->d;
    i=0;

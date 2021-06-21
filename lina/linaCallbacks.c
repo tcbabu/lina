@@ -143,8 +143,12 @@ int  linasplbutton2callback(int butno,int i,void *Tmp) {
       break;
     case 4:
       lc.KbVis = (lc.KbVis+1)%2;
+#if 0
       kgSetGrpVisibility(Tmp,lc.KbGrp,lc.KbVis);
       kgUpdateGrp(Tmp,lc.KbGrp);
+#endif
+      if(lc.KbVis) kgShowKeybrd();
+      else kgHideKeybrd();
       break;
     default:
       break;

@@ -1533,7 +1533,8 @@ typedef struct _keybrd {
   int Vis;
   int Btype;
 } KEYBRD;
-int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr,float transparency) ;
+int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr,int butclr,int bkgrclr,float transparency) ;
+   int GrpId;
 int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int vis);
 int kgSetKeybrdWidget(int curwid);
 int kgHideKeybrd(void);
