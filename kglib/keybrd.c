@@ -2,6 +2,7 @@
 #include "keybrdCallbacks.h"
 int RED=120,GREEN=120,BLUE=120;
 int Btype=5;
+#define  Rfac 0.2 
 //#define Btype 8
 //#define Brdr  0
 
@@ -164,7 +165,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     50, 
     10,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn1, 
     keybrdbutton1callback, /*  Callbak */
@@ -225,7 +226,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     24, 
     3,2, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn2, 
     keybrdbutton2callback, /*  Callbak */
@@ -426,7 +427,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     24, 
     13,2, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn3, 
     keybrdbutton3callback, /*  Callbak */
@@ -452,7 +453,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     68, 
     50, 
     1,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn4, 
     keybrdbutton4callback, /*  Callbak */
@@ -478,7 +479,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     62, 
     50, 
     1,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn5, 
     keybrdbutton5callback, /*  Callbak */
@@ -560,7 +561,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     50, 
     9,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn6, 
     keybrdbutton6callback, /*  Callbak */
@@ -628,7 +629,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     50, 
     7,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn7, 
     keybrdbutton7callback, /*  Callbak */
@@ -654,7 +655,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     80, 
     50, 
     1,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn8, 
     keybrdbutton8callback, /*  Callbak */
@@ -715,7 +716,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     24, 
     3,2, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn9, 
     keybrdbutton9callback, /*  Callbak */
@@ -762,7 +763,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     24, 
     2,2, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn10, 
     keybrdbutton10callback, /*  Callbak */
@@ -788,7 +789,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     80, 
     50, 
     1,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn11, 
     keybrdbutton11callback, /*  Callbak */
@@ -814,7 +815,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     64, 
     50, 
     1,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn12, 
     keybrdbutton12callback, /*  Callbak */
@@ -847,7 +848,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     32, 
     24, 
     1,2, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn13, 
     keybrdbutton13callback, /*  Callbak */
@@ -873,7 +874,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     64, 
     50, 
     1,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn14, 
     keybrdbutton14callback, /*  Callbak */
@@ -906,7 +907,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     44, 
     24, 
     1,2, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn15, 
     keybrdbutton15callback, /*  Callbak */
@@ -995,7 +996,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     50, 
     10,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn16, 
     keybrdbutton16callback, /*  Callbak */
@@ -1077,7 +1078,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     50, 
     9,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn17, 
     keybrdbutton17callback, /*  Callbak */
@@ -1145,7 +1146,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     50, 
     50, 
     7,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn18, 
     keybrdbutton18callback, /*  Callbak */
@@ -1171,7 +1172,7 @@ static int keybrdGroup( DIALOG *D,void **v,void *pt) {
     80, 
     50, 
     1,1, 
-    Btype,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    Btype,Rfac,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn19, 
     keybrdbutton19callback, /*  Callbak */

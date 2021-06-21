@@ -718,7 +718,7 @@ int linaGroup( DIALOG *D,void **v,void *pt) {
     (void *)xpm0,
     12, /* bkgr colour */ 
     0,0 /* border hide */ 
-    ,0.5 // transparency
+    ,0.2 // transparency
   };
   p0.transparency = lc.Transparency;
   strcpy(p0.Wid,(char *)"linaWidget1");
@@ -1057,9 +1057,9 @@ int lina( void *parent,void **v,void *pt) {
       kgSetGrpVisibility((void *)&D,lc.KbGrp,lc.KbVis);
 #else
 //  kgMakeDefaultKeybrd(&D,(xres-840)/2,yres-305,0);
-  kgDefineColor(501,220,220,220);
-  kgDefineColor(101,(unsigned char)(0.8*lc.Red),(unsigned char)(0.8*lc.Green),(unsigned char)(0.8*lc.Blue));
-  kgMakeKeybrd(&D,(xres-840)/2,yres-305,0,8,16,0,501,101,0.1);
+  kgDefineColor(501,180,180,180);
+  kgDefineColor(201,(unsigned char)(0.7*lc.Red),(unsigned char)(0.7*lc.Green),(unsigned char)(0.7*lc.Blue));
+  kgMakeKeybrd(&D,(xres-795)/2,yres-305,0,8,16,0,501,201,0.1);
   kgSetKeybrdWidget(1);
 #endif
 //     D.StackPos = 1; // you may need it
