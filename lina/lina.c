@@ -548,7 +548,7 @@ void ModifylinaGc(Gclr *gc) {
    gc->MsgFont=8;
    gc->MenuFont=8;
    gc->PromptFont=8;
-   gc->ButtonFont=8;
+   gc->ButtonFont=16;
    gc->GuiFontSize=10;
 
 }
@@ -1056,10 +1056,13 @@ int lina( void *parent,void **v,void *pt) {
      lc.KbGrp=MakekeybrdGroup(&D,&TextBox,(int)lc.Red,(int)lc.Green,(int)lc.Blue,(xres-840)/2,yres-305);
       kgSetGrpVisibility((void *)&D,lc.KbGrp,lc.KbVis);
 #else
-//  kgMakeDefaultKeybrd(&D,(xres-840)/2,yres-305,0);
   kgDefineColor(501,180,180,180);
   kgDefineColor(201,(unsigned char)(0.7*lc.Red),(unsigned char)(0.7*lc.Green),(unsigned char)(0.7*lc.Blue));
+#if 0
   kgMakeKeybrd(&D,(xres-795)/2,yres-305,0,8,16,0,501,201,0.1);
+#else
+  kgMakeDefaultKeybrd(&D,(xres-795)/2,yres-305,0);
+#endif
   kgSetKeybrdWidget(1);
 #endif
 //     D.StackPos = 1; // you may need it
