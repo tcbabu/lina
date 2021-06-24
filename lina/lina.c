@@ -1062,7 +1062,7 @@ int lina( void *parent,void **v,void *pt) {
   kgMakeKeybrd(&D,(xres-795)/2,yres-305,0,8,16,0,501,201,0.1);
 #else
 //  kgMakeDefaultKeybrd(&D,(xres-795)/2,yres-305,0);
-  kgMakeDefaultSkeybrd(&D,(xres-492)/2,yres-305,0);
+  kgMakeDefaultSkeybrd(&D,(xres-510)/2,yres-325,0);
 #endif
   kgSetKeybrdWidget(1);
 #endif
