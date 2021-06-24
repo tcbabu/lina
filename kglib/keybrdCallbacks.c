@@ -5,7 +5,7 @@ int kgSetKeybrdWidget(int CurWid) {
    Kbrd.CurWid = CurWid;
    return CurWid;
 }
-int ProcessLabel(void *D,int butno,char *Label) {
+static int ProcessLabel(void *D,int butno,char *Label) {
   int CurWid;
   char ch;
   CurWid = Kbrd.CurWid;
@@ -281,11 +281,15 @@ int  keybrdbutton10callback(int butno,int i,void *Tmp) {
   D = (DIALOG *)Tmp;
   char Label[]=":\";'";
   if(Kbrd.CurWid< 0) return 0;
+#if 0
   if(butno==2) {
   kgSetCurrentWidget(D,Kbrd.CurWid);
   kgSendKeyEvent(Tmp,'>');
   }
   else ProcessLabel(D,butno,Label);
+#else
+  ProcessLabel(D,butno,Label);
+#endif
   return ret;
 }
 void  keybrdbutton10init(DIN *B,void *pt) {

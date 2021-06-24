@@ -6,7 +6,8 @@ lina	: lina.o linaCallbacks.o main.o SessionDia.o SessionDiaCallbacks.o \
 	 UserDia.o  UserDiaCallbacks.o \
 	 PdDia.o PdDiaCallbacks.o passwdfile.o makeimage.o wireless.o \
 	 wiredia.o wirediaCallbacks.o addnetdia.o addnetdiaCallbacks.o \
-	 pskdia.o pskdiaCallbacks.o DateTime.o hdmi.o
+	 pskdia.o pskdiaCallbacks.o DateTime.o hdmi.o \
+	 $(KULINA)/lib/libkulina.a
 	 $(CC) -o lina lina.o linaCallbacks.o main.o \
 	 SessionDia.o SessionDiaCallbacks.o \
 	 UserDia.o  UserDiaCallbacks.o \

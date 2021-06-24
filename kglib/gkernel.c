@@ -3806,10 +3806,13 @@ void get_scan_code(Display *Dsp) {
   XDisplayKeycodes(Dsp,&K_min,&K_max);
   keysym = XGetKeyboardMapping(Dsp,K_min,K_max-K_min+1,&code);
   for(i=0;i<256;i++) Revscan_code[i]=-1;
-//  printf("K_min : %d K_max : %d\n",K_min,K_max);
-  for(i=K_min;i<=K_max;i++) {
+//  printf("K_min : %d K_max : %d,%d\n",K_min,K_max,code);
+
+//  for(i=K_min;i<=K_max;i++) {
+  for(i=K_min;i<(K_min+128);i++) {
     off =0;
     Scan_code[i]= keysym[k];
+//    printf("Kesym: %d %c %c\n",k,keysym[k],keysym[k+1]);
     ch = Scan_code[i];
     if(keysym[k+1]!=  NoSymbol) {
        Scan_sh_code[i]= keysym[k+1];

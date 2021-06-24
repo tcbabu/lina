@@ -1532,10 +1532,12 @@ typedef struct _keybrd {
   int CurWid;
   int Vis;
   int Btype;
+  int symgrp;
+  int kbtype;
 } KEYBRD;
-int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr,int butclr,int bkgrclr,float transparency) ;
+int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int kbtype,int btype,int bfont,int fontclr,int butclr,int bkgrclr,float transparency) ;
    int GrpId;
-int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int vis);
+int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int vis,int kbtype);
 int kgSetKeybrdWidget(int curwid);
 int kgHideKeybrd(void);
 int kgShowKeybrd(void);
