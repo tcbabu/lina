@@ -1245,6 +1245,9 @@ int kgMakeDefaultSkeybrd(DIALOG *D,int xo,int yo,int Vis) {
    Bclr = gc.but_char;
    Btrans = 0.0;
    if(Bclr >= 100) Bclr =0;
+   strcpy(Kbrd.Sfac,Sfac);
+   Kbrd.Bclr = Bclr;
+   Kbrd.Bfont = Bfont;
    ButClr = -1;
    Kbrd.Btype=Btype;
    dtmp = D->d;
@@ -1307,6 +1310,10 @@ int kgMakeSkeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontcl
    Bclr = fontclr;
    Btrans = transparency;
    ButClr = butclr;
+   strcpy(Kbrd.Sfac,Sfac);
+   Kbrd.Bclr = Bclr;
+   Kbrd.Bfont = Bfont;
+   ButClr = -1;
    Kbrd.kbtype=1;
    kgGetDefaultRGB(butclr,&Red,&Green,&Blue);
    ButClr = -(Red*1000000+Green*1000+Blue);

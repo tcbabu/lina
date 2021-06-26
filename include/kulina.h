@@ -1534,6 +1534,8 @@ typedef struct _keybrd {
   int Btype;
   int symgrp;
   int kbtype;
+  char Sfac[5];
+  int  Bfont,Bclr;
 } KEYBRD;
 int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr,int butclr,int bkgrclr,float transparency) ;
    int GrpId;

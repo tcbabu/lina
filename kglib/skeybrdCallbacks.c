@@ -1,5 +1,23 @@
 #include "kulina.h"
 extern KEYBRD Kbrd;
+static char BUFF[100];
+#if 0
+static char Label1[]="1234567890abcdefghijklmnopqrstuvwxyz,./?";
+static char Label2[]="1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ,./?";
+#else
+static char Label1[]="1234567890qwertyuiopasdfghjkl/zxcvbnm,.?";
+static char Label2[]="1234567890QWERTYUIOPASDFGHJKL/ZXCVBNM,.?";
+#endif
+static char Label3[]="1234567890~`!@#$%^&*()_+-={}|[]\\:\";',.<>?";
+static char *kgButtonTitle(char * str) {
+  sprintf(BUFF,"!z%-s!f%2.2d!c%2.2d%-s",Kbrd.Sfac,Kbrd.Bfont,Kbrd.Bclr,str);
+//  printf("%s\n",BUFF);
+  return BUFF;
+}
+static char *Procpy(char *des,char *src) {
+   strcpy(des,kgButtonTitle(src));
+   return des;
+}
 static int ProcessLabel(void *D,int butno,char *Label) {
   int CurWid;
   char ch;
@@ -96,14 +114,24 @@ int  skeybrdbutton3callback(int butno,int i,void *Tmp) {
     i :  Index of Widget  (0 to max_widgets-1) 
     Tmp :  Pointer to DIALOG  
    ***********************************/ 
-  char Label[]="1234567890abcdefghijklmnopqrstuvwxyz,./?";
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
-  ProcessLabel(D,butno,Label);
+  ProcessLabel(D,butno,Label1);
   return ret;
 }
 void  skeybrdbutton3init(DIN *B,void *pt) {
+   int i,n;
+   char buff[3];
+   BUT_STR * but;
+   but = B->buts;
+   n = B->nx * B->ny;
+   for(i=0;i<n;i++) {
+    buff[0]= Label1[i];
+    buff[1]='\0';
+    if(buff[0]=='!') {buff[1]='!';buff[2]='\0';}
+    Procpy(but[i].title,buff);
+   }
 }
 int  skeybrdbutton4callback(int butno,int i,void *Tmp) {
   /*********************************** 
@@ -152,15 +180,25 @@ int  skeybrdbutton5callback(int butno,int i,void *Tmp) {
     i :  Index of Widget  (0 to max_widgets-1) 
     Tmp :  Pointer to DIALOG  
    ***********************************/ 
-  char Label[]="1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ,./?";
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
   B = (DIN *)kgGetWidget(Tmp,i);
-  ProcessLabel(D,butno,Label);
+  ProcessLabel(D,butno,Label2);
   return ret;
 }
 void  skeybrdbutton5init(DIN *B,void *pt) {
+   int i,n;
+   char buff[3];
+   BUT_STR * but;
+   but = B->buts;
+   n = B->nx * B->ny;
+   for(i=0;i<n;i++) {
+    buff[0]= Label2[i];
+    buff[1]='\0';
+    if(buff[0]=='!') {buff[1]='!';buff[2]='\0';}
+    Procpy(but[i].title,buff);
+   }
 }
 int  skeybrdbutton6callback(int butno,int i,void *Tmp) {
   /*********************************** 
@@ -209,15 +247,25 @@ int  skeybrdbutton7callback(int butno,int i,void *Tmp) {
     i :  Index of Widget  (0 to max_widgets-1) 
     Tmp :  Pointer to DIALOG  
    ***********************************/ 
-  char Label[]="1234567890~`!@#$%^&*()_+-={}|[]\\:\";',.<>?";
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
   B = (DIN *)kgGetWidget(Tmp,i);
-  ProcessLabel(D,butno,Label);
+  ProcessLabel(D,butno,Label3);
   return ret;
 }
 void  skeybrdbutton7init(DIN *B,void *pt) {
+   int i,n;
+   char buff[3];
+   BUT_STR * but;
+   but = B->buts;
+   n = B->nx * B->ny;
+   for(i=0;i<n;i++) {
+    buff[0]= Label3[i];
+    buff[1]='\0';
+    if(buff[0]=='!') {buff[1]='!';buff[2]='\0';}
+    Procpy(but[i].title,buff);
+   }
 }
 int skeybrdinit(void *Tmp) {
   /*********************************** 
