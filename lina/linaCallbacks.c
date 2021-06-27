@@ -135,20 +135,18 @@ int  linasplbutton2callback(int butno,int i,void *Tmp) {
       if(PowerDown==3) ret=0;
       break;
     case 3:
+      if(lc.KbVis) kgHideKeybrd(Tmp);
       WirelessStatus();
       WC = Connected;
       WC = (WC+1)%2;
       WC=Wireless(WC,Tmp);
       Connected=WC;
+      if(lc.KbVis) kgShowKeybrd(Tmp);
       break;
     case 4:
       lc.KbVis = (lc.KbVis+1)%2;
-#if 0
-      kgSetGrpVisibility(Tmp,lc.KbGrp,lc.KbVis);
-      kgUpdateGrp(Tmp,lc.KbGrp);
-#endif
-      if(lc.KbVis) kgShowKeybrd();
-      else kgHideKeybrd();
+      if(lc.KbVis) kgShowKeybrd(Tmp);
+      else kgHideKeybrd(Tmp);
       break;
     default:
       break;

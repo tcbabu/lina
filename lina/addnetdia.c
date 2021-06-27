@@ -14,11 +14,13 @@ void ModifyaddnetdiaGc(Gclr *gc) {
 int addnetdiaGroup( DIALOG *D,void **v,void *pt) {
   int GrpId=0,oitems=0,i,j;
   DIA *d=NULL,*dtmp;
-  char *xpm0=   (char *)MakePixmapImage( 378,125,lc.Red,lc.Green,lc.Blue,0.05);
+//  char *xpm0=   (char *)MakePixmapImage( 378,125,lc.Red,lc.Green,lc.Blue,0.05);
+  char *xpm0=   (char *)MakePixmapImage( 518,330,lc.Red,lc.Green,lc.Blue,0.05);
   DIP p0 = { 
     'p',
-    4,4,  
-    383,130,  
+    2,2,  
+//    383,130,  
+    520,332,  
     (void *)xpm0,
     -1, /* bkgr colour */ 
       3,0,0.1 /* border hide */ 
@@ -133,6 +135,8 @@ int addnetdia( void *parent,void **v,void *pt) {
   GrpId = addnetdiaGroup(&D,v,pt);
   d = D.d;
   D.d = d;
+  kgMakeDefaultSkeybrd(&D,0,125,1);
+  kgSetKeybrdWidget(&D,1);
   D.bkup = 1; /* set to 1 for backup */
   D.bor_type = 0;
   D.df = 2;
@@ -142,8 +146,9 @@ int addnetdia( void *parent,void **v,void *pt) {
   D.rw = 4;
   D.xo = 475;   /* Position of Dialog */ 
   D.yo = 174;
-  D.xl = 389;    /*  Length of Dialog */
-  D.yl = 134;    /*  Width  of Dialog */
+  D.xl = 390+140;    /*  Length of Dialog */
+  D.yl = 434;    /*  Width  of Dialog */
+  D.yl = 340;    /*  Width  of Dialog */
   D.Initfun = addnetdiainit;    /*   init fuction for Dialog */
   D.Cleanupfun = addnetdiacleanup;    /*   init fuction for Dialog */
   D.kbattn = 0;    /*  1 for drawing keyborad attention */

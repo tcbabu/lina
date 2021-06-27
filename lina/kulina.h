@@ -865,7 +865,8 @@ typedef struct Dia_str {
   int NoWinMngr; // if set to 1 it is assumed that no window manager is active
   int Maxl,Maxw; // for further development to include bigger size than xl and yl
   void *PWIN; // NULL, if not set as NULL it will be used as parent Window
-  void *ThInfo;  //  for further development
+  void *ThInfo;  // internal
+  void *Kbrd; //for keyboard 
 } DIALOG;
 typedef struct _WidgetGroup {
   void *wlist;
@@ -1534,13 +1535,16 @@ typedef struct _keybrd {
   int Btype;
   int symgrp;
   int kbtype;
+  char Sfac[5];
+  int  Bfont,Bclr;
 } KEYBRD;
-int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int kbtype,int btype,int bfont,int fontclr,int butclr,int bkgrclr,float transparency) ;
+int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr,int butclr,int bkgrclr,float transparency) ;
    int GrpId;
-int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int vis,int kbtype);
-int kgSetKeybrdWidget(int curwid);
-int kgHideKeybrd(void);
-int kgShowKeybrd(void);
+int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int vis);
+int kgMakeDefaultSkeybrd(DIALOG *D,int xo,int yo,int vis);
+int kgSetKeybrdWidget(void *Tmp,int curwid);
+int kgHideKeybrd(void *Tmp);
+int kgShowKeybrd(void *Tmp);
 #endif
 #ifdef __cplusplus
 }

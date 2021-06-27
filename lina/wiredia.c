@@ -247,7 +247,6 @@ int wirediaGroup( DIALOG *D,void **v,void *pt) {
 
 int MakewirediaGroup(DIALOG *D,void *arg) {
    int GrpId;
-   DIA *d=NULL,*dtmp;
    WIDGETGRP *Gpt;
 /*************************************************
 

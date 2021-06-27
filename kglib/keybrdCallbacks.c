@@ -1,20 +1,27 @@
 #include "kulina.h"
-extern KEYBRD Kbrd;
 int ProcessShift(void *D);
-int kgSetKeybrdWidget(int CurWid) {
-   Kbrd.CurWid = CurWid;
+int kgSetKeybrdWidget(void *Tmp,int CurWid) {
+   DIALOG *D;
+   KEYBRD *Kbrd;
+   D = (DIALOG *)Tmp;
+   Kbrd = D->Kbrd;
+   Kbrd->CurWid = CurWid;
    return CurWid;
 }
-static int ProcessLabel(void *D,int butno,char *Label) {
+static int ProcessLabel(void *Tmp,int butno,char *Label) {
   int CurWid;
   char ch;
-  CurWid = Kbrd.CurWid;
+  DIALOG *D;
+  KEYBRD *Kbrd;
+  D = (DIALOG *)Tmp;
+  Kbrd = D->Kbrd;
+  CurWid = Kbrd->CurWid;
   if(CurWid< 0) return 0;
   kgSetCurrentWidget(D,CurWid);
   ch= Label[butno-1];
   kgSendKeyEvent(D,ch);
-  if(Kbrd.ShiftPress) {
-    Kbrd.ShiftPress=0;
+  if(Kbrd->ShiftPress) {
+    Kbrd->ShiftPress=0;
     ProcessShift(D);
   }
   return 1;
@@ -31,15 +38,17 @@ int  keybrdbutton1callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  CurWid = Kbrd.CurWid;
-  if(Kbrd.CurWid< 0) return 0;
+  CurWid = Kbrd->CurWid;
+  if(Kbrd->CurWid< 0) return 0;
   kgSetCurrentWidget(D,CurWid);
   ch= Label[butno-1];
   kgSendKeyEvent(D,ch);
-  if(Kbrd.ShiftPress) {
-    Kbrd.ShiftPress=0;
+  if(Kbrd->ShiftPress) {
+    Kbrd->ShiftPress=0;
     ProcessShift(D);
   }
   return ret;
@@ -56,9 +65,11 @@ int  keybrdbutton2callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  if(Kbrd.CurWid< 0) return 0;
+  if(Kbrd->CurWid< 0) return 0;
   ProcessLabel(D,butno,Label);
   return ret;
 }
@@ -74,9 +85,11 @@ int  keybrdbutton3callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  if(Kbrd.CurWid< 0) return 0;
+  if(Kbrd->CurWid< 0) return 0;
   ProcessLabel(D,butno,Label);
   return ret;
 }
@@ -91,10 +104,12 @@ int  keybrdbutton4callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  if(Kbrd.CurWid< 0) return 0;
-  kgSetCurrentWidget(D,Kbrd.CurWid);
+  if(Kbrd->CurWid< 0) return 0;
+  kgSetCurrentWidget(D,Kbrd->CurWid);
   kgSendBackspaceKeyEvent(Tmp);
   return ret;
 }
@@ -109,10 +124,12 @@ int  keybrdbutton5callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  if(Kbrd.CurWid< 0) return 0;
-  kgSetCurrentWidget(D,Kbrd.CurWid);
+  if(Kbrd->CurWid< 0) return 0;
+  kgSetCurrentWidget(D,Kbrd->CurWid);
   kgSendEscapeKeyEvent(Tmp);
   return ret;
 }
@@ -128,9 +145,11 @@ int  keybrdbutton6callback(int butno,int i,void *Tmp) {
   char Label[]="asdfghjkl";
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  if(Kbrd.CurWid< 0) return 0;
+  if(Kbrd->CurWid< 0) return 0;
   ProcessLabel(D,butno,Label);
   return ret;
 }
@@ -145,66 +164,56 @@ int  keybrdbutton7callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   char Label[]="zxcvbnm";
-  if(Kbrd.CurWid< 0) return 0;
+  if(Kbrd->CurWid< 0) return 0;
   ProcessLabel(D,butno,Label);
   return ret;
 }
 void  keybrdbutton7init(DIN *B,void *pt) {
 }
-int ProcessCapsLock(void *D) {
-  Kbrd.ShiftPress=0;
-  switch(Kbrd.CapsLock) {
+int ProcessCapsLock(void *Tmp) {
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  Kbrd->ShiftPress=0;
+  switch(Kbrd->CapsLock) {
     case 0: 
-      kgSetGrpVisibility(D,Kbrd.cgrp,0);
-      kgSetGrpVisibility(D,Kbrd.ongrp,0);
-      kgSetGrpVisibility(D,Kbrd.sgrp,1);
-      kgSetGrpVisibility(D,Kbrd.offgrp,1);
-#if 0
-      kgSetWidgetVisibility(Kbrd.Con,0);
-      kgUpdateWidget(Kbrd.Con);
-      kgSetWidgetVisibility(Kbrd.Lon,0);
-      kgUpdateWidget(Kbrd.Lon);
-      kgSetWidgetVisibility(Kbrd.Coff,1);
-      kgUpdateWidget(Kbrd.Coff);
-      kgSetWidgetVisibility(Kbrd.Loff,1);
-      kgUpdateWidget(Kbrd.Loff);
-#endif
+      kgSetGrpVisibility(D,Kbrd->cgrp,0);
+      kgSetGrpVisibility(D,Kbrd->ongrp,0);
+      kgSetGrpVisibility(D,Kbrd->sgrp,1);
+      kgSetGrpVisibility(D,Kbrd->offgrp,1);
       break;
     case 1: 
-      kgSetGrpVisibility(D,Kbrd.sgrp,0);
-      kgSetGrpVisibility(D,Kbrd.offgrp,0);
-      kgSetGrpVisibility(D,Kbrd.cgrp,1);
-      kgSetGrpVisibility(D,Kbrd.ongrp,1);
-#if 0
-      kgSetWidgetVisibility(Kbrd.Loff,0);
-      kgUpdateWidget(Kbrd.Loff);
-      kgSetWidgetVisibility(Kbrd.Coff,0);
-      kgUpdateWidget(Kbrd.Coff);
-      kgSetWidgetVisibility(Kbrd.Con,1);
-      kgUpdateWidget(Kbrd.Con);
-      kgSetWidgetVisibility(Kbrd.Lon,1);
-      kgUpdateWidget(Kbrd.Lon);
-#endif
+      kgSetGrpVisibility(D,Kbrd->sgrp,0);
+      kgSetGrpVisibility(D,Kbrd->offgrp,0);
+      kgSetGrpVisibility(D,Kbrd->cgrp,1);
+      kgSetGrpVisibility(D,Kbrd->ongrp,1);
       break;
   }
   kgUpdateOn(D);
   return 1;
 }
-int ProcessShift(void *D) {
- switch(Kbrd.ShiftPress) {
+int ProcessShift(void *Tmp) {
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+ switch(Kbrd->ShiftPress) {
     case 0:
       ProcessCapsLock(D);
       break;
     case 1:
-      switch(Kbrd.CapsLock) {
+      switch(Kbrd->CapsLock) {
         case 1: 
-          kgSetGrpVisibility(D,Kbrd.cgrp,0);
-          kgSetGrpVisibility(D,Kbrd.sgrp,1);
+          kgSetGrpVisibility(D,Kbrd->cgrp,0);
+          kgSetGrpVisibility(D,Kbrd->sgrp,1);
           break;
         case 0: 
-          kgSetGrpVisibility(D,Kbrd.sgrp,0);
-          kgSetGrpVisibility(D,Kbrd.cgrp,1);
+          kgSetGrpVisibility(D,Kbrd->sgrp,0);
+          kgSetGrpVisibility(D,Kbrd->cgrp,1);
           break;
       }
      break;
@@ -221,9 +230,11 @@ int  keybrdbutton8callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  Kbrd.CapsLock = (Kbrd.CapsLock+1)%2;
+  Kbrd->CapsLock = (Kbrd->CapsLock+1)%2;
   ProcessCapsLock(D);
   return ret;
 }
@@ -238,9 +249,11 @@ int  keybrdbutton19callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  Kbrd.CapsLock = (Kbrd.CapsLock+1)%2;
+  Kbrd->CapsLock = (Kbrd->CapsLock+1)%2;
   ProcessCapsLock(D);
   return ret;
 }
@@ -255,14 +268,11 @@ int  keybrdbutton9callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   char Label[]="<>?,./";
-  if(Kbrd.CurWid< 0) return 0;
+  if(Kbrd->CurWid< 0) return 0;
 #if 0
-  if(butno==2) {
-  kgSetCurrentWidget(D,Kbrd.CurWid);
-  kgSendGreaterKeyEvent(D);
-  }
-  else ProcessLabel(D,butno,Label);
 #else
   ProcessLabel(D,butno,Label);
 #endif
@@ -280,13 +290,10 @@ int  keybrdbutton10callback(int butno,int i,void *Tmp) {
   int n,ret =0; 
   D = (DIALOG *)Tmp;
   char Label[]=":\";'";
-  if(Kbrd.CurWid< 0) return 0;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(Kbrd->CurWid< 0) return 0;
 #if 0
-  if(butno==2) {
-  kgSetCurrentWidget(D,Kbrd.CurWid);
-  kgSendKeyEvent(Tmp,'>');
-  }
-  else ProcessLabel(D,butno,Label);
 #else
   ProcessLabel(D,butno,Label);
 #endif
@@ -303,10 +310,12 @@ int  keybrdbutton11callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  if(Kbrd.CurWid< 0) return 0;
-  kgSetCurrentWidget(D,Kbrd.CurWid);
+  if(Kbrd->CurWid< 0) return 0;
+  kgSetCurrentWidget(D,Kbrd->CurWid);
   kgSendEnterKeyEvent(Tmp);
   return ret;
 }
@@ -321,8 +330,10 @@ int  keybrdbutton12callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
-  if(Kbrd.CurWid< 0) return 0;
-  kgSetCurrentWidget(D,Kbrd.CurWid);
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(Kbrd->CurWid< 0) return 0;
+  kgSetCurrentWidget(D,Kbrd->CurWid);
   kgSendSpaceKeyEvent(Tmp);
   return ret;
 }
@@ -337,14 +348,16 @@ int  keybrdbutton13callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
-  if(Kbrd.CurWid< 0) return 0;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(Kbrd->CurWid< 0) return 0;
   switch(butno) {
     case 1: 
-      kgSetCurrentWidget(D,Kbrd.CurWid);
+      kgSetCurrentWidget(D,Kbrd->CurWid);
       kgSendRightKeyEvent(Tmp);
       break;
     case 2: 
-      kgSetCurrentWidget(D,Kbrd.CurWid);
+      kgSetCurrentWidget(D,Kbrd->CurWid);
       kgSendLeftKeyEvent(Tmp);
       break;
   }
@@ -361,9 +374,11 @@ int  keybrdbutton14callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  Kbrd.ShiftPress = (Kbrd.ShiftPress+1)%2;
+  Kbrd->ShiftPress = (Kbrd->ShiftPress+1)%2;
   ProcessShift(D);
   return ret;
 }
@@ -378,16 +393,18 @@ int  keybrdbutton15callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0; 
   D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  if(Kbrd.CurWid< 0) return 0;
+  if(Kbrd->CurWid< 0) return 0;
   switch(butno) {
     case 1: 
-      kgSetCurrentWidget(D,Kbrd.CurWid);
+      kgSetCurrentWidget(D,Kbrd->CurWid);
       kgSendEndKeyEvent(Tmp);
       break;
     case 2: 
-      kgSetCurrentWidget(D,Kbrd.CurWid);
+      kgSetCurrentWidget(D,Kbrd->CurWid);
       kgSendHomeKeyEvent(Tmp);
       break;
   }
@@ -405,7 +422,9 @@ int  keybrdbutton16callback(int butno,int i,void *Tmp) {
   int n,ret =0; 
   D = (DIALOG *)Tmp;
   char Label[]="QWERTYUIOP";
-  if(Kbrd.CurWid< 0) return 0;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(Kbrd->CurWid< 0) return 0;
   ProcessLabel(D,butno,Label);
   return ret;
 }
@@ -421,7 +440,9 @@ int  keybrdbutton17callback(int butno,int i,void *Tmp) {
   int n,ret =0; 
   D = (DIALOG *)Tmp;
   char Label[]="ASDFGHJKL";
-  if(Kbrd.CurWid< 0) return 0;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(Kbrd->CurWid< 0) return 0;
   ProcessLabel(D,butno,Label);
   return ret;
 }
@@ -437,7 +458,9 @@ int  keybrdbutton18callback(int butno,int i,void *Tmp) {
   int n,ret =0; 
   D = (DIALOG *)Tmp;
   char Label[]="ZXCVBNM";
-  if(Kbrd.CurWid< 0) return 0;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(Kbrd->CurWid< 0) return 0;
   ProcessLabel(D,butno,Label);
   return ret;
 }

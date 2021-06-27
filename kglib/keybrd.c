@@ -19,7 +19,6 @@ static int FillClr=101;
 static float Btrans=0.0;
 static unsigned char R=230,G=60,B=0;
 int ButClr=-1;
-KEYBRD Kbrd;
 static char *kgButtonTitle(char * str) {
   sprintf(BUFF,"!z%-s!f%2.2d!c%2.2d%-s",Sfac,Bfont,Bclr,str);
 //  printf("%s\n",BUFF);
@@ -1327,7 +1326,10 @@ int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr
    void **v=NULL;
    void *pt=NULL; /* pointer to send any extra information */
    int Red,Green,Blue;
-   Kbrd.kbtype=0;
+   KEYBRD *Kbrd;
+   D->Kbrd = (void *) malloc(sizeof(KEYBRD));
+   Kbrd = D->Kbrd;
+   Kbrd->kbtype=0;
 #if 0
    kgDefineColor(93,R,G,B);
    kgDefineColor(3,250,230,00);
@@ -1342,7 +1344,7 @@ int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr
    ButClr = butclr;
    kgGetDefaultRGB(butclr,&Red,&Green,&Blue);
    ButClr = -(Red*1000000+Green*1000+Blue);
-   Kbrd.Btype=Btype;
+   Kbrd->Btype=Btype;
    if(Bclr >= 100) Bclr =0;
    dtmp = D->d;
    i=0;
@@ -1354,42 +1356,42 @@ int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr
    Gpt = kgGetWidgetGrp(D,GrpId);
    Gpt->arg= v; // kulina will double free this; you may modify
    d = D->d;
-   Kbrd.sgrp = kgOpenGrp(D);
-   kgAddtoGrp(D,Kbrd.sgrp,d[0+offset].t);
-   kgAddtoGrp(D,Kbrd.sgrp,d[5+offset].t);
-   kgAddtoGrp(D,Kbrd.sgrp,d[6+offset].t);
-   Kbrd.offgrp = kgOpenGrp(D);
-   kgAddtoGrp(D,Kbrd.offgrp,d[7+offset].t);
-   kgAddtoGrp(D,Kbrd.offgrp,d[19+offset].t);
-   Kbrd.cgrp = kgOpenGrp(D);
-   kgAddtoGrp(D,Kbrd.cgrp,d[16+offset].t);
-   kgAddtoGrp(D,Kbrd.cgrp,d[15+offset].t);
-   kgAddtoGrp(D,Kbrd.cgrp,d[17+offset].t);
-   Kbrd.ongrp = kgOpenGrp(D);
-   kgAddtoGrp(D,Kbrd.ongrp,d[18+offset].t);
-   kgAddtoGrp(D,Kbrd.ongrp,d[20+offset].t);
-   kgSetGrpVisibility(D,Kbrd.cgrp,0);
-   kgSetGrpVisibility(D,Kbrd.ongrp,0);
-   Kbrd.Coff = d[7+offset].t;
-   Kbrd.Con = d[18+offset].t;
-   Kbrd.Loff = d[19+offset].t;
-   Kbrd.Lon = d[20+offset].t;
+   Kbrd->sgrp = kgOpenGrp(D);
+   kgAddtoGrp(D,Kbrd->sgrp,d[0+offset].t);
+   kgAddtoGrp(D,Kbrd->sgrp,d[5+offset].t);
+   kgAddtoGrp(D,Kbrd->sgrp,d[6+offset].t);
+   Kbrd->offgrp = kgOpenGrp(D);
+   kgAddtoGrp(D,Kbrd->offgrp,d[7+offset].t);
+   kgAddtoGrp(D,Kbrd->offgrp,d[19+offset].t);
+   Kbrd->cgrp = kgOpenGrp(D);
+   kgAddtoGrp(D,Kbrd->cgrp,d[16+offset].t);
+   kgAddtoGrp(D,Kbrd->cgrp,d[15+offset].t);
+   kgAddtoGrp(D,Kbrd->cgrp,d[17+offset].t);
+   Kbrd->ongrp = kgOpenGrp(D);
+   kgAddtoGrp(D,Kbrd->ongrp,d[18+offset].t);
+   kgAddtoGrp(D,Kbrd->ongrp,d[20+offset].t);
+   kgSetGrpVisibility(D,Kbrd->cgrp,0);
+   kgSetGrpVisibility(D,Kbrd->ongrp,0);
+   Kbrd->Coff = d[7+offset].t;
+   Kbrd->Con = d[18+offset].t;
+   Kbrd->Loff = d[19+offset].t;
+   Kbrd->Lon = d[20+offset].t;
 #if 0
-   kgSetWidgetVisibility(Kbrd.Loff,1);
-   kgSetWidgetVisibility(Kbrd.Coff,1);
+   kgSetWidgetVisibility(Kbrd->Loff,1);
+   kgSetWidgetVisibility(Kbrd->Coff,1);
 #endif
 #if 0
-   kgSetWidgetVisibility(Kbrd.Lon,0);
-   kgSetWidgetVisibility(Kbrd.Con,0);
+   kgSetWidgetVisibility(Kbrd->Lon,0);
+   kgSetWidgetVisibility(Kbrd->Con,0);
 #endif
-   Kbrd.GrpId=GrpId;
-   Kbrd.CurWid = -1;
-   Kbrd.Vis = Vis;
-   Kbrd.D = D;
-   Kbrd.ShiftPress=0;
-   Kbrd.CapsLock=0;
+   Kbrd->GrpId=GrpId;
+   Kbrd->CurWid = -1;
+   Kbrd->Vis = Vis;
+   Kbrd->D = D;
+   Kbrd->ShiftPress=0;
+   Kbrd->CapsLock=0;
    if(Vis==0) {
-    kgSetGrpVisibility(D,Kbrd.GrpId,0);
+    kgSetGrpVisibility(D,Kbrd->GrpId,0);
    }
    return GrpId;
 }
@@ -1399,13 +1401,16 @@ int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int Vis) {
    DIA *dtmp,*d;
    WIDGETGRP *Gpt;
    Gclr gc;
+   KEYBRD *Kbrd;
+   D->Kbrd = (void *) malloc(sizeof(KEYBRD));
+   Kbrd = D->Kbrd;
 /*************************************************
 
 
 *************************************************/
    void **v=NULL;
    void *pt=NULL; /* pointer to send any extra information */
-   Kbrd.kbtype=0;
+   Kbrd->kbtype=0;
    gc = D->gc;
    FillClr = gc.fill_clr;
    Bfont=gc.ButtonFont;
@@ -1413,7 +1418,7 @@ int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int Vis) {
    Btrans = 0.0;
    if(Bclr >= 100) Bclr =0;
    ButClr = -1;
-   Kbrd.Btype=Btype;
+   Kbrd->Btype=Btype;
    dtmp = D->d;
    i=0;
    if(dtmp!= NULL) while(dtmp[i].t!=NULL)i++;
@@ -1424,73 +1429,79 @@ int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int Vis) {
    Gpt = kgGetWidgetGrp(D,GrpId);
    Gpt->arg= v; // kulina will double free this; you may modify
    d = D->d;
-   Kbrd.sgrp = kgOpenGrp(D);
-   kgAddtoGrp(D,Kbrd.sgrp,d[0+offset].t);
-   kgAddtoGrp(D,Kbrd.sgrp,d[5+offset].t);
-   kgAddtoGrp(D,Kbrd.sgrp,d[6+offset].t);
-   Kbrd.offgrp = kgOpenGrp(D);
-   kgAddtoGrp(D,Kbrd.offgrp,d[7+offset].t);
-   kgAddtoGrp(D,Kbrd.offgrp,d[19+offset].t);
-   Kbrd.cgrp = kgOpenGrp(D);
-   kgAddtoGrp(D,Kbrd.cgrp,d[16+offset].t);
-   kgAddtoGrp(D,Kbrd.cgrp,d[15+offset].t);
-   kgAddtoGrp(D,Kbrd.cgrp,d[17+offset].t);
-   Kbrd.ongrp = kgOpenGrp(D);
-   kgAddtoGrp(D,Kbrd.ongrp,d[18+offset].t);
-   kgAddtoGrp(D,Kbrd.ongrp,d[20+offset].t);
-   kgSetGrpVisibility(D,Kbrd.cgrp,0);
-   kgSetGrpVisibility(D,Kbrd.ongrp,0);
-   Kbrd.Coff = d[7+offset].t;
-   Kbrd.Con = d[18+offset].t;
-   Kbrd.Loff = d[19+offset].t;
-   Kbrd.Lon = d[20+offset].t;
-   Kbrd.GrpId=GrpId;
-   Kbrd.CurWid = -1;
-   Kbrd.Vis = Vis;
-   Kbrd.D = D;
-   Kbrd.ShiftPress=0;
-   Kbrd.CapsLock=0;
+   Kbrd->sgrp = kgOpenGrp(D);
+   kgAddtoGrp(D,Kbrd->sgrp,d[0+offset].t);
+   kgAddtoGrp(D,Kbrd->sgrp,d[5+offset].t);
+   kgAddtoGrp(D,Kbrd->sgrp,d[6+offset].t);
+   Kbrd->offgrp = kgOpenGrp(D);
+   kgAddtoGrp(D,Kbrd->offgrp,d[7+offset].t);
+   kgAddtoGrp(D,Kbrd->offgrp,d[19+offset].t);
+   Kbrd->cgrp = kgOpenGrp(D);
+   kgAddtoGrp(D,Kbrd->cgrp,d[16+offset].t);
+   kgAddtoGrp(D,Kbrd->cgrp,d[15+offset].t);
+   kgAddtoGrp(D,Kbrd->cgrp,d[17+offset].t);
+   Kbrd->ongrp = kgOpenGrp(D);
+   kgAddtoGrp(D,Kbrd->ongrp,d[18+offset].t);
+   kgAddtoGrp(D,Kbrd->ongrp,d[20+offset].t);
+   kgSetGrpVisibility(D,Kbrd->cgrp,0);
+   kgSetGrpVisibility(D,Kbrd->ongrp,0);
+   Kbrd->Coff = d[7+offset].t;
+   Kbrd->Con = d[18+offset].t;
+   Kbrd->Loff = d[19+offset].t;
+   Kbrd->Lon = d[20+offset].t;
+   Kbrd->GrpId=GrpId;
+   Kbrd->CurWid = -1;
+   Kbrd->Vis = Vis;
+   Kbrd->D = D;
+   Kbrd->ShiftPress=0;
+   Kbrd->CapsLock=0;
    if(Vis==0) {
-    kgSetGrpVisibility(D,Kbrd.GrpId,0);
+    kgSetGrpVisibility(D,Kbrd->GrpId,0);
    }
    return GrpId;
 }
 
-int kgShowKeybrd(void) {
+int kgShowKeybrd(void *Tmp) {
    DIALOG *D;
-   if(Kbrd.Vis) return 0;
-   D= Kbrd.D;
-   if(Kbrd.kbtype ==0) {
-     kgSetGrpVisibility(Kbrd.D,Kbrd.GrpId,1);
-     kgSetGrpVisibility(Kbrd.D,Kbrd.cgrp,0);
-     kgSetGrpVisibility(Kbrd.D,Kbrd.ongrp,0);
-     kgSetGrpVisibility(Kbrd.D,Kbrd.sgrp,1);
-     kgSetGrpVisibility(Kbrd.D,Kbrd.offgrp,1);
+   KEYBRD *Kbrd;
+   D = (DIALOG *) Tmp;
+   Kbrd = D->Kbrd;
+   if(Kbrd->Vis) return 0;
+//   D= Kbrd->D;
+   if(Kbrd->kbtype ==0) {
+     kgSetGrpVisibility(D,Kbrd->GrpId,1);
+     kgSetGrpVisibility(D,Kbrd->cgrp,0);
+     kgSetGrpVisibility(D,Kbrd->ongrp,0);
+     kgSetGrpVisibility(D,Kbrd->sgrp,1);
+     kgSetGrpVisibility(D,Kbrd->offgrp,1);
      if(D->wc != NULL) {
-       kgUpdateGrp(Kbrd.D,Kbrd.GrpId);
-       kgUpdateGrp(Kbrd.D,Kbrd.sgrp);
-       kgUpdateGrp(Kbrd.D,Kbrd.offgrp);
-       kgUpdateOn(Kbrd.D);
+       kgUpdateGrp(D,Kbrd->GrpId);
+       kgUpdateGrp(D,Kbrd->sgrp);
+       kgUpdateGrp(D,Kbrd->offgrp);
+       kgUpdateOn(D);
      }
    }
    else {
-     kgSetGrpVisibility(Kbrd.D,Kbrd.cgrp,0);
-     kgSetGrpVisibility(Kbrd.D,Kbrd.symgrp,0);
-     kgSetGrpVisibility(Kbrd.D,Kbrd.sgrp,1);
+     kgSetGrpVisibility(D,Kbrd->cgrp,0);
+     kgSetGrpVisibility(D,Kbrd->symgrp,0);
+     kgSetGrpVisibility(D,Kbrd->sgrp,1);
      if(D->wc != NULL) {
-       kgUpdateGrp(Kbrd.D,Kbrd.sgrp);
-       kgUpdateOn(Kbrd.D);
+       kgUpdateGrp(D,Kbrd->sgrp);
+       kgUpdateOn(D);
      }
    }
-   Kbrd.ShiftPress=0;
-   Kbrd.CapsLock=0;
-   Kbrd.Vis = 1;
-   return Kbrd.GrpId;
+   Kbrd->ShiftPress=0;
+   Kbrd->CapsLock=0;
+   Kbrd->Vis = 1;
+   return Kbrd->GrpId;
 }
 
-int kgHideKeybrd(void) {
+int kgHideKeybrd(void *Tmp) {
    DIALOG *D;
-   if(Kbrd.Vis==0) return 0;
+   KEYBRD *Kbrd;
+   D = (DIALOG *) Tmp;
+   Kbrd = D->Kbrd;
+   if(Kbrd->Vis==0) return 0;
 #if 0
    kgSetGrpVisibility(Kbrd.D,Kbrd.cgrp,0);
    kgSetWidgetVisibility(Kbrd.Lon,0);
@@ -1499,24 +1510,26 @@ int kgHideKeybrd(void) {
    kgSetWidgetVisibility(Kbrd.Loff,0);
    kgSetWidgetVisibility(Kbrd.Coff,0);
 #endif
-   kgSetGrpVisibility(Kbrd.D,Kbrd.GrpId,0);
-   D= Kbrd.D;
+   kgSetGrpVisibility(D,Kbrd->GrpId,0);
    if(D->wc != NULL) {
-     kgUpdateGrp(Kbrd.D,Kbrd.GrpId);
-     kgUpdateOn(Kbrd.D);
+     kgUpdateGrp(D,Kbrd->GrpId);
+     kgUpdateOn(D);
    }
-   Kbrd.ShiftPress=0;
-   Kbrd.CapsLock=0;
-   Kbrd.Vis = 0;
-   return Kbrd.GrpId;
+   Kbrd->ShiftPress=0;
+   Kbrd->CapsLock=0;
+   Kbrd->Vis = 0;
+   return Kbrd->GrpId;
 }
 
 int keybrd( void *parent,void **v,void *pt) {
   int offset=1;
   int ret=1,GrpId,k;
+  KEYBRD *Kbrd;
   DIALOG D;
   DIA *d=NULL;
   D.VerId=1401010200;
+  Kbrd = (KEYBRD *)malloc(sizeof(KEYBRD));
+  D.Kbrd = Kbrd;
   kgInitUi(&D);
   D.d=NULL;
   GrpId = keybrdGroup(&D,v,pt);
@@ -1533,23 +1546,23 @@ int keybrd( void *parent,void **v,void *pt) {
   D.yo = 274;
   D.xl = 796;    /*  Length of Dialog */
   D.yl = 258;    /*  Width  of Dialog */
-  Kbrd.sgrp = kgOpenGrp(&D);
-  kgAddtoGrp(&D,Kbrd.sgrp,d[0+offset].t);
-  kgAddtoGrp(&D,Kbrd.sgrp,d[5+offset].t);
-  kgAddtoGrp(&D,Kbrd.sgrp,d[6+offset].t);
-  Kbrd.cgrp = kgOpenGrp(&D);
-  kgAddtoGrp(&D,Kbrd.cgrp,d[16+offset].t);
-  kgAddtoGrp(&D,Kbrd.cgrp,d[15+offset].t);
-  kgAddtoGrp(&D,Kbrd.cgrp,d[17+offset].t);
-  kgSetGrpVisibility(&D,Kbrd.cgrp,0);
-  Kbrd.Coff = d[7+offset].t;
-  Kbrd.Con = d[18+offset].t;
-  Kbrd.Loff = d[19+offset].t;
-  Kbrd.Lon = d[20+offset].t;
-  kgSetWidgetVisibility(Kbrd.Loff,1);
-  kgSetWidgetVisibility(Kbrd.Coff,1);
-  kgSetWidgetVisibility(Kbrd.Lon,0);
-  kgSetWidgetVisibility(Kbrd.Con,0);
+  Kbrd->sgrp = kgOpenGrp(&D);
+  kgAddtoGrp(&D,Kbrd->sgrp,d[0+offset].t);
+  kgAddtoGrp(&D,Kbrd->sgrp,d[5+offset].t);
+  kgAddtoGrp(&D,Kbrd->sgrp,d[6+offset].t);
+  Kbrd->cgrp = kgOpenGrp(&D);
+  kgAddtoGrp(&D,Kbrd->cgrp,d[16+offset].t);
+  kgAddtoGrp(&D,Kbrd->cgrp,d[15+offset].t);
+  kgAddtoGrp(&D,Kbrd->cgrp,d[17+offset].t);
+  kgSetGrpVisibility(&D,Kbrd->cgrp,0);
+  Kbrd->Coff = d[7+offset].t;
+  Kbrd->Con = d[18+offset].t;
+  Kbrd->Loff = d[19+offset].t;
+  Kbrd->Lon = d[20+offset].t;
+  kgSetWidgetVisibility(Kbrd->Loff,1);
+  kgSetWidgetVisibility(Kbrd->Coff,1);
+  kgSetWidgetVisibility(Kbrd->Lon,0);
+  kgSetWidgetVisibility(Kbrd->Con,0);
   D.Initfun = keybrdinit;    /*   init fuction for Dialog */
   D.Cleanupfun = keybrdcleanup;    /*   init fuction for Dialog */
   D.kbattn = 0;    /*  1 for drawing keyborad attention */

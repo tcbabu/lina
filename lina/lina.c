@@ -1064,7 +1064,7 @@ int lina( void *parent,void **v,void *pt) {
 //  kgMakeDefaultKeybrd(&D,(xres-795)/2,yres-305,0);
   kgMakeDefaultSkeybrd(&D,(xres-510)/2,yres-275,0);
 #endif
-  kgSetKeybrdWidget(1);
+  kgSetKeybrdWidget(&D,1);
 #endif
 //     D.StackPos = 1; // you may need it
   }    /*  end of fullscreen mode */

@@ -15,11 +15,11 @@ void ModifypskdiaGc(Gclr *gc) {
 int pskdiaGroup( DIALOG *D,void **v,void *pt) {
   int GrpId=0,oitems=0,i,j;
   DIA *d=NULL,*dtmp;
-  char *xpm0=   (char *)MakePixmapImage( 340,75,lc.Red,lc.Green,lc.Blue,0.05);
+  char *xpm0=   (char *)MakePixmapImage( 518,320,lc.Red,lc.Green,lc.Blue,0.05);
   DIP p0 = { 
     'p',
     2,2,  
-    343,78,  
+    522,322,  
     (void *)xpm0,
     -1, /* bkgr colour */ 
       3,0,0.1 /* border hide */ 
@@ -33,8 +33,8 @@ int pskdiaGroup( DIALOG *D,void **v,void *pt) {
   e1[0].sw=1;
   DIT t1 = { 
     't',
-    23,8,  
-    328,42,
+    23,18,  
+    328,52,
     20, 
     1,1, 
     e1,
@@ -54,8 +54,8 @@ int pskdiaGroup( DIALOG *D,void **v,void *pt) {
   butn2[0].butncode='';
   DIL h2 = { 
     'h',
-    132,43,  
-    214,76,
+    132,53,  
+    214,86,
     2,0,  
     72, 
     25, 
@@ -124,6 +124,8 @@ int pskdia( void *parent,void **v,void *pt) {
   GrpId = pskdiaGroup(&D,v,pt);
   d = D.d;
   D.d = d;
+  kgMakeDefaultSkeybrd(&D,0,110,1);
+  kgSetKeybrdWidget(&D,1);
   D.bkup = 1; /* set to 1 for backup */
   D.bor_type = 4;
   D.df = 2;
@@ -135,6 +137,8 @@ int pskdia( void *parent,void **v,void *pt) {
   D.yo = 206;
   D.xl = 348;    /*  Length of Dialog */
   D.yl = 82;    /*  Width  of Dialog */
+  D.xl = 530;    /*  Length of Dialog */
+  D.yl = 340;    /*  Width  of Dialog */
   D.Initfun = pskdiainit;    /*   init fuction for Dialog */
   D.Cleanupfun = pskdiacleanup;    /*   init fuction for Dialog */
   D.kbattn = 0;    /*  1 for drawing keyborad attention */
