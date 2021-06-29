@@ -6229,11 +6229,15 @@ void **kgSetList(void *Tmp,void **list) {
   }
   switch(X->code) {
     case 'x':
-    case 'r':
     case 'c':
     X->list=list;
     X->nitems= nitems;
     uiCleanXImages(X);
+    return (void **)list;
+    case 'r':
+    X->list=list;
+    X->nitems= nitems;
+    uiCleanRImages((DIRA *)X);
     return (void **)list;
     case 'y':
     X->list=list;
