@@ -1539,6 +1539,7 @@ typedef struct _keybrd {
   int  Bfont,Bclr;
 } KEYBRD;
 int kgMakeKeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr,int butclr,int bkgrclr,float transparency) ;
+int kgMakeSkeybrd(DIALOG *D,int xo,int yo,int Vis,int btype,int bfont,int fontclr,int butclr,int bkgrclr,float transparency);
    int GrpId;
 int kgMakeDefaultKeybrd(DIALOG *D,int xo,int yo,int vis);
 int kgMakeDefaultSkeybrd(DIALOG *D,int xo,int yo,int vis);

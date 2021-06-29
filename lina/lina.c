@@ -1056,13 +1056,17 @@ int lina( void *parent,void **v,void *pt) {
      lc.KbGrp=MakekeybrdGroup(&D,&TextBox,(int)lc.Red,(int)lc.Green,(int)lc.Blue,(xres-840)/2,yres-305);
       kgSetGrpVisibility((void *)&D,lc.KbGrp,lc.KbVis);
 #else
-  kgDefineColor(501,180,180,180);
-  kgDefineColor(201,(unsigned char)(0.7*lc.Red),(unsigned char)(0.7*lc.Green),(unsigned char)(0.7*lc.Blue));
+  kgDefineColor(501,(unsigned char) lc.ButRed,(unsigned char) lc.ButGreen,(unsigned char) lc.ButBlue);
+  kgDefineColor(201,(unsigned char) lc.Red,(unsigned char) lc.Green,(unsigned char) lc.Blue);
 #if 0
   kgMakeKeybrd(&D,(xres-795)/2,yres-305,0,8,16,0,501,201,0.1);
 #else
 //  kgMakeDefaultKeybrd(&D,(xres-795)/2,yres-305,0);
+#if 0
   kgMakeDefaultSkeybrd(&D,(xres-510)/2,yres-275,0);
+#else
+  kgMakeSkeybrd(&D,(xres-510)/2,yres-275,0,8,16,0,501,201,0.05);
+#endif
 #endif
   kgSetKeybrdWidget(&D,1);
 #endif
@@ -1398,11 +1402,13 @@ int Runlina(void *arg) {
    InitConfig(&lc);
    Mid=fork();
    if((Mid)==0) {
+#if 1
    close(1);
    remove("/var/log/lina.log");
    id=open("/var/log/lina.log",O_CREAT|O_RDWR,0777);
    close(2);
    dup(id);
+#endif
    if( pipe(Pip) < 0) return 0;
    while(Loop) {
      Passwd[0]='\0';
