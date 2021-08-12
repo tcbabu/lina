@@ -83,7 +83,7 @@ static  int InitBuff( int sizex, int sizey) {
 //        Bcolr=0xff000000|BkColor;
         Bcolr=BkColor;
         ln = (sizex+1)*(sizey+1);
-	buffer = (unsigned long *) malloc(ln*sizeof(unsigned long));
+	buffer = (unsigned long *) Malloc(ln*sizeof(unsigned long));
 	if ( buffer == NULL ) return(0);
         for(i=0;i<ln;i++) buffer[i]=Bcolr;
 	return (1);

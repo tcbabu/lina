@@ -120,6 +120,9 @@ int  wirediasplbutton1callback(int butno,int i,void *Tmp) {
       kgUpdateOn(Tmp);
       sleep(2);
       RetVal=1;
+      Connected =0;
+      SetConnectState(Tmp);
+      ret =0;
       break;
   }
   return ret;
@@ -296,14 +299,20 @@ int wirediaCallBack(void *Tmp,void *tmp) {
   int ret = 0;
   DIALOG *D;
   KBEVENT *kbe;
+  DIS *S;
   D = (DIALOG *)Tmp;
   kbe = (KBEVENT *)tmp;
+//  S= kgGetClickedWidget(D);
+  S= kgGetLocationWidget(D,kbe->x,kbe->y);
+  if((S!=NULL) &&(S->code =='s')) return 0;
+#if 1
   if(kbe->event ==1) {
     if(kbe->button ==1) {
       RetVal=0;
       ret=1;
     }
   }
+#endif
   return ret;
 }
 int wirediaResizeCallBack(void *Tmp) {

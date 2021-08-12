@@ -5,8 +5,8 @@ include config.mak
 CC	= cc    -msse3 -O3 -DUNIX -pthread $(X11_CFLAFS)  $(CFLAGS)
 #CC	= cc    -msse3 -g -DUNIX  $(CFLAGS)
 all	: libkulina.a 
-libkulina.a  : kgl.o kgui.o kgui1.o kgui2.o lowlib.o gkernel.o file_pro.o dlink.o printerdia.o shade.o PngImage.o gminterface.o makeimg.o drawimg.o  ogl.o threadtool.o hlib.o keybrd.o keybrdCallbacks.o skeybrd.o skeybrdCallbacks.o
-	ar -r libkulina.a kgl.o kgui.o kgui1.o kgui2.o lowlib.o gkernel.o file_pro.o  printerdia.o shade.o PngImage.o gminterface.o makeimg.o drawimg.o dlink.o ogl.o threadtool.o hlib.o keybrd.o keybrdCallbacks.o skeybrd.o skeybrdCallbacks.o
+libkulina.a  : kgl.o kgui.o kgui1.o kgui2.o lowlib.o gkernel.o file_pro.o dlink.o printerdia.o shade.o PngImage.o gminterface.o makeimg.o drawimg.o  ogl.o threadtool.o hlib.o keybrd.o keybrdCallbacks.o skeybrd.o skeybrdCallbacks.o keybrd0.o keybrd0Callbacks.o keybrd4.o keybrd4Callbacks.o keybrd5.o keybrd5Callbacks.o
+	ar -r libkulina.a kgl.o kgui.o kgui1.o kgui2.o lowlib.o gkernel.o file_pro.o  printerdia.o shade.o PngImage.o gminterface.o makeimg.o drawimg.o dlink.o ogl.o threadtool.o hlib.o keybrd.o keybrdCallbacks.o skeybrd.o skeybrdCallbacks.o keybrd0.o keybrd0Callbacks.o keybrd4.o keybrd4Callbacks.o keybrd5.o keybrd5Callbacks.o
 kgl.o : kgl.c kulina.h gprivate.h
 	$(CC) -c  -I$(PREFIX)/include/GraphicsMagick kgl.c
 printerdia.o	: printerdia.c  kulina.h gprivate.h
@@ -47,6 +47,18 @@ skeybrd.o	: skeybrd.c kulina.h
 	$(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick skeybrd.c 
 skeybrdCallbacks.o	: skeybrdCallbacks.c kulina.h
 	       $(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick skeybrdCallbacks.c 
+keybrd0.o	: keybrd0.c kulina.h
+	$(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick keybrd0.c 
+keybrd0Callbacks.o	: keybrd0Callbacks.c kulina.h
+	       $(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick keybrd0Callbacks.c 
+keybrd4.o	: keybrd4.c kulina.h
+	$(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick keybrd4.c 
+keybrd4Callbacks.o	: keybrd4Callbacks.c kulina.h
+	       $(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick keybrd4Callbacks.c 
+keybrd5.o	: keybrd5.c kulina.h
+	$(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick keybrd5.c 
+keybrd5Callbacks.o	: keybrd5Callbacks.c kulina.h
+	       $(CC)  -c -I$(PREFIX)/include -I$(PREFIX)/include/GraphicsMagick keybrd5Callbacks.c 
 
 clean	:
 	 rm -f *.o gph2ps gph2eps gph2jpg ps2jpg imagetoc cleantmpdir glib.a

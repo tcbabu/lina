@@ -47,6 +47,7 @@ static char SLASHS[2]="\\";
 #endif
 #define GAP 0.05
 #define HFAC 1.30
+#define RESIZE 5
 static pthread_mutex_t _Initlock=PTHREAD_MUTEX_INITIALIZER;
 void CHDIR(char *);
 static int NCLRS=256;
@@ -163,7 +164,7 @@ void kgDefaultGuiTheme(Gclr *Gc) {
   Gc->InputFontSize=9;
   return ;
 }
-void kgColorTheme(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue) {
+void kgColorTheme2(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue) {
   float h,s,v,r,g,b,vorg,dv;
   Gclr *Gc;
   Gc = &(D->gc);
@@ -266,98 +267,228 @@ void kgColorTheme(DIALOG *D,unsigned char red,unsigned char green, unsigned char
   Gc->InputFontSize=9;
   return ;
 }
-void kgColorTheme_new(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue) {
-  float h,s,v,r,g,b,vorg,dv;
+void kgColorTheme(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue) {
+  int R,G,B;
+  float H,S,V,r,g,b,vorg,dv,cval,val,hval,lval;
+  int type=0,vbrt;
   Gclr *Gc;
   Gc = &(D->gc);
-  RGBtoHSV((float) red,(float) green,(float) blue,&h,&s,&v);
-  HSVtoRGB(&r,&g,&b,h,s,v*0.3);
-//  printf("%d %d %d %d\n",40,(int)r,(int)g,(int)b);
-  kgDefineColor(940,(int)r,(int)g,(int)b);
-  HSVtoRGB(&r,&g,&b,h,s,v*0.45);
-//  printf("%d %d %d %d\n",41,(int)r,(int)g,(int)b);
-  kgDefineColor(941,(int)r,(int)g,(int)b);
-  HSVtoRGB(&r,&g,&b,h,s,v*0.65);
-//  printf("%d %d %d %d\n",42,(int)r,(int)g,(int)b);
-  kgDefineColor(942,(int)r,(int)g,(int)b);
-  HSVtoRGB(&r,&g,&b,h,s,v*0.85);
-//  printf("%d %d %d %d\n",43,(int)r,(int)g,(int)b);
-  kgDefineColor(943,(int)r,(int)g,(int)b);
-  HSVtoRGB(&r,&g,&b,h,s,v);
-//  printf("%d %d %d %d\n",44,(int)r,(int)g,(int)b);
-  kgDefineColor(944,(int)r,(int)g,(int)b);
-//  v = v*(1.05+2*atan(1.-v)/1.57);
-  vorg = v;
-  v = v*(1.01+acos(v)/1.57);
-  if(v> 1.) {
-     v=1.0;
-     if(s< 0.1 ){
-       r = 0.93*r;
-       g = 0.95*g;
-       RGBtoHSV((float) r,(float) g,(float) b,&h,&s,&v);
-     }
-     v=1.0;
-     HSVtoRGB(&r,&g,&b,0.8*h,0.8*s,v);
-//  printf("%d %d %d %d\n",45,(int)r,(int)g,(int)b);
-     kgDefineColor(945,(int)r,(int)g,(int)b);
-     HSVtoRGB(&r,&g,&b,h,0.7*s,v);
-//  printf("%d %d %d %d\n",46,(int)r,(int)g,(int)b);
-     kgDefineColor(946,(int)r,(int)g,(int)b);
-     HSVtoRGB(&r,&g,&b,h,0.6*s,v);
-//  printf("%d %d %d %d\n",47,(int)r,(int)g,(int)b);
-     kgDefineColor(947,(int)r,(int)g,(int)b);
-  }
-  else {
-    dv = v -vorg;
-    HSVtoRGB(&r,&g,&b,h,s,vorg+dv*0.4);
-    kgDefineColor(945,(int)r,(int)g,(int)b);
-    HSVtoRGB(&r,&g,&b,h,s,vorg+dv*0.8);
-    kgDefineColor(946,(int)r,(int)g,(int)b);
-    HSVtoRGB(&r,&g,&b,h,s,v);
-    kgDefineColor(947,(int)r,(int)g,(int)b);
-  }
-  Gc->fill_clr=944;
-  Gc->char_clr=49;
-  Gc->bodr_clr=944;
-  Gc->cur_clr=  944;
-  Gc->high_clr= 945;
-  Gc->char_hclr = 947;
-  Gc->msg_fill = 945;
-  Gc->msg_char = 49;
-  Gc->msg_bodr = 947;
-  Gc->txt_fill = 943;
-  Gc->txt_char = 48;
-  Gc->txt_pchar  = 49;
-  Gc->tabl_fill = 943;
-  Gc->tabl_char = 49;
-  Gc->tabl_hchar = 947;
-  Gc->tabl_line = 941;
-  Gc->v_dim= 940;
-  Gc->dim =942;
-  Gc->bright=946;
-  Gc->vbright=947;
-  Gc->twin_fill = 945;
-  Gc->twin_char = 48;
-  Gc->twin_bodr = 942;
-  Gc->info_fill = 946;
-  Gc->info_char = 49;
-  Gc->but_char=49;
-  Gc->menu_char=49;
-  Gc->c_bound = 946;
+  RGBtoHSV((float) red,(float) green,(float) blue,&H,&S,&V);
+  if(V> 0.6) {
+       type =0;
+       val =0.6*V;
+       lval = 0.8*V;
+       cval=1.4*V;
+       if(cval>1.0) cval=1.0;
+       hval=1.5*V;
+       if(hval>1.0) hval=1.0;
+   }
+   else {
+       type =1;
+       val = 1.80*V;
+       if(val>1.0) val=1.0;
+       cval=0.4*V;
+       hval=0.3*V;
+       lval = 0.7*V;
+   }
+//   printf("type= %d V=%f\n",type,V);
+   R = red,G=green,B=blue;
+   kgDefineColor(54,R,G,B);
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(55,R,G,B);
+   HSVtoRGB(&r,&g,&b,H,S,cval);
+   R = r,G=g,B=b;
+   kgDefineColor(56,R,G,B);
+   HSVtoRGB(&r,&g,&b,H,S,hval);
+   R = r,G=g,B=b;
+   kgDefineColor(57,R,G,B);
+   val = 1.3*V;
+   if(val>1.0) val=1.0;
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(58,R,G,B);
+   val = 1.4*V;
+   if(val>1.0) val=1.0;
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(59,R,G,B);
+   val = 0.3*V;
+   if(val>1.0) val=1.0;
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(60,R,G,B);
+   val = 0.2*V;
+   if(val>1.0) val=1.0;
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(61,R,G,B);
+   HSVtoRGB(&r,&g,&b,H,S,lval);
+   R = r,G=g,B=b;
+   kgDefineColor(62,R,G,B);
+   val = 2.0*V;
+   if(val>1.0) val=1.0;
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(63,R,G,B);
+
+  vbrt = 63;
+  Gc->v_dim= 61;
+  Gc->dim =60;
+  Gc->bright=58;
+  Gc->vbright=59;
+
+  Gc->fill_clr=54;
+  Gc->char_clr=61;
+  if(type) Gc->char_clr= 59;
+  Gc->bodr_clr=58;
+  Gc->cur_clr=  57;
+  Gc->high_clr= 59;
+  Gc->char_hclr = 61;
+  Gc->msg_fill = 55;
+  Gc->msg_char = 56;
+  Gc->msg_bodr = 58;
+  Gc->txt_fill = 62;
+  Gc->txt_char = Gc->char_clr;
+  Gc->txt_pchar  = Gc->char_clr;
+  Gc->tabl_fill = 62;
+  Gc->tabl_char = Gc->char_clr;
+  Gc->tabl_hchar = 57;
+  Gc->tabl_line = 54;
+  
+  Gc->twin_fill = 55;
+  Gc->twin_char = 56;
+  Gc->twin_bodr = 58;
+  Gc->info_fill = 55;
+  Gc->info_char = 56;
+  Gc->but_char=Gc->v_dim;
+  if(type) Gc->but_char= vbrt;
+  Gc->msg_char = Gc->but_char;
+  Gc->menu_char=56;
+  Gc->c_bound = 58;
   Gc->GuiFontSize =9;
   Gc->MenuFont = 8;
-  Gc->PromptFont = 32;
-  Gc->ButtonFont = 23;
-  Gc->MsgFont = 23;
+  Gc->PromptFont = 24;
+  Gc->ButtonFont = 16;
+  Gc->MsgFont = 1;
   Gc->FontSize =9;
-  Gc->Font=23;
-  Gc->SplashFont=4;
-  Gc->SplashFillColor=940;
-  Gc->SplashBodrColor=946;
-  Gc->SplashCharColor=226;
-  Gc->ProgFillColor=946;
-  Gc->ProgBodrColor=6;
-  Gc->ProgColor=8;
+  Gc->Font=16;
+  Gc->SplashFont=24;
+  Gc->SplashFillColor=55;
+  Gc->SplashBodrColor=58;
+  Gc->SplashCharColor=56;
+  Gc->ProgFillColor=55;
+  Gc->ProgBodrColor=58;
+  Gc->ProgColor=56;
+  Gc->InputFontSize=9;
+  return ;
+}
+void kgColorTheme1(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue) {
+  int R,G,B;
+  float H,S,V,r,g,b,vorg,dv,cval,val,hval,lval;
+  int type=0;
+  Gclr *Gc;
+  Gc = &(D->gc);
+  RGBtoHSV((float) red,(float) green,(float) blue,&H,&S,&V);
+  if(V> 0.6) {
+       type =0;
+       val =0.6*V;
+       lval = 0.8*V;
+       cval=1.2*V;
+       if(cval>1.0) cval=1.0;
+       hval=1.3*V;
+       if(hval>1.0) hval=1.0;
+   }
+   else {
+       type =1;
+       val = 1.6*V;
+       if(val>1.0) val=1.0;
+       cval=0.4*V;
+       hval=0.3*V;
+       lval = 0.7*V;
+   }
+   R = red,G=green,B=blue;
+   kgDefineColor(54,R,G,B);
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(55,R,G,B);
+   HSVtoRGB(&r,&g,&b,H,S,cval);
+   R = r,G=g,B=b;
+   kgDefineColor(56,R,G,B);
+   HSVtoRGB(&r,&g,&b,H,S,hval);
+   R = r,G=g,B=b;
+   kgDefineColor(57,R,G,B);
+   val = 1.2*V;
+   if(val>1.0) val=1.0;
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(58,R,G,B);
+   val = 1.3*V;
+   if(val>1.0) val=1.0;
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(59,R,G,B);
+   val = 0.3*V;
+   if(val>1.0) val=1.0;
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(60,R,G,B);
+   val = 0.2*V;
+   if(val>1.0) val=1.0;
+   HSVtoRGB(&r,&g,&b,H,S,val);
+   R = r,G=g,B=b;
+   kgDefineColor(61,R,G,B);
+   HSVtoRGB(&r,&g,&b,H,S,lval);
+   R = r,G=g,B=b;
+   kgDefineColor(62,R,G,B);
+
+  Gc->v_dim= 61;
+  Gc->dim =60;
+  Gc->bright=58;
+  Gc->vbright=59;
+
+  Gc->fill_clr=54;
+  Gc->char_clr=61;
+  if(type) Gc->char_clr= 59;
+  Gc->bodr_clr=58;
+  Gc->cur_clr=  57;
+  Gc->high_clr= 59;
+  Gc->char_hclr = 61;
+  Gc->msg_fill = 55;
+  Gc->msg_char = 56;
+  Gc->msg_bodr = 58;
+  Gc->txt_fill = 62;
+  Gc->txt_char = 59;
+  if(type) Gc->txt_char = 61;
+  Gc->txt_pchar  = Gc->char_clr;
+  Gc->tabl_fill = 62;
+  Gc->tabl_char = Gc->txt_char;
+  Gc->tabl_hchar = 57;
+  Gc->tabl_line = 54;
+  
+  Gc->twin_fill = 55;
+  Gc->twin_char = 56;
+  Gc->twin_bodr = 58;
+  Gc->info_fill = 55;
+  Gc->info_char = 56;
+  Gc->but_char=59;
+  if(type) Gc->but_char= 61;
+  Gc->menu_char=56;
+  Gc->c_bound = 58;
+  Gc->GuiFontSize =9;
+  Gc->MenuFont = 8;
+  Gc->PromptFont = 24;
+  Gc->ButtonFont = 16;
+  Gc->MsgFont = 1;
+  Gc->FontSize =9;
+  Gc->Font=16;
+  Gc->SplashFont=24;
+  Gc->SplashFillColor=55;
+  Gc->SplashBodrColor=58;
+  Gc->SplashCharColor=56;
+  Gc->ProgFillColor=55;
+  Gc->ProgBodrColor=58;
+  Gc->ProgColor=56;
   Gc->InputFontSize=9;
   return ;
 }
@@ -425,11 +556,12 @@ void uiInitGbox(DIALOG *D,int i) {
   pthread_mutex_lock(&_Initlock);
   entry++;
   G = D->d[i].g;
-  dc = (kgDC *) malloc(sizeof(kgDC));
+  dc = (kgDC *) Malloc(sizeof(kgDC));
   G->D= D;
-  G->wc = (kgWC *) malloc(sizeof(kgWC));
+  G->wc = (kgWC *) Malloc(sizeof(kgWC));
   G->dc = dc;
   G->Obj_opn=0;
+  dc->Fontlist=NULL;
   ui_initialise(G);
   for(l=0;l<10;l++) dc->st_ptr[l]=0;
   G->B_min = 10400;
@@ -461,7 +593,7 @@ void uiInitGbox(DIALOG *D,int i) {
   strcat(dc->cmdsfile,"/cmdsfile");
   dc->ls_list=NULL;
   dc->No_of_lights=0;
-  G->Rbuff = (unsigned char  *) malloc(B_max+100);
+  G->Rbuff = (unsigned char  *) Malloc(B_max+100);
   G->hbuf =-1;
   uiinitialise(G);
   pthread_mutex_unlock(&_Initlock);
@@ -1318,8 +1450,8 @@ int uiProcess_arc (DIG *G,float *xo,float *yo)
     a2 = ang2*3.14159265/180.0;
     th= 2.0*3.14159265/180.0;
     n = fabs(a2-a1)/th+0.5;
-    x = malloc(sizeof(float)*(n+2));
-    y = malloc(sizeof(float)*(n+2));
+    x = Malloc(sizeof(float)*(n+2));
+    y = Malloc(sizeof(float)*(n+2));
     if(y==NULL) {
       printf("Error: In mem allocation..\n");
       exit(0);
@@ -1357,8 +1489,8 @@ int uiProcess_arc (DIG *G,float *xo,float *yo)
     a2 = ang2*3.14159265/180.0;
     th= 2.0*3.14159265/180.0;
     n = fabs(a2-a1)/th+0.5;
-    x = malloc(sizeof(float)*(n+2));
-    y = malloc(sizeof(float)*(n+2));
+    x = Malloc(sizeof(float)*(n+2));
+    y = Malloc(sizeof(float)*(n+2));
     if(y==NULL) {
       printf("Error: In mem allocation..\n");
       exit(0);
@@ -4549,8 +4681,8 @@ int gphRoundedRectangleLowered_o(int fid,float xo,float yo,float xl,float yl,int
     a2 = ang2*3.14159265/180.0;
     th= 5.0*3.14159265/180.0;
     n = fabs(a2-a1)/th+0.5;
-    x = malloc(sizeof(float)*(n+2));
-    y = malloc(sizeof(float)*(n+2));
+    x = Malloc(sizeof(float)*(n+2));
+    y = Malloc(sizeof(float)*(n+2));
     if(y==NULL) {
       printf("Error: In mem allocation..\n");
       exit(0);
@@ -4614,10 +4746,10 @@ void kgrev_shade_o(DIG *G,FILE *fp)
   dc= G->dc;
   Fread(fp,(void *)&n,4);
   l = sizeof(float)*n;
-  x = (float *)malloc(l);
-  y = (float *)malloc(l);
-  z = (float *)malloc(l);
-  v = (float *)malloc(l);
+  x = (float *)Malloc(l);
+  y = (float *)Malloc(l);
+  z = (float *)Malloc(l);
+  v = (float *)Malloc(l);
   Fread(fp,(void *)x,l);
   Fread(fp,(void *)y,l);
   Fread(fp,(void *)z,l);
@@ -4693,10 +4825,10 @@ void kgrev_godr_fill3f(DIG *G,FILE *fp)
      dc = G->dc;
   Fread(fp,(void *)&n,4);
   l = sizeof(float)*n;
-  x = (float *)malloc(l);
-  y = (float *)malloc(l);
-  z = (float *)malloc(l);
-  v = (float *)malloc(l);
+  x = (float *)Malloc(l);
+  y = (float *)Malloc(l);
+  z = (float *)Malloc(l);
+  v = (float *)Malloc(l);
   Fread(fp,(void *)x,l);
   Fread(fp,(void *)y,l);
   Fread(fp,(void *)z,l);
@@ -4727,9 +4859,9 @@ void kgrev_poly_fill3f(DIG *G,FILE *fp)
      dc = G->dc;
   Fread(fp,(void *)&n,4);
   l = sizeof(float)*n;
-  x = (float *)malloc(l);
-  y = (float *)malloc(l);
-  z = (float *)malloc(l);
+  x = (float *)Malloc(l);
+  y = (float *)Malloc(l);
+  z = (float *)Malloc(l);
   Fread(fp,(void *)x,l);
   Fread(fp,(void *)y,l);
   Fread(fp,(void *)z,l);
@@ -4910,7 +5042,7 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
       {
         case 'w':
                 Fread(pf,(void *)&n,4);
-                tx= (unsigned char *) malloc((n+1)*sizeof(unsigned));
+                tx= (unsigned char *) Malloc((n+1)*sizeof(unsigned));
                 Fread(pf,(void *)tx,n);
                 *(tx+n)='\0';
                 kgWriteText(G,(char *)tx);
@@ -4992,8 +5124,8 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
                 break;
         case 'p':
                 Fread(pf,(void *)&n,4);
-                xx=(float *)malloc(sizeof(float)*n);
-                yy=(float *)malloc(sizeof(float)*n);
+                xx=(float *)Malloc(sizeof(float)*n);
+                yy=(float *)Malloc(sizeof(float)*n);
                 check_mem_alloc(yy);
                 Fread(pf,(void *)xx,4*n);
                 Fread(pf,(void *)yy,4*n);
@@ -5009,9 +5141,9 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
                 break;
         case 'g': 
                 Fread(pf,(void *)&n,4);
-                xx=(float *)malloc(sizeof(float)*n);
-                yy=(float *)malloc(sizeof(float)*n);
-                p=(float *)malloc(sizeof(float)*n);
+                xx=(float *)Malloc(sizeof(float)*n);
+                yy=(float *)Malloc(sizeof(float)*n);
+                p=(float *)Malloc(sizeof(float)*n);
                 check_mem_alloc(p);
                 Fread(pf,(void *)xx,4*n);
                 Fread(pf,(void *)yy,4*n);
@@ -5160,10 +5292,10 @@ void uicnv_godr_fill3f(DIG *G,FILE *fp)
   dc = G->dc;
   Fread(fp,(void *)&n,4);
   l = sizeof(float)*n;
-  x = (float *)malloc(l);
-  y = (float *)malloc(l);
-  z = (float *)malloc(l);
-  v = (float *)malloc(l);
+  x = (float *)Malloc(l);
+  y = (float *)Malloc(l);
+  z = (float *)Malloc(l);
+  v = (float *)Malloc(l);
   Fread(fp,(void *)x,l);
   Fread(fp,(void *)y,l);
   Fread(fp,(void *)z,l);
@@ -5196,9 +5328,9 @@ void uicnv_shade_o(DIG *G,FILE *fp)
   dc = G->dc;
   Fread(fp,(void *)&n,4);
   l = sizeof(float)*n;
-  x = (float *)malloc(l);
-  y = (float *)malloc(l);
-  z = (float *)malloc(l);
+  x = (float *)Malloc(l);
+  y = (float *)Malloc(l);
+  z = (float *)Malloc(l);
   Fread(fp,(void *)x,l);
   Fread(fp,(void *)y,l);
   Fread(fp,(void *)z,l);
@@ -5239,9 +5371,9 @@ void uicnv_poly_fill3f(DIG *G,FILE *fp)
   dc = G->dc;
   Fread(fp,(void *)&n,4);
   l = sizeof(float)*n;
-  x = (float *)malloc(l);
-  y = (float *)malloc(l);
-  z = (float *)malloc(l);
+  x = (float *)Malloc(l);
+  y = (float *)Malloc(l);
+  z = (float *)Malloc(l);
   Fread(fp,(void *)x,l);
   Fread(fp,(void *)y,l);
   Fread(fp,(void *)z,l);
@@ -5426,7 +5558,7 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
       {
         case 'w':
                 Fread(pf,(void *)&n,4);
-                tx= (unsigned char *) malloc((n+1)*sizeof(unsigned));
+                tx= (unsigned char *) Malloc((n+1)*sizeof(unsigned));
                 Fread(pf,(void *)tx,n);
                 *(tx+n)='\0';
                 kgWriteText(G,(char *)tx);
@@ -5501,8 +5633,8 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
                 break;
         case 'p':
                 Fread(pf,(void *)&n,4);
-                xx=(float *)malloc(sizeof(float)*n);
-                yy=(float *)malloc(sizeof(float)*n);
+                xx=(float *)Malloc(sizeof(float)*n);
+                yy=(float *)Malloc(sizeof(float)*n);
                 check_mem_alloc(yy);
                 Fread(pf,(void *)xx,4*n);
                 Fread(pf,(void *)yy,4*n);
@@ -5518,9 +5650,9 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
                 break;
         case 'g': 
                 Fread(pf,(void *)&n,4);
-                xx=(float *)malloc(sizeof(float)*n);
-                yy=(float *)malloc(sizeof(float)*n);
-                p=(float *)malloc(sizeof(float)*n);
+                xx=(float *)Malloc(sizeof(float)*n);
+                yy=(float *)Malloc(sizeof(float)*n);
+                p=(float *)Malloc(sizeof(float)*n);
                 check_mem_alloc(p);
                 Fread(pf,(void *)xx,4*n);
                 Fread(pf,(void *)yy,4*n);
@@ -5898,8 +6030,8 @@ void uiwin_poly_fill(DIG *G)
   dc=G->dc;
   wc = G->wc;
   uiread_buf(G,&n,4);
-  x = (float *) malloc(sizeof(float)*n);
-  y = (float *) malloc(sizeof(float)*n);
+  x = (float *) Malloc(sizeof(float)*n);
+  y = (float *) Malloc(sizeof(float)*n);
   if(y==NULL) {
     printf("Error: in allocating memory for panel\n");
     exit(0);
@@ -6083,7 +6215,7 @@ void  uiwin_txtwrt(DIG *G)
   dc=G->dc;
   wc = G->wc;
   uiread_buf(G,&n,4);
-  tx = (char *)malloc((n+1)*sizeof(char));
+  tx = (char *)Malloc((n+1)*sizeof(char));
   uiread_buf(G,tx,n);
   tx[n]='\0';
   if(G->D_ON)ui_txt_wr(G,n,tx);
@@ -11934,7 +12066,7 @@ void * kgStringToImage_old(char *Str,void *image,int xsize,int ysize,int font,in
    float length=0.0,fac,th,tw;
 #if 1
    {
-      fid = kgInitImage((int)(xsize),ysize,4);
+      fid = kgInitImage((int)(xsize),ysize,RESIZE);
       kgUserFrame(fid,0.,0.,(float)xsize,(float)ysize);
       th = (float)ysize*.5;
       tw = (float)width;
@@ -11981,7 +12113,7 @@ void * kgStringToImage(char *Str,void *image,int xsize,int ysize,int font,int tx
    float length=0.0,fac,th,tw;
 #if 1
    {
-      fid = kgInitImage((int)(xsize),ysize,8);
+      fid = kgInitImage((int)(xsize),ysize,RESIZE);
       kgUserFrame(fid,0.,0.,(float)xsize,(float)ysize);
       th = (float)ysize*.5;
       tw = (float)width;
@@ -12011,7 +12143,7 @@ void * kgFilledStringToImagePressed(char *Str,void *image,int xsize,int ysize,in
    aspc=1;
    if(ysize > size) {size=ysize;aspc=0;}
    {
-      fid = kgInitImage(xsize,ysize,4);
+      fid = kgInitImage(xsize,ysize,RESIZE);
       kgUserFrame(fid,-3.,-3.,(float)xsize+3.,(float)ysize+3.);
       kgTextFont(fid,font);
       th = (float)ysize*.5;
@@ -12096,7 +12228,7 @@ void * kgFilledStringToImage1(char *Str,void *image,int xsize,int ysize,int font
    if(ysize > size) {size=ysize;aspc=0;}
    if(depthfac> xsize*0.4 ) depthfac=xsize*0.4;
    if(depthfac> ysize*0.4 ) depthfac=ysize*0.4;
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    {
       kgUserFrame(fid,-3.,-3.,(float)xsize+3.,(float)ysize+3.);
       kgTextFont(fid,font);
@@ -12178,7 +12310,7 @@ void * kgFilledStringToImage2(char *Str,void *image,int xsize,int ysize,int font
    aspc=1;
    size = xsize;
    if(ysize > size) {size=ysize;aspc=0;}
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,-3.,-3.,(float)xsize+3.,(float)ysize+3.);
       kgTextFont(fid,font);
@@ -12252,7 +12384,7 @@ void * kgFilledStringToImage3(char *Str,void *image,int xsize,int ysize,int font
    if(ysize > size) {size=ysize;aspc=0;}
    if(depthfac> xsize*0.4 ) depthfac=xsize*0.4;
    if(depthfac> ysize*0.4 ) depthfac=ysize*0.4;
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,-3.,-3.,(float)xsize+3.,(float)ysize+3.);
       kgTextFont(fid,font);
@@ -12335,7 +12467,7 @@ void * kgShadedStringToImage(char *Str,void *image,int xsize,int ysize,int font,
    float length=0.0,fac,th,tw,vmin,vmax,size,lnwidth=2,xm,ym;
    float h,s,v,red,blue,green;
    int r,g,b;
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    aspc =1;
    size = xsize;
 //   kgGetDefaultRGB(fillcolor,&r,&g,&b);
@@ -12497,7 +12629,7 @@ void * kgBoxedStringToImage(char *Str,void *image,int xsize,int ysize,int font,i
    float length=0.0,fac,th,tw,size;
    float h,s,v,red,blue,green,vorg;
    int r,g,b;
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    aspc =1;
    size = xsize;
    if(ysize > size) {size=ysize;aspc=0;}
@@ -12595,7 +12727,7 @@ void  kgStringToImagefile(char *Imgfile,char *Str,int xsize,int ysize,int font,i
    void *img=NULL;
    char *tmpdir,flname[200];
    float length=0.0,fac,th,tw;
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,0.,0.,(float)xsize,(float)ysize);
       kgTextFont(fid,font);
@@ -12644,7 +12776,7 @@ void * kgSplashStringToImage_o(char *Str,int xsize,int ysize,int font,int fillco
    aspc=1;
    size = xsize;
    if(ysize > size) {size=ysize;aspc=0;}
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,-0.,-0.,(float)xsize+0.,(float)ysize+0.);
       kgTextFont(fid,font);
@@ -12719,7 +12851,7 @@ void * kgSplashStringToImage(char *Str,int xsize,int ysize,int font,int fillcolo
    aspc=1;
    size = xsize;
    if(ysize > size) {size=ysize;aspc=0;}
-   fid = kgInitImage(xsize,ysize,8);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    if(fid != NULL ) {
 //      kgUserFrame(fid,-0.,-0.,(float)xsize+0.,(float)ysize+0.);
       kgUserFrame(fid,-1.0,-1.0,(float)xsize+1.0,(float)ysize+1.0);
@@ -12827,7 +12959,7 @@ void * kgSplashStringToImage_n(char *Str,int xsize,int ysize,int font,int fillco
    aspc=1;
    size = xsize;
    if(ysize > size) {size=ysize;aspc=0;}
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,-1.,-1.,(float)xsize+1.,(float)ysize+1.);
 //      kgGetDefaultRGB(fillcolor,&r,&g,&b);
@@ -12933,7 +13065,7 @@ int uiPressedBoxFill(void *Dialog,int xo,int yo,int xsize,int ysize,int fillcolo
    void *fid;
    void *img=NULL;
    char *tmpdir,flname[200];
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,0.,0.,(float)xsize,(float)ysize);
       kgRoundedRectangleFill(fid,(float)xsize*0.5,(float)ysize*0.5,(float)xsize,(float)ysize,0,fillcolor,rfac);
@@ -12950,7 +13082,7 @@ int uiBoxFill(void *Dialog,int xo,int yo,int xsize,int ysize,int fillcolor,float
    void * fid;
    void *img=NULL;
    char *tmpdir,flname[200];
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,0.,0.,(float)xsize,(float)ysize);
       kgRoundedRectangleFill(fid,(float)xsize*0.5,(float)ysize*0.5,(float)xsize,(float)ysize,0,fillcolor,rfac);
@@ -12966,7 +13098,7 @@ int uiRoundedBorder(void *Dialog,int xo,int yo,int xsize,int ysize,int bodrcolor
    void * fid;
    void *img=NULL;
    char *tmpdir,flname[200];
-   fid = kgInitImage(xsize,ysize,4);
+   fid = kgInitImage(xsize,ysize,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,0.,0.,(float)xsize,(float)ysize);
       kgRoundedRectangle(fid,(float)xsize*0.5,(float)ysize*0.5,(float)xsize,(float)ysize,bodrcolor,rfac,(float)bodrsize);
@@ -12988,7 +13120,7 @@ void kgAddSearchDir(void *Tmp,char *Dir) {
        D->SearchList=L;
      }
      Resetlink(L);
-     dname = (char *)malloc(strlen(Dir)+2);
+     dname = (char *)Malloc(strlen(Dir)+2);
      strcpy(dname,Dir);
      strcat(dname,"/");
      Dinsert(L,dname);
@@ -13005,7 +13137,7 @@ void *kgBorderedRectangle(int width,int height,int fillclr,float rfac) {
   xo = l*0.5;
   yo = w*0.5;
   if(height<100) small=1;
-  fid = kgInitImage(width,height,4);
+  fid = kgInitImage(width,height,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,-3.0,-3.0,(float)l+3,(float)w+3);
       if(fillclr>=0)
@@ -13055,7 +13187,7 @@ void *kgPressedRectangle(int width,int height,int fillclr,float rfac) {
   xo = l*0.5;
   yo = w*0.5;
   if(height<100) small=1;
-  fid = kgInitImage(width,height,4);
+  fid = kgInitImage(width,height,RESIZE);
    if(fid != NULL ) {
       kgUserFrame(fid,-3.0,-3.0,(float)l+3,(float)w+3);
       if(fillclr>0)

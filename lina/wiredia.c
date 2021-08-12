@@ -4,10 +4,74 @@
 #include "netlist.h"
 #include "simages.c"
 extern LINACONFIG lc;
+extern char *Wdev;
 int RetVal=0;
-int grp1,grp2;
+int grp1,grp2,grp3;
 int Connected=0;
 extern Dlink *Scanlist;
+int WaitForProcess(int pip0,int pip1,int Pid);
+int MakemsgboxGroup(DIALOG *D,void *arg);
+int ProcessWconf(int pip0,int pip1,int Pid);
+int InitWireless(void) {
+      FILE *fp;
+      char buff[500];
+      if(!GetWdev()) return 0;
+      fp = fopen("/tmp/dhclient.conf","w");
+      if(fp==NULL) return 0;
+      runjob("ip route del default",WaitForProcess);
+      fprintf(fp,"interface \"%-s\"{\n",Wdev);
+      fprintf(fp,"prepend domain-name-servers 127.0.0.1;\n");
+      fprintf(fp,"request subnet-mask, broadcast-address, time-offset, routers,\n");
+      fprintf(fp,"       domain-name, domain-name-servers, host-name;\n");
+//      fprintf(fp,"require subnet-mask, domain-name-servers;\n");
+      fprintf(fp,"require subnet-mask;\n");
+      fprintf(fp,"}\n");
+      fclose(fp);
+      remove("/var/lib/dhclient/dhclient.leases");
+      if((CheckProcess("wpa_supplicant"))) {
+         if (!CheckCliConnection()){
+           if(!CheckSystemd()){
+             MakeConfigFile();
+             sprintf(buff,"wpa_supplicant -i%-s -u -c/tmp/wpa.conf -B",Wdev);
+             runjob(buff,WaitForProcess);
+             sleep(1);
+           }
+           fprintf (stderr,"Systemd is Running...\n");
+#if 1
+           if (!CheckCliConnection()) {
+             fprintf(stderr,"No cli connection Reset Systemd\n");
+             ResetSystemd() ;
+             if (!CheckCliConnection()) {
+               fprintf(stderr,"Reset Systemd:No cli connection\n");
+             }
+           }
+#endif
+         }
+         if (!CheckCliConnection()) {printf("No cli connection\n");return 0;}
+      }
+      else {
+        fprintf(stderr,"wpa_supplicant not running\n");
+        MakeConfigFile();
+        sprintf(buff,"wpa_supplicant -i%-s -u -c/tmp/wpa.conf -B",Wdev);
+        runjob(buff,WaitForProcess);
+      }
+      runjob("cat /etc/wpa_supplicant.conf",ProcessWconf);
+      sprintf(buff,"ip link set  %s up",Wdev);
+      runjob(buff,WaitForProcess);
+      return 1;
+}
+int SetConnectState(void *Tmp) {
+   DIALOG *D;
+   D = (DIALOG *)Tmp;
+   kgSetGrpVisibility(D,grp3,0);
+   kgSetGrpVisibility(D,grp1,0);
+   kgSetGrpVisibility(D,grp2,1);
+   InitWireless();
+   wirediainit(Tmp);
+   kgUpdateGrp(D,grp2);
+   kgUpdateOn(D);
+   return 1;
+}
 ThumbNail ** MakeScanThumbnails(Dlink *Scanlist) {
    int count,i;
    NETLIST *nt;
@@ -339,11 +403,14 @@ int wiredia( void *parent,void **v,void *pt) {
   kgAddtoGrp(&D,grp2,d[2].t);
   kgAddtoGrp(&D,grp2,d[4].t);
   kgAddtoGrp(&D,grp2,d[5].t);
+  grp3 = MakemsgboxGroup(&D,NULL);
   if(Connected) {
     kgSetGrpVisibility(&D,grp2,0);
     kgSetGrpVisibility(&D,grp1,1);
+    kgSetGrpVisibility(&D,grp3,1);
   }
   else {
+    kgSetGrpVisibility(&D,grp3,0);
     kgSetGrpVisibility(&D,grp1,0);
     kgSetGrpVisibility(&D,grp2,1);
   }

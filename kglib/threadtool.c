@@ -51,7 +51,8 @@ int getCores()
                fgets(line,99,fp);
                if(strncmp(line,"processor",9)==0) cores++;
        }
-//       printf("CORES AVAILABLE: %d\n",cores);
+       if(cores < 1) cores =1;
+//       fprintf(stderr,"CORES AVAILABLE: %d\n",cores);
        return cores;
 } 
 void * OpenThreads(int thds)
@@ -73,7 +74,7 @@ void * OpenThreads(int thds)
        }
        if(ThInfo->threads==NULL)
        {
-         printf("Error allocating memory\n");
+         fprintf(stderr,"Error allocating memory\n");
          return NULL;
        }
        ThInfo->ActSize = sizeof(Thaction);
@@ -86,18 +87,28 @@ void * OpenThreads(int thds)
             pthread_create(&(ThInfo->threads[i].id),NULL,threadFunc,ThInfo->threads+i);
        }
        ThInfo->nTh=0;
+//       fprintf(stderr,"Opened Threads\n");
        return ThInfo;
 }
 void DoInAnyThread(void *Tmp,void *(*threadFunc)(void *),void *arg) 
 {
+       int count=0;
+       int wd,nw;
        Thaction job;
        int nTh=0;
+       char *pt;
        ThreadInfo *ThInfo;
        ThInfo = (ThreadInfo *)Tmp;
        nTh = ThInfo->nTh;
        job.threadFunc=threadFunc;
        job.arg = arg;
-       write(ThInfo->PIPES[nTh][1],&job, ThInfo->ActSize);
+       nw = ThInfo->ActSize;
+       pt = (char *)&job;
+       count = write(ThInfo->PIPES[nTh][1],pt,nw);
+       while(count <nw) {
+         wd =  write(ThInfo->PIPES[nTh][1],pt+count,nw-count);
+         count +=wd;
+       }
        nTh++;
        nTh %= ThInfo->nCores;
        ThInfo->nTh = nTh;
@@ -116,20 +127,28 @@ void WaitThreads( void *Tmp)
 } 
 void *threadFunc(void *Th)
 {
+   int count;
+   int rd,nr;
    Thaction job;
    Thread *th;
+   char *pt;
    int num;
    ThreadInfo *ThInfo;
    th = (Thread *)Th;
    ThInfo = th->ThInfo;
    num = (th)->num;
+   nr = ThInfo->ActSize;
+   pt = (char *)&job;
    while(1) {
-          read(ThInfo->PIPES[num][0],&job, ThInfo->ActSize);
+          count = read(ThInfo->PIPES[num][0],pt, nr);
+          while(count < nr) {
+             rd = read(ThInfo->PIPES[num][0],pt+count,nr-count);
+             count +=rd;
+          }
           th->status=BUSY;
           if(job.threadFunc == NULL) write(ThInfo->RPIPES[num][1],&job,ThInfo->ActSize);
           else job.threadFunc(job.arg);
           th->status=FREE;
-//           printf("Executed job\n");
    }
 } 
 void CloseThreads( void *Tmp){

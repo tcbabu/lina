@@ -131,7 +131,12 @@ static  XFontStruct *fontstruct;
 #define End              XK_End
 #define Kp_End              XK_KP_End
 #define Shiftleft            XK_Shift_L
+#define Shiftright            XK_Shift_R
 #define Space            XK_KP_Space
+#define Capslock         XK_Caps_Lock
+#define Shiftlock         XK_Shift_Lock
+#define Control           XK_Control_L
+#define Alt           XK_Alt_L
 
 union kbinp { short kbint; char kbc[2];} kb;
 int NCLRS=1024;
@@ -623,11 +628,101 @@ int kgSendKeyEvent(void *Tmp,int ch) {
   XKeyEvent *k;
   DIALOG *D;
   kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
+  int status;
+  e = (XEvent *)Malloc(sizeof(XEvent));
+  k = (XKeyEvent *)e;
+  D = (DIALOG *)Tmp;
+  wc = WC(D);
+  k->type=KeyRelease;
+  k->send_event=1;
+  k->display=wc->Dsp;
+  k->window=wc->Win;
+  k->root = DefaultRootWindow(wc->Dsp);
+  k->subwindow = wc->Win;
+  k->state = 0;
+  code = Revscan_code[ch];
+  if(code < 0) {
+     fprintf(stderr,"code < 0 %c %x\n",ch,ch);
+     return 0;
+  }
+  {
+    k->keycode = code;
+    k->same_screen = 1;
+    k->type=KeyPress;
+    status= XSendEvent(wc->Dsp,wc->Win,False,0,e);
+    k->type=KeyRelease;
+    status= XSendEvent(wc->Dsp,wc->Win,False,0,e);
+  }
+  
+  free(e);
+  return status;
+}
+int kgSendTabKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,TabKey);
+}
+int kgSendSpaceKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,' ');
+}
+int kgSendDeleteKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,DeleteKey);
+}
+int kgSendInsertKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,InsertKey);
+}
+int kgSendPageupKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,PageupKey);
+}
+int kgSendPagedownKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,PagedownKey);
+}
+int kgSendEscapeKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,EscapeKey);
+}
+int kgSendClearKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,ClearKey);
+//  return kgSendKeyEvent(Tmp,PrintKey);
+}
+int kgSendHomeKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,HomeKey);
+}
+int kgSendEndKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,EndKey);
+}
+int kgSendBackspaceKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,BackspaceKey);
+}
+int kgSendLeftKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,LeftKey);
+}
+int kgSendRightKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,RightKey);
+}
+int kgSendUpKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,UpKey);
+}
+int kgSendDownKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,DownKey);
+}
+int kgSendEnterKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,LinefeedKey);
+}
+int kgSendLinefeedKeyEvent(void *Tmp) {
+  return kgSendKeyEvent(Tmp,LinefeedKey);
+}
+int kgSendControlKeyEvent(void *Tmp,int ch) {
+  int code;
+  if(ch >='a') ch = (ch-'a'+'A');
+  if( (ch < 'A') || (ch>'_')) return 0;
+  XEvent *e;
+  XKeyEvent *k;
+  DIALOG *D;
+  kgWC *wc;
+  e = (XEvent *)Malloc(sizeof(XEvent));
   k = (XKeyEvent *)e;
   D = (DIALOG *)Tmp;
   wc = WC(D);
   int status;
+  k->state = ControlMask;
   k->type=KeyRelease;
   k->send_event=1;
   k->display=wc->Dsp;
@@ -640,824 +735,148 @@ int kgSendKeyEvent(void *Tmp,int ch) {
      fprintf(stderr,"code < 0 %c %x\n",ch,ch);
      return 0;
   }
-  if( (code>128)&&(code<223)) {
-    code -=128;
+  {
+    k->keycode = code;
     k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
     k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
+    status= XSendEvent(wc->Dsp,wc->Win,False,0,e);
     k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
+    status= XSendEvent(wc->Dsp,wc->Win,False,0,e);
   }
   
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
   free(e);
-  return status;
 }
-int kgSendTabKeyEvent(void *Tmp) {
+int kgSendKeyToWindow(void *Tmp,void *wtmp,int ch) {
   int code;
   XEvent *e;
   XKeyEvent *k;
   DIALOG *D;
   kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
+  Window win,mywin,root;
+  e = (XEvent *)Malloc(sizeof(XEvent));
   k = (XKeyEvent *)e;
   D = (DIALOG *)Tmp;
   wc = WC(D);
   int status;
+  int state = 0;
+  mywin = wc->Win;
+  win = *((Window *)wtmp);
   k->type=KeyRelease;
-  k->send_event=1;
+  k->send_event=True;
   k->display=wc->Dsp;
-  k->window=wc->Win;
+  k->window= root;
+  k->window= win;
   k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[TabKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendSpaceKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[SpaceKey];
-  if(code< 0) code = Revscan_code[' '];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->type=KeyPress;
-    k->state = KeyPress;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendDeleteKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[DeleteKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendInsertKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[InsertKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendPageupKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[PageupKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendPagedownKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[PagedownKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendEscapeKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[EscapeKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendClearKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[ClearKey];
+  k->subwindow =  mywin;
+  k->state = state;
+  code = Revscan_code[ch];
   if(code < 0) {
-    code = Revscan_code[PrintKey];
-//    printf("Failed:Sending PrintScreen %d\n",code);
-    if(code < 0) return 0;
+     fprintf(stderr,"code < 0 %c %x\n",ch,ch);
+     return 0;
   }
-  if( (code>128)&&(code<218)) {
-    code -=128;
+  {
+    k->keycode = code;
     k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
     k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
+    k->state = state;
+    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
     k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
+    k->state = state;
+    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
   }
   
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
   free(e);
   return status;
 }
-int kgSendHomeKeyEvent(void *Tmp) {
+int kgSendTabKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,TabKey);
+}
+int kgSendSpaceKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,' ');
+}
+int kgSendDeleteKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,DeleteKey);
+}
+int kgSendInsertKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,InsertKey);
+}
+int kgSendPageupKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,PageupKey);
+}
+int kgSendPagedownKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,PagedownKey);
+}
+int kgSendEscapeKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,EscapeKey);
+}
+int kgSendClearKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,ClearKey);
+//  return kgSendKeyToWindow(Tmp,win,PrintKey);
+}
+int kgSendHomeKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,HomeKey);
+}
+int kgSendEndKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,EndKey);
+}
+int kgSendBackspaceKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,BackspaceKey);
+}
+int kgSendLeftKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,LeftKey);
+}
+int kgSendRightKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,RightKey);
+}
+int kgSendUpKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,UpKey);
+}
+int kgSendDownKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,DownKey);
+}
+int kgSendEnterKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,ReturnKey);
+}
+int kgSendLinefeedKeyToWindow(void *Tmp,void *win) {
+  return kgSendKeyToWindow(Tmp,win,LinefeedKey);
+}
+int kgSendControlKeyToWindow(void *Tmp,void *wtmp,int ch) {
   int code;
+  kgSetInputFocus(Tmp,wtmp);
+  if(ch >= 'a') ch = (ch-'a'+'A');
+  if( (ch < 'A') || (ch>'_')){
+      fprintf(stderr,"Wrong Control char: %c:%d\n",ch,ch);
+      return 0;
+  }
   XEvent *e;
   XKeyEvent *k;
   DIALOG *D;
   kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
+  Window win,mywin,root;
+  e = (XEvent *)Malloc(sizeof(XEvent));
   k = (XKeyEvent *)e;
   D = (DIALOG *)Tmp;
   wc = WC(D);
   int status;
+  int state = ControlMask;
+  mywin = wc->Win;
+  win = *((Window *)wtmp);
   k->type=KeyRelease;
-  k->send_event=1;
+  k->send_event=True;
   k->display=wc->Dsp;
-  k->window=wc->Win;
+  k->window= root;
+  k->window= win;
   k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[HomeKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
+  k->subwindow =  mywin;
+  k->state = state;
+  code = Revscan_code[ch];
     k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
     k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
+    k->state = state;
+    k->keycode =  code;
+    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
     k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendEndKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[EndKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendBackspaceKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[BackspaceKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendLeftKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[LeftKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendRightKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[RightKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendUpKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[UpKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendDownKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[DownKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendEnterKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[ReturnKey];
-  if(code < 0) code = Revscan_code[LinefeedKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
-  free(e);
-  return status;
-}
-int kgSendLinefeedKeyEvent(void *Tmp) {
-  int code;
-  XEvent *e;
-  XKeyEvent *k;
-  DIALOG *D;
-  kgWC *wc;
-  e = (XEvent *)malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
-  D = (DIALOG *)Tmp;
-  wc = WC(D);
-  int status;
-  k->type=KeyRelease;
-  k->send_event=1;
-  k->display=wc->Dsp;
-  k->window=wc->Win;
-  k->root = DefaultRootWindow(wc->Dsp);
-  k->subwindow = wc->Win;
-  k->state = KeyRelease;
-  code = Revscan_code[LinefeedKey];
-  if(code<0)code=Revscan_code[ReturnKey];
-  if(code < 0) return 0;
-  if( (code>128)&&(code<218)) {
-    code -=128;
-    k->same_screen = 1;
-    k->keycode = Revscan_code[ShiftKey];
-    k->type=KeyPress;
-    k->state = KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = code;
-    k->type=KeyRelease;
-    k->state = KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-    k->keycode = Revscan_code[ShiftKey];
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  else {
-    k->keycode = code;
-    k->same_screen = 1;
-    status= XSendEvent(wc->Dsp,wc->Win,False,(KeyPressMask|KeyReleaseMask),e);
-  }
-  
-#if 0
-  printf("Send Request Status= %d %d %d %d %d %d %d\n",status,Up_Arrow,Down_Arrow,Left_Arrow,Right_Arrow,XK_Shift_L,Escape);
-#endif
+    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
   free(e);
   return status;
 }
@@ -1565,6 +984,62 @@ void kgDropFocus(void *tmp) {
   return ;
 }
 
+void * kgGetInputFocus (void *Tmp) {
+  static Window *owin=NULL;
+  static Window *mywin=NULL;
+  void *tpt;
+  Window Cw;
+  DIALOG *D;
+  Display *Dsp;
+  int ret;
+  if(owin==NULL)  owin = (Window *) Malloc(sizeof(Window));
+  if(mywin==NULL)  mywin = (Window *) Malloc(sizeof(Window));
+  if(Tmp != NULL) {
+    D = (DIALOG *)Tmp;
+    Dsp = (Display *)WC(D)->Dsp;
+  }
+  else {
+    Dsp = XOpenDisplay(NULL);
+    if(Dsp == NULL) {
+     fprintf(stderr,"Failed to Open Display\n");
+     return NULL;
+    }
+  }
+  XGetInputFocus(Dsp,&Cw,&ret);
+  if(Tmp == NULL)  {
+    XCloseDisplay(Dsp);
+    memcpy(owin,&Cw,sizeof(Window));
+    return owin;
+  }
+  if (Cw == (Window)(WC(D)->Win)) {
+    memcpy(mywin,&Cw,sizeof(Window));
+    return mywin;
+  }
+  else {
+    memcpy(owin,&Cw,sizeof(Window));
+    return owin;
+  }
+}
+int kgSetInputFocus(void *Tmp,void *wtmp) {
+  Window *win;
+  int ret;
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  win = (Window *)wtmp;
+  XSetInputFocus((Display *)WC(D)->Dsp,*win,RevertToPointerRoot,CurrentTime);
+  return 1;
+}
+int kgCheckMyWindow(void *Tmp,void *wtmp) {
+/* Check a given window is my window */
+  Window *win;
+  int ret;
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  win = (Window *)wtmp;
+  if (*win == (Window)(WC(D)->Win)) return 1;
+  else return 0;
+}
+
 int kg_image_bitmap(Display *Dsp,GC Gc,Pixmap bmp,void *tmp,int width,int height) {
     float transparency=0,highfac=1.0;
     int x0=0,y0=0;
@@ -1592,7 +1067,7 @@ int kg_image_bitmap(Display *Dsp,GC Gc,Pixmap bmp,void *tmp,int width,int height
     if( (cpt[0]=='#') &&(cpt[1]=='#')){
          png = (GMIMG *)_uiGetFileImage((char *)(cpt+2));
          if(png==NULL) {
-            printf("Failed to get %s\n",(char *)(cpt+2));
+            fprintf(stderr,"Failed to get %s\n",(char *)(cpt+2));
             return 0;
          }
          imgFile=1;
@@ -1727,7 +1202,7 @@ void kgSubWindow(void *Gtmp) {
   xswa.override_redirect=False;
   Win= XCreateWindow(Dsp,Parent,xpos,ypos,xres,yres,0,Dpth,InputOutput,Vis,
        (CWBackPixel|CWBackingStore|CWSaveUnder|CWColormap|CWBitGravity),&xswa);
-  sWin= (void *)malloc(sizeof(Window));
+  sWin= (void *)Malloc(sizeof(Window));
   fprintf(stderr,"glWindow= %ld\n",Win);
   *sWin =Win;
   G->glWindow= (void *)sWin;
@@ -1836,7 +1311,7 @@ void  *kgCreateSubWindow (void *Tmp) {
   hints.flags = 2;   // Specify that we're changing the window decorations.
   hints.decorations = dec;  // 0 (false) means that window decorations should go bye-bye.
   
-  wc = (kgWC *)malloc(sizeof(kgWC));
+  wc = (kgWC *)Malloc(sizeof(kgWC));
   PARWC= (kgWC *)(Parent->wc);
   D->wc= wc;
 //  XInitThreads(); // created problem for True Color
@@ -2099,7 +1574,7 @@ void  *kgCreateSubWindow (void *Tmp) {
   wc->SBlist=Dopen();
   wc->TLIST = Dopen();
   wc->ExposeWin =0;
-  wc->kgcolors=(kgColor *) malloc(sizeof(kgColor)*1024);
+  wc->kgcolors=(kgColor *) Malloc(sizeof(kgColor)*1024);
   wc->GuiFont=23;
   wc->GuiFontSize=8;
   kgcolors = (kgColor *) wc->kgcolors;
@@ -2138,7 +1613,7 @@ void * kgGetGeometry(void *Tmp,int *xo,int *yo,int *l,int *h,int *borwidth) {
   wc = WC(D);
   Window *Rwin;
   int bwidth,depth;
-  Rwin = (Window *)malloc(sizeof(Window));
+  Rwin = (Window *)Malloc(sizeof(Window));
 //  XGetGeometry(wc->Dsp,wc->Win,Rwin,xo,yo,l,h,borwidth,&depth);
   XGetWindowAttributes(wc->Dsp,wc->Win,&xwa);
   *xo = xwa.x;
@@ -2232,7 +1707,7 @@ void  *kgCreateWindow (void *Tmp) {
   NoWinMngr=D->NoWinMngr;
   hints.flags = 2;   // Specify that we're changing the window decorations.
   hints.decorations = dec;  // 0 (false) means that window decorations should go bye-bye.
-  wc = (kgWC *)malloc(sizeof(kgWC));
+  wc = (kgWC *)Malloc(sizeof(kgWC));
   D->wc= wc;
 //  XInitThreads(); // created problem for True Color
   XInitThreads();
@@ -2519,7 +1994,7 @@ if(NoWinMngr!=1) {
   wc->SBlist=Dopen();
   wc->TLIST = Dopen();
   wc->ExposeWin =0;
-  wc->kgcolors=(kgColor *) malloc(sizeof(kgColor)*1024);
+  wc->kgcolors=(kgColor *) Malloc(sizeof(kgColor)*1024);
   wc->GuiFont=23;
   wc->GuiFontSize=8;
   kgcolors = (kgColor *) wc->kgcolors;
@@ -2613,7 +2088,7 @@ void  *ui_create_window(int xpos,int ypos,int xres,int yres,char *title,int dec,
   XColor c15,c0;
   kgColor *kgcolors;
 //  XInitThreads(); // created problem for True Color
-  wc = (kgWC *)malloc(sizeof(kgWC));
+  wc = (kgWC *)Malloc(sizeof(kgWC));
   XInitThreads();
   Dsp = XOpenDisplay(NULL);
   if(Dsp == NULL) {printf(" Error: in opening Display ..\n");exit(0);};
@@ -2621,7 +2096,7 @@ void  *ui_create_window(int xpos,int ypos,int xres,int yres,char *title,int dec,
   yresmax = DisplayHeight(Dsp,DefaultScreen(Dsp));
 
   if(XMatchVisualInfo(Dsp, DefaultScreen(Dsp), 32, TrueColor, &visualinfo)== 0) {
-      printf("Could not find a True Color Match\n");
+      fprintf(stderr,"Could not find a True Color Match\n");
       Vis = XDefaultVisual(Dsp,DefaultScreen(Dsp));
       Dpth =  DisplayPlanes(Dsp,DefaultScreen(Dsp));
       TrClr=0;
@@ -2932,7 +2407,7 @@ void  *ui_create_window(int xpos,int ypos,int xres,int yres,char *title,int dec,
   wc->SBlist=Dopen();
   wc->TLIST = Dopen();
   wc->ExposeWin =0;
-  wc->kgcolors=(kgColor *) malloc(sizeof(kgColor)*1024);
+  wc->kgcolors=(kgColor *) Malloc(sizeof(kgColor)*1024);
   wc->GuiFont=23;
   wc->GuiFontSize=8;
   kgcolors = (kgColor *) wc->kgcolors;
@@ -3491,7 +2966,7 @@ void uiDraw_XString(DIALOG *D,int x,int y,char *str,int gap){
    if(ln <=0 ) return;
    while(str[ln-1]<= ' ') ln--;
    if(ln <=0 ) return;
-   item = (XTextItem *)malloc(sizeof(XTextItem)*ln);
+   item = (XTextItem *)Malloc(sizeof(XTextItem)*ln);
    if(item==NULL) {
      printf("Error: IN MALLOC....\n");
      exit(1);
@@ -3806,151 +3281,290 @@ void get_scan_code(Display *Dsp) {
   XDisplayKeycodes(Dsp,&K_min,&K_max);
   keysym = XGetKeyboardMapping(Dsp,K_min,K_max-K_min+1,&code);
   for(i=0;i<256;i++) Revscan_code[i]=-1;
-//  printf("K_min : %d K_max : %d,%d\n",K_min,K_max,code);
+#if 0
+  printf("K_min : %d K_max : %d,%d\n",K_min,K_max,code);
 
-//  for(i=K_min;i<=K_max;i++) {
-  for(i=K_min;i<(K_min+128);i++) {
-    off =0;
-    Scan_code[i]= keysym[k];
-//    printf("Kesym: %d %c %c\n",k,keysym[k],keysym[k+1]);
-    ch = Scan_code[i];
-    if(keysym[k+1]!=  NoSymbol) {
-       Scan_sh_code[i]= keysym[k+1];
-       ch1 = Scan_sh_code[i];
-       off =128;
-    }
-    else Scan_sh_code[i]= keysym[k];
+  for(i=K_min;i<=K_max;i++) {
+  }
+//TCB 07
+      XModifierKeymap *xm;
+      KeyCode *mpt;
+      xm = XGetModifierMapping(Dsp);
+//      xm->max_keypermod = 1; //should not be done
+      XSetModifierMapping(Dsp,xm);
+      free(xm);
+      xm = XGetModifierMapping(Dsp);
+      k=0;
+      fprintf(stderr,"Max mod: %d\n",xm->max_keypermod);
+      for(i=0;i< xm->max_keypermod;i++) {
+         mpt =  (xm->modifiermap+k);
+         fprintf(stderr," %d %d %d %d %d %d %d %d\n",
+             mpt[0],mpt[1],mpt[2],mpt[3],mpt[4],mpt[5],mpt[6],mpt[7]);
+               
+        k += 8;
+      }
+#endif
+#if 0
+  printf("K_min : %d K_max : %d,%d\n",K_min,K_max,code);
+  k=(K_min-1)*code;
+  k=0;
+  for(i=K_min;i<K_max;i++) {
+    printf("Kesym:%d  %d %x:%c %x:%c %x:%c\n",i,k,keysym[k],keysym[k],keysym[k+1],keysym[k+1],keysym[k+2],keysym[k+2]);
     k+=code;
-    switch(ch) {
+  }
+#endif
+// For Shift characters from 161 onwards
+  k=0;
+  for(i=K_min;i<(K_max-160);i++) {
+    keysym[k+160*code]=keysym[k+1];
+    k=k+code;
+  }
+// For control charactres Cntl-A to Cntl-_
+// Stored from 224 onwards
+#if 0  // Not Needed
+  k=0;
+  for(i=K_min;i<(K_max-224);i++) {
+    keysym[k+224*code]=0x0000+((i-K_min)+1);
+//    keysym[k+224*code]=0xff00|((i-K_min)+'A');
+//    keysym[k+224*code]=0x1008ff00+(i-K_min)+1;
+    k=k+code;
+  }
+#endif
+  XChangeKeyboardMapping(Dsp,K_min,code,keysym,K_max-K_min+1);
+#if 0
+  printf("K_min : %d K_max : %d,%d\n",K_min,K_max,code);
+  k=(K_min-1)*code;
+  k=0;
+  for(i=K_min;i<K_max;i++) {
+    printf("Kesym:%d  %d %x:%c %x:%c %x:%c\n",i,k,keysym[k],keysym[k],keysym[k+1],keysym[k+1],keysym[k+2],keysym[k+2]);
+    k+=code;
+  }
+#endif
+  k=0;
+//  for(i=K_min;i<(256);i++) {
+  for(i=K_min;i<(K_max);i++) {
+    ch = keysym[k];
+    k+=code;
+    if(ch != NoSymbol )Scan_code[i]= ch;
+    if(ch != NoSymbol) switch(ch) {
       case Home:
+        if(Revscan_code[HomeKey] < 0)
         Revscan_code[HomeKey]=i;
         break;
       case Return:
+        if(Revscan_code[ReturnKey] < 0)
         Revscan_code[ReturnKey]=i;
         break;
       case Linefeed:
+        if(Revscan_code[LinefeedKey] < 0)
         Revscan_code[LinefeedKey]=i;
         break;
       case Escape:
+        if(Revscan_code[EscapeKey] < 0)
         Revscan_code[EscapeKey]=i;
         break;
+      case Control:
+        if(Revscan_code[CntlKey] < 0)
+        Revscan_code[CntlKey]=i;
+        break;
+      case Alt:
+        if(Revscan_code[AltKey] < 0)
+        Revscan_code[AltKey]=i;
+        break;
       case Tab:
+        if(Revscan_code[TabKey] < 0)
         Revscan_code[TabKey]=i;
         break;
       case End:
+        if(Revscan_code[EndKey] < 0)
         Revscan_code[EndKey]=i;
         break;
       case Delete:
+        if(Revscan_code[DeleteKey] < 0)
         Revscan_code[DeleteKey]=i;
         break;
       case Insert:
+        if(Revscan_code[InsertKey] < 0)
         Revscan_code[InsertKey]=i;
         break;
       case Clear:
+        if(Revscan_code[ClearKey] < 0)
         Revscan_code[ClearKey]=i;
         break;
       case Print:
+        if(Revscan_code[PrintKey] < 0)
         Revscan_code[PrintKey]=i;
         break;
       case Backspace:
+        if(Revscan_code[BackspaceKey] < 0)
         Revscan_code[BackspaceKey]=i;
         break;
       case Left_Arrow:
+        if(Revscan_code[LeftKey] < 0)
         Revscan_code[LeftKey]=i;
         break;
       case Right_Arrow:
+        if(Revscan_code[RightKey] < 0)
         Revscan_code[RightKey]=i;
         break;
       case Up_Arrow:
+        if(Revscan_code[UpKey] < 0)
         Revscan_code[UpKey]=i;
         break;
       case Down_Arrow:
+        if(Revscan_code[DownKey] < 0)
         Revscan_code[DownKey]=i;
         break;
       case Shiftleft:
+        if(Revscan_code[ShiftKey] < 0)
         Revscan_code[ShiftKey]=i;
+//        fprintf(istderr,"Got Shift Left key %d\n",i);
+        break;
+      case Shiftright:
+        if(Revscan_code[ShiftRightKey] < 0)
+        Revscan_code[ShiftRightKey]=i;
+        break;
+      case Shiftlock:
+        if(Revscan_code[ShiftLockKey] < 0)
+        Revscan_code[ShiftLockKey]=i;
+        break;
+      case Capslock:
+        if(Revscan_code[CapslockKey] < 0)
+        Revscan_code[CapslockKey]=i;
         break;
       case Pageup:
+        if(Revscan_code[PageupKey] < 0)
         Revscan_code[PageupKey]=i;
         break;
       case Pagedown:
+        if(Revscan_code[PagedownKey] < 0)
         Revscan_code[PagedownKey]=i;
         break;
       case Space:
-//        printf("Got Space key\n");
+        if(Revscan_code[SpaceKey] < 0)
         Revscan_code[SpaceKey]=i;
         break;
       default :
         if(ch < 128) {
 //            if(ch==32) printf("Got Space as Ascii\n");
+        if(Revscan_code[ch] < 0)
             Revscan_code[ch]=i; 
         }
         break;
     }
-    if(off) {
+  }
+  k=0;
+//  for(i=K_min;i<(256);i++) {
+  for(i=K_min;i<(K_max);i++) {
+    ch1 = keysym[k+1];
+    k +=code;
+    if(ch1 !=  NoSymbol) {
+       Scan_sh_code[i]= ch1;
+    }
+    if(ch1!=NoSymbol) {
+#if 1
      switch(ch1) {
       case Home:
+        if(Revscan_code[HomeKey] < 0)
         Revscan_code[HomeKey]=i;
         break;
       case Return:
+        if(Revscan_code[ReturnKey] < 0)
         Revscan_code[ReturnKey]=i;
         break;
       case Linefeed:
+        if(Revscan_code[LinefeedKey] < 0)
         Revscan_code[LinefeedKey]=i;
         break;
       case Escape:
+        if(Revscan_code[EscapeKey] < 0)
         Revscan_code[EscapeKey]=i;
         break;
       case End:
+        if(Revscan_code[EndKey] < 0)
         Revscan_code[EndKey]=i;
         break;
       case Clear:
+        if(Revscan_code[ClearKey] < 0)
         Revscan_code[ClearKey]=i;
         break;
       case Tab:
+        if(Revscan_code[TabKey] < 0)
         Revscan_code[TabKey]=i;
         break;
       case Backspace:
+        if(Revscan_code[BackspaceKey] < 0)
         Revscan_code[BackspaceKey]=i;
         break;
       case Left_Arrow:
+        if(Revscan_code[LeftKey] < 0)
         Revscan_code[LeftKey]=i;
         break;
       case Right_Arrow:
+        if(Revscan_code[RightKey] < 0)
         Revscan_code[RightKey]=i;
         break;
       case Up_Arrow:
+        if(Revscan_code[UpKey] < 0)
         Revscan_code[UpKey]=i;
         break;
       case Down_Arrow:
+        if(Revscan_code[DownKey] < 0)
         Revscan_code[DownKey]=i;
         break;
       case Shiftleft:
+        if(Revscan_code[ShiftKey] < 0)
         Revscan_code[ShiftKey]=i;
         break;
+      case Shiftright:
+        if(Revscan_code[ShiftRightKey] < 0)
+        Revscan_code[ShiftRightKey]=i;
+        break;
+      case Shiftlock:
+        if(Revscan_code[ShiftLockKey] < 0)
+        Revscan_code[ShiftLockKey]=i;
+        break;
+      case Capslock:
+        if(Revscan_code[CapslockKey] < 0)
+        Revscan_code[CapslockKey]=i;
+        break;
       case Space:
+        if(Revscan_code[SpaceKey] < 0)
         Revscan_code[SpaceKey]=i;
         break;
       case Delete:
+        if(Revscan_code[DeleteKey] < 0)
         Revscan_code[DeleteKey]=i;
         break;
       default :
         if(ch1 < 128) {
+        if(Revscan_code[ch1] < 0)
             Revscan_code[ch1]=i+128; 
         }
         break;
      }
+#else
+        if(ch1 < 128) {
+        if(Revscan_code[ch1] < 0)
+            Revscan_code[ch1]=i+128; 
+        }
+
+#endif
     }
   }
-//TCB
+// For Control Characters
+  for(i=224;i<(K_max-K_min);i++) {
+    Revscan_code[i]=i+K_min;
+  }
+//TCB 07
 #if 0
-  for(i=0;i<128;i++) {
+  for(i=0;i<K_max;i++) {
     k = Revscan_code[i];
     if(k==-1) continue;
     ch = ' ';
-    if(k>=128) ch= Scan_sh_code[k-128];
-    else  ch= Scan_code[k];
-    printf("%d: %d %c \n",i,k,ch);
+//    if(k>=128) ch= Scan_sh_code[k-128];
+      ch= Scan_code[k];
+    printf("%d: %d %x:%c \n",i,k,ch,ch);
   }
 #endif
   XFree(keysym);
@@ -4220,7 +3834,7 @@ void kgPushBackEvent(DIALOG *D) {
   wc=WC(D);
   XEvent *e;
   if(wc->eventback.type < 0) return;
-  e =(XEvent *)malloc(sizeof(XEvent));
+  e =(XEvent *)Malloc(sizeof(XEvent));
   *e= wc->eventback;
   XPutBackEvent(wc->Dsp,e);
   wc->eventback.type=-100;
@@ -4485,7 +4099,6 @@ int  kgWaitSelection(void *Tmp) {
     e = eo;
     switch(e.type) {
        case SelectionNotify:
-//            printf("Got Selection Notify\n");
             if(e.xselection.property==None) return 0;
             else return 1;
             break;
@@ -5284,7 +4897,7 @@ char * _uiGetFileImageName(DIALOG *D,char *flname) {
           strcat(sharedfilename,flname);
           if ((infile = fopen(sharedfilename, "rb"))){
             fclose(infile);
-            fullname = (char *)malloc(strlen(sharedfilename)+1);
+            fullname = (char *)Malloc(strlen(sharedfilename)+1);
             strcpy(fullname,sharedfilename);
             break;
           }
@@ -5293,7 +4906,7 @@ char * _uiGetFileImageName(DIALOG *D,char *flname) {
   }
   else {
     fclose(infile);
-    fullname = (char *)malloc(strlen(sharedfilename)+1);
+    fullname = (char *)Malloc(strlen(sharedfilename)+1);
     strcpy(fullname,sharedfilename);
   }
   return fullname;
@@ -5361,7 +4974,7 @@ void * ReadJpegFile (char * flname) {
         }
       }
   }
-  img = (JPGIMG *)malloc(sizeof(JPGIMG));
+  img = (JPGIMG *)Malloc(sizeof(JPGIMG));
   strcpy(img->Sign,"JPG");
   img->incode =0;
   cinfo.err = jpeg_std_error(&jerr.pub);
@@ -5381,9 +4994,9 @@ void * ReadJpegFile (char * flname) {
   img->col = cinfo.output_width;
   img->row = cinfo.output_height;
   img->colors = cinfo.output_components;
-  img->matchcol= (int *)malloc(sizeof(int)*img->row*img->col);
+  img->matchcol= (int *)Malloc(sizeof(int)*img->row*img->col);
   j=0;
-  buffer = (char *)malloc(row_stride);
+  buffer = (char *)Malloc(row_stride);
   while (cinfo.output_scanline < cinfo.output_height) {
     (void) jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&buffer, 1);
     pt = img->matchcol+j*img->col;
@@ -5507,7 +5120,7 @@ static short * setpal(Dlink *Tlist) {
     short *palette=NULL;
     int no,k=0,*val;
     no = Dcount(Tlist);
-    palette = (short *)malloc(sizeof(short)*no*3);
+    palette = (short *)Malloc(sizeof(short)*no*3);
     Resetlink(Tlist);
     while ( (val = (int *)Getrecord(Tlist)) != NULL) {
       palette[k]= (((*val)*0x00ff0000)>>16)*65535/255;
@@ -5584,7 +5197,7 @@ static int add_palette(Dlink *Tlist,int val) {
     break;
   }
   if(pt==NULL) {
-    tmp = (int *)malloc(sizeof(int));
+    tmp = (int *)Malloc(sizeof(int));
     *tmp = val;
     Dappend(Tlist,tmp);
   }
@@ -5879,7 +5492,7 @@ void uiFreeImage(void *tmp) {
   return ;
 }
 void kgFreeImage(void *tmp) {
-  uiFreeImage(tmp);
+  if(tmp != NULL) uiFreeImage(tmp);
 }
 
 int uiDataToArea(DIALOG *D,unsigned long *data,int xl,int yl,int w,int h) {
@@ -5993,7 +5606,7 @@ SC_BUF * wc_alloc_scrn_buffer(kgWC *wc) {
     SBlist=Dopen();
     wc->SBlist =SBlist;
   }
-    tmp=(SC_BUF *)malloc(sizeof(SC_BUF));
+    tmp=(SC_BUF *)Malloc(sizeof(SC_BUF));
     Dappend(SBlist,tmp);
   return tmp;
 }
@@ -6005,7 +5618,7 @@ SC_BUF * kg_alloc_scrn_buffer(kgWC *wc) {
     SBlist=Dopen();
     wc->SBlist =SBlist;
   }
-  tmp=(SC_BUF *)malloc(sizeof(SC_BUF));
+  tmp=(SC_BUF *)Malloc(sizeof(SC_BUF));
   Dappend(SBlist,tmp);
   return tmp;
 }
@@ -7518,7 +7131,7 @@ static int mod_table[] = {0, 2, 1};
 void build_decoding_table() {
   int i;
 
-  decoding_table = malloc(256);
+  decoding_table = Malloc(256);
 
   for (i = 0; i < 64; i++)
     decoding_table[(unsigned char) encoding_table[i]] = i;
@@ -7599,7 +7212,7 @@ void * kgGetRootRawImage(int xo,int yo,int wd,int ht ) {
     uiImage = XGetImage(Dsp,Root,0,0,EVGAX,EVGAY,0xffffffff,ZPixmap);
     ximage_rowbytes = uiImage->bytes_per_line;
     Imgdata = (unsigned char *)uiImage->data;
-    Img = (unsigned char *)malloc(ht*wd*3);
+    Img = (unsigned char *)Malloc(ht*wd*3);
     rdest = Img;
     k=0;
     for (i = 0;  i < h;  ++i) {
@@ -8114,7 +7727,7 @@ unsigned char *_uiGetPrimary(void * Tmp) {
 //   XDeleteProperty(wc->Dsp, wc->Win, prop);
    XFlush(wc->Dsp);
    if(buff != NULL) {
-     ret = (unsigned char *)malloc(len+1);
+     ret = (unsigned char *)Malloc(len+1);
      memcpy(ret,buff,len);
 //     printf("len= %d\n",len);
      ret[len]='\0';
@@ -8199,7 +7812,7 @@ unsigned char *_uiGetClipBoard(void * Tmp) {
 //   XDeleteProperty(wc->Dsp, wc->Win, prop);
    XFlush(wc->Dsp);
    if(buff != NULL) {
-     ret = (unsigned char *)malloc(len+1);
+     ret = (unsigned char *)Malloc(len+1);
      memcpy(ret,buff,len);
 //     printf("len= %d\n",len);
      ret[len]='\0';
@@ -8296,4 +7909,3 @@ int kgDisableSelection(void *junk) {
     wc->Rth=0;
     return 1;
 }
-

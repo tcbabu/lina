@@ -124,8 +124,6 @@ int pskdia( void *parent,void **v,void *pt) {
   GrpId = pskdiaGroup(&D,v,pt);
   d = D.d;
   D.d = d;
-  kgMakeDefaultSkeybrd(&D,0,110,1);
-  kgSetKeybrdWidget(&D,1);
   D.bkup = 1; /* set to 1 for backup */
   D.bor_type = 4;
   D.df = 2;
@@ -137,8 +135,8 @@ int pskdia( void *parent,void **v,void *pt) {
   D.yo = 206;
   D.xl = 348;    /*  Length of Dialog */
   D.yl = 82;    /*  Width  of Dialog */
-  D.xl = 530;    /*  Length of Dialog */
-  D.yl = 340;    /*  Width  of Dialog */
+  D.xl = 524;    /*  Length of Dialog */
+  D.yl = 324;    /*  Width  of Dialog */
   D.Initfun = pskdiainit;    /*   init fuction for Dialog */
   D.Cleanupfun = pskdiacleanup;    /*   init fuction for Dialog */
   D.kbattn = 0;    /*  1 for drawing keyborad attention */
@@ -187,6 +185,13 @@ int pskdia( void *parent,void **v,void *pt) {
 //  kgColorTheme(&D,210,210,210);    /*  set colors for gui*/
 //  ModifypskdiaGc(&(D.gc));    /*  set colors for gui*/
   D.gc = ((DIALOG *)(D.parent))->gc;
+  {
+    int xs,ys;
+    kgMakeKeybrd1(&D,0,0,1,1,25,-40045040,501,201,0.0,0.05);
+    kgSetKeybrdWidget(&D,1);
+    kgGetKeybrdSize(&D,&xs,&ys);
+    kgShiftKeybrd(&D,(D.xl-xs)/2,(D.yl-ys-50));
+  }
   ret= kgUi(&D);
   kgCleanUi(&D);
   return ret;

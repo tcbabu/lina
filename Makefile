@@ -28,7 +28,7 @@ LINAFILES = $(foreach part, lina, $(wildcard $(addprefix $(part)/,*.[ch])))
 CONFIGFILES = $(foreach part, Config, $(wildcard $(addprefix $(part)/,*.[ch])))
 SETPHOTOFILES = $(foreach part, SetPhoto, $(wildcard $(addprefix $(part)/,*.[ch])))
 
-all	: lina/lina SetPhoto/SetPhoto Config/configlina
+all	: lina/lina SetPhoto/SetPhoto Config/configlina wireless/wireless
 
 lib/libkulina.a	: lib/libgm.a $(KGLIBFILES) 
 	echo "PREFIX=$(PWD)">kglib/config.mak
@@ -57,10 +57,13 @@ Config/configlina	: lib/libgm.a lib/libkulina.a $(CONFIGFILES)
 	echo "PREFIX=$(PREFIX)">Config/config.mak
 	echo "KULINA=$(PWD)">>Config/config.mak
 	$(MAKE) -C Config
-install	: lina/lina SetPhoto/SetPhoto Config/configlina
+wireless/wireless	:
+	$(MAKE) -C wireless
+install	: lina/lina SetPhoto/SetPhoto Config/configlina wireless/wireless
 	  $(MAKE) -C lina install
 	  $(MAKE) -C Config install
 	  $(MAKE) -C SetPhoto install
+	  $(MAKE) -C wireless install
 clean	:
 	 rm -rf lib/* share/* bin/* man/*
 	$(MAKE) -C OpenSource clean
@@ -68,3 +71,4 @@ clean	:
 	$(MAKE) -C lina clean
 	$(MAKE) -C Config clean
 	$(MAKE) -C SetPhoto  clean
+	$(MAKE) -C wireless  clean

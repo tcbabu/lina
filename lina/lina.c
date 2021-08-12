@@ -14,8 +14,9 @@
 #include "images.c"
 
 LINACONFIG lc;
+int Kbtype=1;
 int TextBox;
-int xm,ym,xl,yl;
+int xm,ym,xl,yl,xkb,ykb;
 int Loop=1;
 int Xres=0,Yres=0;
 void *Img=NULL,*Img1=NULL;
@@ -861,7 +862,7 @@ int linaGroup( DIALOG *D,void **v,void *pt) {
     'h',
     1142,590,  
     1460,636,
-    30,10,  
+    30,3,  
     44, 
     44, 
     4,1, 
@@ -953,6 +954,7 @@ int lina( void *parent,void **v,void *pt) {
   int ret=1,GrpId,k,gid,bgid;
   float H,S,V,R,G,B;
   void **imgs;
+  KBINFO Ki;
   DIALOG D;
   DIA *d=NULL;
   D.VerId=1401010200;
@@ -1049,27 +1051,19 @@ int lina( void *parent,void **v,void *pt) {
      t->y1 = 40;
      t->x2 = t->x1 + xl;
      t->y2 = t->y1 + yl;
-//     kgShiftGrp(&D,lc.KbGrp,(xres-840)/2-5,yres-305);
 
-     lc.KbVis=0;
-#if 0
-     lc.KbGrp=MakekeybrdGroup(&D,&TextBox,(int)lc.Red,(int)lc.Green,(int)lc.Blue,(xres-840)/2,yres-305);
-      kgSetGrpVisibility((void *)&D,lc.KbGrp,lc.KbVis);
-#else
-  kgDefineColor(501,(unsigned char) lc.ButRed,(unsigned char) lc.ButGreen,(unsigned char) lc.ButBlue);
-  kgDefineColor(201,(unsigned char) lc.Red,(unsigned char) lc.Green,(unsigned char) lc.Blue);
-#if 0
-  kgMakeKeybrd(&D,(xres-795)/2,yres-305,0,8,16,0,501,201,0.1);
-#else
-//  kgMakeDefaultKeybrd(&D,(xres-795)/2,yres-305,0);
-#if 0
-  kgMakeDefaultSkeybrd(&D,(xres-510)/2,yres-275,0);
-#else
-  kgMakeSkeybrd(&D,(xres-510)/2,yres-275,0,8,16,0,501,201,0.05);
-#endif
-#endif
-  kgSetKeybrdWidget(&D,1);
-#endif
+//     lc.KbVis=0;
+     kgDefineColor(501,(unsigned char) lc.ButRed,
+       (unsigned char) lc.ButGreen,(unsigned char) lc.ButBlue);
+     kgDefineColor(201,(unsigned char) lc.Red,
+       (unsigned char) lc.Green,(unsigned char) lc.Blue);
+     kgInitKbinfo(&Ki);
+     Ki.kbtype= 4;
+     kgKeybrd(&D,lc.KbVis,&Ki);
+//     kgMakeKeybrd(&D,Kbtype,lc.KbVis,1,25,-40045040,501,201,0.0,lc.Transparency);
+     kgGetKeybrdSize(&D,&xkb,&ykb);
+     kgShiftKeybrd(&D,(xres - xkb)/2,yres-50 -ykb);
+     kgSetKeybrdWidget(&D,1);
 //     D.StackPos = 1; // you may need it
   }    /*  end of fullscreen mode */
   printf("Calling Ui\n");

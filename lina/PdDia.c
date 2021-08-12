@@ -18,64 +18,6 @@ void ModifyPdDiaGc(Gclr *gc) {
    gc->Font=23;
 */
 }
-int PdDiaGroup_o( DIALOG *D,void **v,void *pt) {
-  int GrpId=0,oitems=0,i,j;
-  DIA *d=NULL,*dtmp;
-  BUT_STR  *butn0=NULL; 
-  butn0= (BUT_STR *)malloc(sizeof(BUT_STR)*3);
-  butn0[0].sw=1;
-  strcpy(butn0[0].title,(char *)"Shutdown");
-  butn0[0].xpmn=(void *)&shutdown_str;
-  butn0[0].xpmp=NULL;
-  butn0[0].xpmh=NULL;
-  butn0[0].bkgr=-180180180;
-  butn0[0].butncode='';
-  butn0[1].sw=1;
-  strcpy(butn0[1].title,(char *)"Reboot");
-  butn0[1].xpmn=(void *)&reboot_str;
-  butn0[1].xpmp=NULL;
-  butn0[1].xpmh=NULL;
-  butn0[1].bkgr=-180180180;
-  butn0[1].butncode='';
-  butn0[2].sw=1;
-  strcpy(butn0[2].title,(char *)"Cancel");
-  butn0[2].xpmn=(void *)&cancel_str;
-  butn0[2].xpmp=NULL;
-  butn0[2].xpmh=NULL;
-  butn0[2].bkgr=-180180180;
-  butn0[2].butncode='';
-  DIL h0 = { 
-    'h',
-    4,4,  
-    226,80,
-    18,26,  
-    50, 
-    50, 
-    3,1, 
-    0,0.500000,0,0,0,0, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
-    butn0, 
-    PdDiasplbutton1callback, /*  Callbak */
-      NULL  /* any args */
-  };
-  strcpy(h0.Wid,(char *)"PgDiaWidget1");
-  dtmp = D->d;
-  i=0;
-  if(dtmp!= NULL) while(dtmp[i].t!=NULL)i++;
-  dtmp = (DIA *)realloc(dtmp,sizeof(DIA )*(i+2));
-  d =dtmp+i; 
-  d[1].t=NULL;
-  d[0].t = (DIT *)malloc(sizeof(DIL));
-  PdDiasplbutton1init(&h0,pt) ;
-  *d[0].h = h0;
-  d[0].h->item = -1;
-  d[1].t = NULL;
-  GrpId=kgOpenGrp(D);
-  D->d = dtmp;
-  j=0;
-  while(d[j].t!=NULL){ kgAddtoGrp(D,GrpId,(void *)(d[j].t));j++;}
-  return GrpId;
-} 
-
 
 int PdDiaGroup( DIALOG *D,void **v,void *pt) {
   int GrpId=0,oitems=0,i,j;
@@ -117,8 +59,8 @@ int PdDiaGroup( DIALOG *D,void **v,void *pt) {
   DIL h1 = { 
     'h',
     9,14,  
-    256,96,
-    38,38,  
+    256,76,
+    38,18,  
     46, 
     46, 
     3,1, 
