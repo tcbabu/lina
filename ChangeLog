@@ -1,3 +1,12 @@
+Ver 2.0
+Dated 12 Aug 2021
+Quite a few changes, improved kglib is used.
+A new key board is addedr, wireless interface is
+modified. A command line tool 'wireless' added for
+wireless connection, which can be used to connect to
+preferred network at start up itself. It used the configuration
+of 'lina' connection set up.
+
 Ver 1.2 dated 01Mar18
 Fixed a bug in not setting SHELL env
 
