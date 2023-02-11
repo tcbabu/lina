@@ -1,5 +1,5 @@
 #include "headers.h"
-#include "kulina.h"
+#include <kulina.h>
 #include "configlinaCallbacks.h"
 int Enabled=0;
 
@@ -139,6 +139,9 @@ int configlinaGroup( DIALOG *D,void **v,void *pt) {
   strcpy(c2.Wid,(char *)"configlinaWidget7");
   char **menu3 ; 
   count = Dcount(lc.Ulist)+1;
+  if(lc.Ulist==NULL) count=1;
+  else count = Dcount(lc.Ulist)+1;
+  printf ("Ulist count= %d\n",count);
   menu3= (char **)malloc(sizeof(char *)*count);
   menu3[count-1]=NULL;
   Resetlink(lc.Ulist);
@@ -164,8 +167,10 @@ int configlinaGroup( DIALOG *D,void **v,void *pt) {
   };
   strcpy(w3.Wid,(char *)"configlinaWidget10");
   if(w3.size >= count ) w3.size = count-1;
+  printf ("Slist count= %d\n",count);
   char **menu4 ; 
-  count = Dcount(lc.Slist)+1;
+  if(lc.Slist==NULL) count=1;
+  else count = Dcount(lc.Slist)+1;
   menu4= (char **)malloc(sizeof(char *)*count);
   menu4[count-1]=NULL;
   Resetlink(lc.Slist);
@@ -621,7 +626,7 @@ int configlina( void *parent,void **v,void *pt) {
   D.Shapexpm = NULL;    /*  PNG/jpeg file for window shape;Black color will not be drawn */
   D.parent = parent;    /*  1 for not showing in task bar*/
   D.pt = pt;    /*  any data to be passed by user*/
-//  strcpy(D.name,"Kulina Designer ver 1.0");    /*  Dialog name you may change */
+  strcpy(D.name,"Configure Lina");    /*  Dialog name you may change */
   if(D.fullscreen!=1) {    /*  if not fullscreen mode */
      int xres,yres; 
      kgDisplaySize(&xres,&yres); 
@@ -635,6 +640,7 @@ int configlina( void *parent,void **v,void *pt) {
   }    /*  end of fullscreen mode */
 //  kgColorTheme(&D,210,210,210);    /*  set colors for gui*/
 //  ModifyconfiglinaGc(&(D.gc));    /*  set colors for gui*/
+//  Print_gui_data(&D,"configlina.rc");
   ret= kgUi(&D);
   kgCleanUi(&D);
   return ret;
@@ -674,6 +680,7 @@ void *Runconfiglina(void *arg) {
    v[5]=(void *)(&v5);
    v[6]=(void *)(&v6);
    v6 = lc.DateFont+1;
+
    configlina(NULL,v,pt );
    if(geteuid()!=  0) return NULL;
    return NULL;

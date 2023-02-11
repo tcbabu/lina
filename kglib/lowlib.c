@@ -221,7 +221,7 @@ static unsigned char BLUE[4]={0x00, 0x01, 0x08, 0x09 };
 static unsigned char GREEN[4]={0x00, 0x02, 0x10, 0x12 };
 static char Posfmt[200]={"%14.5g , %-14.5g"},
            Xfmt[7]={" 14.5g"},Yfmt[7]={"-14.5g"};
-union kbinp { short kbint; char kbc[2];} kb;
+static union kbinp { short kbint; char kbc[2];} kb;
 
 void *kgBorderedRectangle(int width,int height,int fillclr,float rfac);
 void *kgPressedRectangle(int width,int height,int fillclr,float rfac);
@@ -271,7 +271,7 @@ void uig_scroll_up(DIALOG *D,short x1,short y1,short x2,short y2,short jmp)
  short get_key(int t)
  {
    union kbinp { short kbint; char kbc[2];} kb;
-     if((kb.kbint=get_kb())>0) return(kb.kbint);
+     if((kb.kbint=ui_get_kb())>0) return(kb.kbint);
    return(0);
  }
 #if 0
@@ -283,7 +283,7 @@ void uig_scroll_up(DIALOG *D,short x1,short y1,short x2,short y2,short jmp)
    union kbinp { short kbint; char kbc[2];} kb;
    for(;;)
    {
-     if((kb.kbint=get_kb())>0) return(kb.kbint);
+     if((kb.kbint=ui_get_kb())>0) return(kb.kbint);
      if((key=GetPointer(&dx,&dy))>=0){
        yy=EVGAY-dy;
        if(key==1){
@@ -4524,7 +4524,7 @@ KBEVENT  kgSkipMouseMove(DIALOG *D) {
   }
   return kb;
 }
-int   kgGetTimedEvent(DIALOG *D,KBEVENT *e) {
+int   kgGetTimedEvent_o(DIALOG *D,KBEVENT *e) {
   int i,SKIP=20;
   KBEVENT kb,kbo;
   if(kgCheckEvent(D,&kbo)==0)  {
@@ -4534,12 +4534,31 @@ int   kgGetTimedEvent(DIALOG *D,KBEVENT *e) {
   }
   kb = kbo;
   for(i=0;i<SKIP;i++) {
+    kb = kbo;
     if((kbo.event==0)||(kbo.event==3)){
-      kb = kbo;
       if(kgCheckEvent(D,&kbo)==0) break;
       continue;
     }
-    else break;
+    else {  break;}
+  }
+  *e=kb;
+  return 1;
+}
+int   kgGetTimedEvent(DIALOG *D,KBEVENT *e) {
+  int i,SKIP=20;
+  KBEVENT kb,kbo;
+  if(kgCheckEvent(D,&kbo)==0)  {
+//    kgThreadSleep(0,250);
+    kgThreadSleep(0,2000);
+    if(kgCheckEvent(D,&kbo)==0) return 0;
+  }
+  kb = kbo;
+  i=0;
+  while((kbo.event==0)||(kbo.event==3)){
+      if(kgCheckEvent(D,&kbo)==0) break;
+      kb = kbo;
+      i++;
+      if(i==SKIP) break;
   }
   *e=kb;
   return 1;
@@ -5082,7 +5101,7 @@ char cross_getpointer(DIG *G,int *xx,int *yy)
   if(pointer==3){gcur_x=xpo,gcur_y=ypo, key='.';goto jump;};
 
 
-    kb.kbint = get_kb();
+    kb.kbint = ui_get_kb();
     ch=kb.kbc[0];
     key=ch;
     while ((ch!='\r')&&(kb.kbint>=0)&&(ch!='\n'))
@@ -5106,7 +5125,7 @@ char cross_getpointer(DIG *G,int *xx,int *yy)
 
        }
       }
-     kb.kbint = get_kb();
+     kb.kbint = ui_get_kb();
      ch=kb.kbc[0];
      key = ch;
     }
@@ -8560,13 +8579,13 @@ void _ui_slidevalue(DIALOG *D,S_STR *pt) {
 //   _uirect_fill(wc,x,y+w,x+l,y+1,pt->fill_clr);
    if(pt->code=='f') {
      val = pt->df*pt->cf+pt->sh;
-     sprintf(buf,"%-lg\0",val);
+     sprintf(buf,"%-lg",val);
    }
    else {
      val = pt->df*pt->cf+pt->sh;
 //TCB
-//     sprintf(buf,"%-ld\0",(int)(val+0.5));
-     sprintf(buf,"%-d\0",(int)(val+0.5));
+//     sprintf(buf,"%-ld",(int)(val+0.5));
+     sprintf(buf,"%-d",(int)(val+0.5));
    }
    x = x +(l)/2;
    uiwrite_string(D,buf,x,EVGAY-pt->y+4,pt->char_clr);
@@ -8923,7 +8942,7 @@ void * _ui_setslide(void *tmp,int min,int max,int x,int y,int l,int df,
    gc = &(D->gc);
    if(min>=max) {
      normal();
-     printf("Error: Wrong slide-bar limits: min=%ld max=%ld\n",min,max);
+     printf("Error: Wrong slide-bar limits: min=%d max=%d\n",min,max);
      exit(0);
    }
    if((df-min)*(max-df)< 0) df = (max+min)/2;
@@ -9103,7 +9122,7 @@ void * _ui_sethbar(DIHB *B,int min,int max,int x,int y,int l,int df,
    gc = &(D->gc);
    if(min>=max) {
      normal();
-     printf("Error: Wrong slide-bar limits: min=%ld max=%ld\n",min,max);
+     printf("Error: Wrong slide-bar limits: min=%d max=%d\n",min,max);
      exit(0);
    }
    if((df-min)*(max-df)< 0) df = (max+min)/2;
@@ -9862,7 +9881,7 @@ int Make_h_bar(DIHB *d) {
    }
    l = max;
    if(min>=max) {
-     printf("Error: Wrong slide-bar limits: min=%ld max=%ld\n",min,max);
+     printf("Error: Wrong slide-bar limits: min=%d max=%d\n",min,max);
      exit(0);
    }
    if((df-min)*(max-df)< 0) df = (max+min)/2;
@@ -10989,6 +11008,8 @@ int _uiMake_Y(DIY *y)
    bwsr->scroll=1;
    if(y->size==y->ny) {
          bwsr->scroll=0;
+	 //TCB
+         bwsr->pos=0;
    }
    bwsr->size=y->size;
    if(bwsr->df >n ) bwsr->df=1;
@@ -14220,7 +14241,7 @@ void uimake_telmt(T_ELMT *elmt) {
   int i,k=0,err=0,size=0,l;
   char *cpt;
   char *chpt;float *fpt;double *dpt;int *ipt;int *lpt;
-  char dfmt[10],ffmt[10],sfmt[10];
+  char dfmt[20],ffmt[20],sfmt[20];
   char prompt[MAXTPRMTLN],field[MAXTITEMLN];
   char wrk[1000];
   double val;

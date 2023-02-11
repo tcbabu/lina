@@ -71,7 +71,7 @@ void Read_Gclr(Gclr *gc,char *app) {
     if(buff[0]=='#') continue;
     i=0; while( buff[i]==' ') i++;
     if(buff[i]< ' ') continue;
-    sscanf(buff+i,"%s",code);
+    sscanf(buff+i,"%s",(char *)code);
     if(strcmp(code,"char_clr") == 0) {
       while( (buff[i]!='=')&&(buff[i] >= ' ')) i++;
       if(buff[i] != '=') continue;
@@ -992,7 +992,7 @@ int PrintXpm(FILE *fp,void *xpm){
   else {
     tmp = (char *)(xpm);
     if( (tmp[0]=='#')&&(tmp[1]=='#') )
-        fprintf(fp,"%-s // XPM \n",xpm+2);
+        fprintf(fp,"%-s // XPM \n",(char *)(xpm+2));
     else fprintf(fp,"NULL // XPM \n");
   }
   return 1;
@@ -1475,7 +1475,7 @@ DIB * Read_data_buttonbox(FILE *fp){
       t->xpm[i]= (void *)Malloc(100);
       pt =(char *) t->xpm[i];
       strcpy(pt,"##");
-      sscanf(buff,"%s",pt+2);
+      sscanf(buff,"%s",(char *)(pt+2));
     }
     else t->xpm[i]=NULL;
   }
@@ -1560,7 +1560,7 @@ DIN * Read_data_buttonboxn(FILE *fp){
       butn[i].xpmn= (void *)Malloc(100);
       pt =(char *) butn[i].xpmn;
       strcpy(pt,"##");
-      sscanf(buff,"%s",pt+2);
+      sscanf(buff,"%s",(char *)(pt+2));
     }
     else butn[i].xpmn=NULL;
     GETDATALINE;
@@ -1568,7 +1568,7 @@ DIN * Read_data_buttonboxn(FILE *fp){
       butn[i].xpmp= (void *)Malloc(100);
       pt =(char *) butn[i].xpmp;
       strcpy(pt,"##");
-      sscanf(buff,"%s",pt+2);
+      sscanf(buff,"%s",(char *)(pt+2));
     }
     else butn[i].xpmp=NULL;
     GETDATALINE;
@@ -1576,7 +1576,7 @@ DIN * Read_data_buttonboxn(FILE *fp){
       butn[i].xpmh= (void *)Malloc(100);
       pt =(char *) butn[i].xpmh;
       strcpy(pt,"##");
-      sscanf(buff,"%s",pt+2);
+      sscanf(buff,"%s",(char *)(pt+2));
     }
     else butn[i].xpmh=NULL;
     butn[i].imgn=NULL;
@@ -1586,7 +1586,7 @@ DIN * Read_data_buttonboxn(FILE *fp){
     GETDATALINE;
     sscanf(buff,"%d",&(butn[i].bkgr));
     GETDATALINE;
-    sscanf(buff,"%c",&(butn[i].butncode));
+    sscanf(buff,"%c",(char *)&(butn[i].butncode));
   }
   GETDATALINE;
   sscanf(buff,"%d%f%d",&(t->type),&(t->fac),&(t->bordr));
@@ -1636,7 +1636,7 @@ DIL * Read_data_splbuttonbox(FILE *fp){
       butn[i].xpmn= (void *)Malloc(100);
       pt =(char *) butn[i].xpmn;
       strcpy(pt,"##");
-      sscanf(buff,"%s",pt+2);
+      sscanf(buff,"%s",(char *)(pt+2));
     }
     else butn[i].xpmn=NULL;
     GETDATALINE;
@@ -1644,7 +1644,7 @@ DIL * Read_data_splbuttonbox(FILE *fp){
       butn[i].xpmp= (void *)Malloc(100);
       pt =(char *) butn[i].xpmp;
       strcpy(pt,"##");
-      sscanf(buff,"%s",pt+2);
+      sscanf(buff,"%s",(char *)(pt+2));
     }
     else butn[i].xpmp=NULL;
     GETDATALINE;
@@ -1652,7 +1652,7 @@ DIL * Read_data_splbuttonbox(FILE *fp){
       butn[i].xpmh= (void *)Malloc(100);
       pt =(char *) butn[i].xpmh;
       strcpy(pt,"##");
-      sscanf(buff,"%s",pt+2);
+      sscanf(buff,"%s",(char *)(pt+2));
     }
     else butn[i].xpmh=NULL;
     butn[i].imgn=NULL;
@@ -1662,7 +1662,7 @@ DIL * Read_data_splbuttonbox(FILE *fp){
     GETDATALINE;
     sscanf(buff,"%d",&(butn[i].bkgr));
     GETDATALINE;
-    sscanf(buff,"%c",&(butn[i].butncode));
+    sscanf(buff,"%c",(char *)&(butn[i].butncode));
   }
   GETDATALINE;
   sscanf(buff,"%d%f%d",&(t->type),&(t->fac),&(t->bordr));
@@ -1775,7 +1775,7 @@ DIBN * Read_data_buttonboxnew(FILE *fp){
       t->xpm[i]= (void *)Malloc(100);
       pt =(char *) t->xpm[i];
       strcpy(pt,"##");
-      sscanf(buff,"%s",pt+2);
+      sscanf(buff,"%s",(char *)(pt+2));
     }
     else t->xpm[i]=NULL;
   }
@@ -2004,7 +2004,7 @@ DILN * Read_data_horibarnew(FILE *fp){
       t->xpm[i]= (void *)Malloc(100);
       pt =(char *) t->xpm[i];
       strcpy(pt,"##");
-      sscanf(buff,"%s",pt+2);
+      sscanf(buff,"%s",(char *)(pt+2));
     }
     else t->xpm[i]=NULL;
   }

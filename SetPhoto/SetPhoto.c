@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include "SetPhotoCallbacks.h"
 void ModifySetPhotoGc(Gclr *gc) {
 /*

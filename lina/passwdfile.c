@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +12,7 @@
 #include "headers.h"
 #include "passwdfile.h"
 #include "uimages.c"
+int WriteSessionsFile(Dlink *Slist);
 int CheckString(char *s1,char *s2);
 int SearchString(char *s1,char *s2);
 #define Isize 42
@@ -486,22 +487,22 @@ int CheckLogin(LINACONFIG *lc,int Index,char *password) {
     return ret;
 }
 int InitConfig(LINACONFIG *lc) {
-  lc->Red=98;
-  lc->Green=108;
-  lc->Blue=98;
-  lc->ButRed=98;
-  lc->ButGreen=98;
-  lc->ButBlue=93;
-  lc->DateRed=142;
-  lc->DateGreen=152;
-  lc->DateBlue=142;
-  lc->FontRed=5;
-  lc->FontGreen=0;
-  lc->FontBlue=0;
+  lc->Red=216;
+  lc->Green=226;
+  lc->Blue=216;
+  lc->ButRed=216;
+  lc->ButGreen=226;
+  lc->ButBlue=216;
+  lc->DateRed=216;
+  lc->DateGreen=226;
+  lc->DateBlue=216;
+  lc->FontRed=39;
+  lc->FontGreen=44;
+  lc->FontBlue=39;
   lc->HighRed=226;
   lc->HighGreen=255;
   lc->HighBlue=255;
-  lc->Transparency = 0.0;
+  lc->Transparency = 0.1;
   lc->fac = 0.0;
   lc->Bkgr[0]='\0';
   lc->RootPic[0]='\0';
@@ -513,7 +514,7 @@ int InitConfig(LINACONFIG *lc) {
   lc->Uimg=NULL;
   lc->Mask=NULL;
   strcpy(lc->DefUser,"Guest");
-  strcpy(lc->DefSession,"KDE");
+  strcpy(lc->DefSession,"XFCE");
   lc->Action=1;
   lc->Powerdown=3;
   lc->Session=1;
@@ -521,7 +522,7 @@ int InitConfig(LINACONFIG *lc) {
   lc->TextMode=1;
   lc->SafeMode=1;
   lc->ShowTime=1;
-  lc->DateFont=16;
+  lc->DateFont=25;
 }
 #define SkipCommentLine {\
   i=0;\

@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include "passwdfile.h"
 extern int Index;
 extern LINACONFIG lc;

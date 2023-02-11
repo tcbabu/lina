@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include "headers.h"
 #include "GetSessionDiaCallbacks.h"
 void ModifyGetSessionDiaGc(Gclr *gc) {

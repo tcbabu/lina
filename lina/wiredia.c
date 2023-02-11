@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include "wirediaCallbacks.h"
 #include "headers.h"
 #include "netlist.h"
@@ -12,6 +12,14 @@ extern Dlink *Scanlist;
 int WaitForProcess(int pip0,int pip1,int Pid);
 int MakemsgboxGroup(DIALOG *D,void *arg);
 int ProcessWconf(int pip0,int pip1,int Pid);
+int GetWdev(void);
+int runjob(char *job,int (*ProcessOut)(int,int,int));
+int CheckProcessCommand(char *procname);
+int CheckProcess(char *procname);
+int CheckSystemd(void);
+int ResetSystemd(void);
+int MakeConfigFile(void);
+int CheckCliConnection(void);
 int InitWireless(void) {
       FILE *fp;
       char buff[500];

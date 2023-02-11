@@ -1,0 +1,1 @@
+int kgMakeDefaultKeybrd(void *Tmp,int Type,int Vis) {

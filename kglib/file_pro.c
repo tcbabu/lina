@@ -65,7 +65,7 @@ File * Fopen(char *flname){
   F = (File *)Malloc(sizeof(File));
   F->L = LN;
   if( strlen(flname)>119 ) {
-    normal();
+//    normal();
     printf("Error: long file name in Fcreate/Fopen %s\n",flname);
     exit(0);
   }
@@ -86,7 +86,6 @@ File * Fcreate(char *flname){
   F = (File *)Malloc(sizeof(File));
   F->L = Dopen();
   if( strlen(flname)>119 ) {
-    normal();
     printf("Error: long file name in Fcreate/Fopen %s\n",flname);
     exit(0);
   }
@@ -447,6 +446,6 @@ int Fprintf(void * unknown,...)
    }
    else cpt++;
   }
-  if(pt!='\0')strcat(wrk,pt);
+  if(pt!=NULL)strcat(wrk,pt);
   add_line(fp,wrk);
  }

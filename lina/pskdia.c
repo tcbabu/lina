@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include "pskdiaCallbacks.h"
 #include "headers.h"
 #include "netlist.h"

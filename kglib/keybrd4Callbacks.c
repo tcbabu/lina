@@ -1,4 +1,4 @@
-#include <kulina.h>
+#include "kulina.h"
 static int NOBKGR=1;
 //static int Bx=72,By=48,Xg=4,Yg=4;
 //static int Bxoff=2,Byoff=2,Bodr=10;
@@ -19,6 +19,7 @@ static char Label12[] = ",./";
 static char Label13[] = "{}|";
 static char Label14[] = ":\"";
 static char Label15[] = "<>?";
+void kgModifyTextWidget(void *Tmp,int ch);
 static void *CreateButImage4(void *Tmp);
 static int kgProcessInit4(DIN *B,KEYBRD *Kbrd,char *Label,char *Label1,int inx) ;
 typedef struct _butimgdata {
@@ -124,7 +125,7 @@ static void *MakeStringImage4(int xl,int yl,int bclr,float fac, int tc,int utc,i
 //     kgGetDefaultRGB(utc,&R,&G,&B);
 //     kgChangeColor(fid,utc,R,G,B);
      kgTextColor(fid,utc);
-     kgTextSize(fid,h,w,0.);
+     kgTextSize(fid,h*0.7,w*0.7,0.);
      kgMove2f(fid,xp,yp);
      kgWriteText(fid,ustr);
    }
@@ -137,7 +138,8 @@ static void *MakeStringImage4(int xl,int yl,int bclr,float fac, int tc,int utc,i
 static char *kgButtonTitle1(char * str,void *pt,char *ustr) {
   KEYBRD *Kbrd;
   Kbrd = (KEYBRD *)pt;
-  sprintf(BUFF,"!h15!d!h51!z%-s!f%2.2d!c%2.2d%-s!g !c%2.2d!z23!u%-s",Kbrd->Sfac,Kbrd->Bfont,Kbrd->Bclr,str,Kbrd->FillClr,ustr);
+//  sprintf(BUFF,"!h15!d!h51!z%-s!f%2.2d!c%2.2d%-s!g !c%2.2d!z23!u%-s",Kbrd->Sfac,Kbrd->Bfont,Kbrd->Bclr,str,Kbrd->FillClr,ustr);
+  sprintf(BUFF,"!h15!d!h51!z%-s!f%2.2d!c%2.2d%-s!g !c%2.2d!z23!u%-s",Kbrd->Sfac,Kbrd->Bfont,Kbrd->Bclr,str,Kbrd->Bclr,ustr);
 //  printf("%s\n",BUFF);
   return BUFF;
 }
@@ -232,6 +234,7 @@ static int kgProcessLabel(void *Tmp,int butno,char *Label) {
   KEYBRD *Kbrd;
   D = (DIALOG *)Tmp;
   Kbrd = (KEYBRD *)D->Kbrd;
+  Kbrd->CurWid =-1;
   CurWid = Kbrd->CurWid;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
@@ -240,7 +243,8 @@ static int kgProcessLabel(void *Tmp,int butno,char *Label) {
   if(CurWid>= 0)  {
     kgSetCurrentWidget(D,CurWid);
     ch= Label[butno-1];
-    kgSendKeyEvent(D,ch);
+//    kgSendKeyEvent(D,ch);
+    kgModifyTextWidget(D,ch);
   }
   else  {
     if(Kbrd->TargetWindow != NULL) {
@@ -294,7 +298,8 @@ static void *GetStringImg4(DIN *B,int index,KEYBRD *kb,char *str,char *ustr) {
 //   xl = (xl+1)/2*2-1;
 //   yl = (yl+1)/2*2-1;
    clr =kb->ButClr;
-   img = MakeStringImage4(xl,yl,clr,B->fac,kb->Bclr,kb->FillClr,kb->Bfont,str,ustr);
+//   img = MakeStringImage4(xl,yl,clr,B->fac,kb->Bclr,kb->FillClr,kb->Bfont,str,ustr);
+   img = MakeStringImage4(xl,yl,clr,B->fac,kb->Bclr,kb->Bclr,kb->Bfont,str,ustr);
    
    but[index].xpmn=img;
    return img;
@@ -341,7 +346,7 @@ static void kgProcessTitle(DIN *B,void *pt){
       im->str[80]='\0';
       im->ustr[0]='\0';
       im->index = i;
-#if 0
+#if 1
       if(Kbrd->Thds != NULL) DoInAnyThread(Kbrd->Thds,CreateButImage4,(void *)im);
       else CreateButImage4((void *)(im));
 #else
@@ -517,6 +522,7 @@ int  keybrd4button1callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = (KEYBRD *)D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) { 
      Kbrd->CurWid = D->InputWid;
   }
@@ -530,6 +536,7 @@ int  keybrd4button1callback(int butno,int i,void *Tmp) {
   else {
     kgSetCurrentWidget(D,Kbrd->CurWid);
     kgSendBackspaceKeyEvent(Tmp);
+//    kgModifyTextWidget(D,8);
   }
   switch(butno) {
     case 1: 
@@ -560,6 +567,7 @@ int  keybrd4button2callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = (KEYBRD *)D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) { 
      Kbrd->CurWid = D->InputWid;
   }
@@ -573,6 +581,7 @@ int  keybrd4button2callback(int butno,int i,void *Tmp) {
   else {
     kgSetCurrentWidget(D,Kbrd->CurWid);
     kgSendEscapeKeyEvent(Tmp);
+//    kgModifyTextWidget(Tmp,27);
   }
   switch(butno) {
     case 1: 
@@ -618,6 +627,7 @@ int  keybrd4button4callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = (KEYBRD *)D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) { 
      Kbrd->CurWid = D->InputWid;
   }
@@ -683,6 +693,7 @@ int  keybrd4button6callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = (KEYBRD *)D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) { 
      Kbrd->CurWid = D->InputWid;
   }
@@ -720,6 +731,7 @@ int  keybrd4button7callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = (KEYBRD *)D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) { 
      Kbrd->CurWid = D->InputWid;
   }
@@ -761,6 +773,7 @@ int  keybrd4button8callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = (KEYBRD *)D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) { 
      Kbrd->CurWid = D->InputWid;
   }
@@ -773,7 +786,8 @@ int  keybrd4button8callback(int butno,int i,void *Tmp) {
   }
   else {
     kgSetCurrentWidget(D,Kbrd->CurWid);
-    kgSendSpaceKeyEvent(Tmp);
+//    kgSendSpaceKeyEvent(Tmp);
+    kgModifyTextWidget(Tmp,32);
   }
   switch(butno) {
     case 1: 

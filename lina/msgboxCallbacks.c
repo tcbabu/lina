@@ -7,6 +7,8 @@ static char **MenuItems=NULL;
 static Dlink *Mslist=NULL;
 int runjob(char *job,int (*ProcessOut)(int,int,int));
 int wirediainit(void *Tmp);
+int GetLine(int pip0,char *buff);
+int SearchString(char *s1,char *s2);
 static int AddtoList(char *buff) {
   int ln;
   char *pt;

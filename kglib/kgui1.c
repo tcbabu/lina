@@ -1,4 +1,6 @@
 #define D_TH
+#include <unistd.h>
+#include <stdlib.h>
 #include "kulina.h"
 #include "gprivate.h"
 #include "dlink.h"
@@ -15,6 +17,10 @@
 #include "imageswarn.c"
 #include "images.c"
 #define RESIZE 5
+#define GETCWD(x,y) { \
+  void *ret; \
+  ret = getcwd(x,y); \
+}
 static int B_max=990000,B_min=989000;
 extern int TextSize,Ht,Wd,Gap,Bt;  // It is Okay For Thread;
 void *stop_xpm=&Stop_str;
@@ -1953,7 +1959,7 @@ static int uiGetDirFile(char *flname,char *folder) {
      if(i<0 ) break;
   }
   if(i< 0) {
-    getcwd(folder,499);
+    GETCWD(folder,499);
   }
   else {
     strcpy(folder,flname);
@@ -2272,7 +2278,7 @@ int  filebrowsertextbox1callback(int key,int i,void *Tmp) {
   m = (char **)((DIALOG *)Tmp)->pt;
   T = D[i].t;
   e = T->elmt;
-  getcwd(d_name,149);
+  GETCWD(d_name,149);
   filter = Dgetstring(Tmp,i,1);
   m = _uiFileMenu(d_name,filter);
 //  scr_recover();
@@ -2399,7 +2405,7 @@ int kgFileBrowser(void *parent,int x0,int y0,  char *v0, char *v1 ){
     NULL,filebrowserbrowser1callback, /* *args, callback */
     20,6,22,1,1,1,0
   };
-  getcwd(d_name,149);
+  GETCWD(d_name,149);
 //  printf("Dir: %s\n",d_name);
   strcpy(filter,v1);
   e0[1].v=filter;
@@ -4885,54 +4891,6 @@ void *uiMakeThumbNail(void *Tmp) {
   else pt->thImg=NULL;
   return NULL;
 }
-void **uiGetThumbnails_o(char *Dir,int size) {
-  GMIMG **thImgs=NULL;
-  char **flnames,name[500];
-  int i,k=0;
-  char *pt;
-  GMIMG *img;
-  flnames = kgFileMenu(Dir,"*.png *.jpg *.jpeg *.JPG");
-  if(flnames != NULL) {
-   i=0;while(flnames[i]!= NULL) i++;
-//   if(i> 0) {
-   {
-     thImgs=(GMIMG **)Malloc(sizeof(GMIMG *)*(i+1));
-     for(k=0;k<=i;k++) thImgs[k]=NULL;
-     i=0;
-     k=0;
-     while(flnames[i]!=NULL) {
-       strcpy(name,Dir);
-       strcat(name,"/");
-       strcat(name,flnames[i]);
-       img = (GMIMG *)uiGetgmImage(name);
-//       printf("%s \n",flnames[i]);
-//       if(img==NULL) printf("%s is NULL\n",flnames[i]);
-       if(img != NULL) {
-         thImgs[k]= (GMIMG *)uiThumbnailgmImage(img,size,size);
-#if 0
-         sprintf(name,"(%5d,%5d): %s",img->image_width,img->image_height,flnames[i]);
-         strcpy(thImgs[k]->flname,name);
-#else
-         if((thImgs[k]->image_width>size)||(thImgs[k]->image_height>size)) {
-           printf("%s: %d:%d %d:%d\n",flnames[i],thImgs[k]->image_width,thImgs[k]->image_height,img->image_width,img->image_height);
-         }
-         thImgs[k]->image_width=img->image_width;
-         thImgs[k]->image_height=img->image_height;
-//         thImgs[k]->bkgrclr=15;
-         strcpy(thImgs[k]->flname,flnames[i]);
-#endif
-         uiFreeImage(img);
-         k++;
-       }
-       i++;
-     }
-     i=0;while(flnames[i]!= NULL) free(flnames[i++]);
-   }
-   free(flnames);
-  }
-//  printf("K= %d\n",k);
-  return (void **)thImgs;
-}
 void **uiGetThumbnails(char *Dir,int size) {
   GMIMG **thImgs=NULL;
   char **flnames,name[500];
@@ -5273,7 +5231,7 @@ void * kgOpenBusy(void *arg,int xo,int yo) {
 *************************************************/
    int ch;
    dptr = (struct _doubleptr *) Malloc(sizeof(struct _doubleptr));
-   pipe(dptr->pipe);
+   ch = pipe(dptr->pipe);
    dptr->parent=arg;
    dptr->xo = xo;
    dptr->yo=  yo;
@@ -5284,8 +5242,9 @@ void * kgOpenBusy(void *arg,int xo,int yo) {
 void kgCloseBusy(void * id) {
    struct _doubleptr{void *parent;int pipe[2];pthread_t Pth;int xo;int yo;} *dptr;
    char bf=0xff;
+   int rval;
    dptr = (struct _doubleptr *)id;
-   write(dptr->pipe[1],&bf,1);
+   rval = write(dptr->pipe[1],&bf,1);
 //   pthread_cancel(dptr->Pth);
    pthread_join(dptr->Pth,NULL);
    close(dptr->pipe[0]);
@@ -5672,8 +5631,9 @@ static int  PickImagehoribar1callback(int key,int i,void *Tmp) {
           if(strcmp(CurDir,"/")!=0) strcat(sflname,"/");
           strcat(sflname,flname);
           if(kgFolderBrowser(NULL,100,100,flname,"*jpg *.png")==1) {
+            int rval;
             sprintf(buf,"cp \"%s\" \"%s\"",sflname,flname);
-            system(buf);
+            rval = system(buf);
           }
           break;
          }
@@ -5864,7 +5824,7 @@ int kgPickImage( void *parent,int xo,int yo,void *pt) {
   };
   xpm2[0]=kgHomeImage(24,250,250,220);
   xpm2[1]=kgUpdirImage(24,250,250,220);
-  getcwd(CurDir,999);
+  GETCWD(CurDir,999);
   strcpy(HomeDir,CurDir);
   menu0=kgFolderMenu(CurDir);
   e0.menu=menu0;
@@ -6088,7 +6048,7 @@ int kgSelectImage( void *parent,int xo,int yo,int ThSize,void *pt) {
   };
   xpm2[0]=kgHomeImage(24,250,250,220);
   xpm2[1]=kgUpdirImage(24,250,250,220);
-  getcwd(CurDir,999);
+  GETCWD(CurDir,999);
   strcpy(HomeDir,CurDir);
   menu0=kgFolderMenu(CurDir);
   e0.menu=menu0;

@@ -16,6 +16,7 @@
 #include <stdarg.h>
 #include <malloc.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include "kulina.h"
 #include "gprivate.h"
@@ -444,6 +445,7 @@ void twinmove(DIALOG *D,int col,int row)
  {
   ui_twinmove(D,(int)col,(int)row);
  }
+#if 0
 int  gscanf_o(void *D,void *unknown,...)
  {
   int i,item=0,j,jmax=0,it=0,k=0,err=0,size=6;
@@ -584,6 +586,7 @@ int  gscanf_o(void *D,void *unknown,...)
   }
   for(i=0;i<item;i++){free(field[i]);free(prompt[i]);}
  }
+#endif
 void arrange(char **m,int n) {
   int i,j;
   char *pt;
@@ -1153,6 +1156,7 @@ int uiDraw_Dialog(DIALOG *D) {
          if(kgGetWidgetVisibility(kgGetWidget(D,i))!=0){
             controls++;
             D->df = i;
+	    if(D->InputWid < 0) D->InputWid=i;
          }
          break;
        case 'T':
@@ -1160,6 +1164,7 @@ int uiDraw_Dialog(DIALOG *D) {
          if(kgGetWidgetVisibility(kgGetWidget(D,i))!=0){
             controls++;
             D->df = i;
+	    if(D->InputWid < 0) D->InputWid=i;
          }
          break;
        case 'h':
@@ -4603,6 +4608,7 @@ void kgCleanUi(void *tmp){
  Dlink *Gpt;
  D = (DIALOG *) tmp;
  WIDGETGRP *pt=NULL;
+#if 1
  if(D->SearchList!=NULL) Dempty((Dlink *)D->SearchList);
  Grp = (Dlink *)D->GrpList;
  if(Grp != NULL) {
@@ -4617,6 +4623,9 @@ void kgCleanUi(void *tmp){
    D->GrpList= NULL;
  }
  D->SearchList=D->GrpList=NULL;
+#endif
+ // TCB Checking
+#if 1
  switch(D->VerId) {
     case 1401010100:
        uiFreeWidgetMem(D);
@@ -4645,6 +4654,7 @@ void kgCleanUi(void *tmp){
 #endif
        break;
  }
+#endif
  return;
 }
 int kgOpenGrp(void *Tmp) {
@@ -4794,6 +4804,51 @@ int kgSetExit(void *tmp) {
   else return 0;
 }
 
+void kgModifyTextWidget(void *Tmp,int ch) {
+/*
+   it should behave like a
+   key event with a character 'ch'
+   Useful for onscreen keyboard widget
+*/
+    int i,code,df;
+    DIALOG *D;
+    DIT *T;
+    KBEVENT kbevent;
+    D= (DIALOG *)Tmp;
+    if(D->InputWid < 0) return;
+    i = D->InputWid;
+    code = D->d[i].t->code;
+    kbevent.event=5;
+    kbevent.key = ch;
+    switch(code) {
+      case 't':
+       df = KeyReleaseInTextBox((TX_STR *)(D->d[i].t->tstr),kbevent);
+       if(df >= 0) {
+          if( _ui_readtextbox((TX_STR *)(D->d[i].t->tstr)) < 0) {
+             gprintf(D,"Error in Text box data");
+          }
+          else {
+           Up_D_Tx_Table(0,i,D);
+          }
+       }
+       break;
+      case 'T':
+       df = KeyReleaseInTableBox((TX_STR *)(D->d[i].t->tstr),kbevent);
+       if(df != -1) {
+          if( _ui_readtextbox((TX_STR *)(D->d[i].t->tstr)) < 0) {
+             gprintf(D,"Error in Table box data");
+          }
+          else {
+           Up_D_Table(df,i,D);
+          }
+       }
+       break;
+      default:
+       break;
+   }
+   kgUpdateOn(D);
+   return;
+}
 int kgUi(DIALOG *D) {
  DIA *d;
  int item;
@@ -4994,6 +5049,7 @@ again:
                  draw_key_board_attn(i,D);
                  ch =  (d[oldi].t->code);
                  if( (ch=='t') ||(ch=='T')){_ui_readtextbox((TX_STR *)(d[oldi].t->tstr));}
+                 D->InputWid=oldi;
                  uiUpdateOn(D);
                  oldi=i;
               }
@@ -5083,7 +5139,9 @@ again:
    kgCheckAndRemoveParent(D->tmpdir);
    Free(D->tmpdir);
 
+//   fprintf(stderr,"Closing threads\n");
    CloseThreads(D->ThInfo);
+   D->ThInfo=NULL;
 //   fprintf(stderr,"Closed Ui\n");
    return(ret);
 }
@@ -5405,6 +5463,7 @@ int kgThreadWaitPipe(int pipe,int secs,int usecs) {
 /* waits for read ready on pipe or time out; if ready 1 char is read from pipe*/
     char buf[2];
     int retval;
+    int rval;
     struct timeval tv1;
     fd_set rfds;
     FD_ZERO(&rfds);
@@ -5412,7 +5471,7 @@ int kgThreadWaitPipe(int pipe,int secs,int usecs) {
     tv1.tv_sec = secs;
     tv1.tv_usec = usecs;
     retval = select(pipe+1, &rfds, NULL, NULL, &tv1);
-    if(retval>=1) read(pipe,buf,1);
+    if(retval>=1) rval = read(pipe,buf,1);
     else retval=0;
     return retval;
 }
@@ -5585,7 +5644,7 @@ int  Gprintf(DIALOG *D,void *unknown,...)
    }
    else cpt++;
   }
-  if(pt!='\0')strcat(wrk,pt);
+  if(pt!=NULL)strcat(wrk,pt);
   gprintf(D,wrk);
  }
 static int getitems(char ** items) {

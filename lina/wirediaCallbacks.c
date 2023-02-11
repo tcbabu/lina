@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include "netlist.h"
 extern char *Wdev;
 extern int RetVal;
@@ -15,6 +15,8 @@ int ProcessSet(int pip0,int pip1,int Pid);
 int WaitForProcess(int pip0,int pip1,int Pid);
 int GetState(void);
 int ConnectNetwork(NETLIST *nt);
+int SetConnectState(void *Tmp);
+int runjob(char *job,int (*ProcessOut)(int,int,int));
 extern Dlink *Scanlist;
 ThumbNail ** MakeScanThumbnails(Dlink *Scanlist);
 int  wirediabutton1callback(int butno,int i,void *Tmp) {

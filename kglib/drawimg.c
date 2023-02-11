@@ -82,6 +82,7 @@ char * ui_mktmpdir(void);
  void img_set_prtxt(DIG *G,int txt );
  void  img_sup_clip_limit(DIG *G,float x1,float y1,float x2,float y2);
  void img_chng_clr(DIG *G,int no,int ir,int ig,int ib);
+ void uiput_shade_pix3(DIG *G,int col,int row,int z,float illu);
 #if 1
 static pthread_mutex_t _Tmplock=PTHREAD_MUTEX_INITIALIZER;
 #define Lock pthread_mutex_lock(&_Tmplock)
@@ -1621,7 +1622,7 @@ static void shade_line3(DIG *G,int xa,int xb,int y,int za,int zb,float pa,float 
   za=z_inter(xa,m,cons);zb=z_inter(xb,m,cons);
   for(i=xa;i<=xb;i++) {
     tempp=(pa+(i-xa)*pfac);
-    z=z_inter(i,m,cons);put_shade_pix3(G,i,yy,z,tempp);
+    z=z_inter(i,m,cons);uiput_shade_pix3(G,i,yy,z,tempp);
   }
 }
 
@@ -3860,7 +3861,7 @@ void _img_initialise(DIG *G)
 }
 void *kgInitImage(int width,int height,int mag) {
   int l,i;
-  static entry=0;
+  static int entry=0;
   char flname[200],reviewfile[200];
 
   DIG *G;
@@ -3931,7 +3932,7 @@ void kgCloseImage(void *Gtmp) {
 void *kgInitGph(int width,int height) {
   int mag = 1;
   int l,i;
-  static entry=0;
+  static int entry=0;
   char flname[200],reviewfile[200];
 
   DIG *G;

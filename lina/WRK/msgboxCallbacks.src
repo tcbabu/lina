@@ -1,0 +1,80 @@
+#include <kulina.h>
+void  msgboxbrowser1init(DIS *S,void *pt) {
+}
+int msgboxinit(void *Tmp) {
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  /* you add any initialisation here */
+  int ret = 1;
+  DIALOG *D;void *pt;
+  D = (DIALOG *)Tmp;
+  pt = D->pt;
+  return ret;
+}
+int msgboxcleanup(void *Tmp) {
+  /* you add any cleanup/mem free here */
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  int ret = 1;
+  DIALOG *D;void *pt;
+  D = (DIALOG *)Tmp;
+  pt = D->pt;
+  return ret;
+}
+int Modifymsgbox(void *Tmp,int GrpId) {
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  DIA *d;
+  int i,n;
+  d = D->d;
+  i=0;while(d[i].t!= NULL) {;
+     i++;
+  };
+  n=1;
+  return GrpId;
+}
+
+int msgboxCallBack(void *Tmp,void *tmp) {
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+    tmp :  Pointer to KBEVENT  
+   ***********************************/ 
+  int ret = 0;
+  DIALOG *D;
+  KBEVENT *kbe;
+  D = (DIALOG *)Tmp;
+  kbe = (KBEVENT *)tmp;
+  if(kbe->event ==1) {
+    if(kbe->button ==1) {
+    }
+  }
+  return ret;
+}
+int msgboxResizeCallBack(void *Tmp) {
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  int ret = 0;
+  int xres,yres,dx,dy;
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  kgGetWindowSize(D,&xres,&yres);
+  dx = xres - D->xl;
+  dy = yres - D->yl;
+  /* extra code */
+  D->xl= xres;
+  D->yl= yres;
+  kgRedrawDialog(D);
+  return ret;
+}
+int msgboxWaitCallBack(void *Tmp) {
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+    Called while waiting for event  
+    return value 1 will close the the UI  
+   ***********************************/ 
+  int ret = 0;
+  return ret;
+}

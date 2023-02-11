@@ -1,3 +1,5 @@
+#define _GNU_SOURCE  
+#define D_STOPSERVER
 #include <unistd.h>
 #include <sys/types.h>
 #include <signal.h>
@@ -7,7 +9,7 @@
 #include <grp.h>
 #include <math.h>
 
-#include "kulina.h"
+#include <kulina.h>
 #include "passwdfile.h"
 #include "headers.h"
 #include "linaCallbacks.h"
@@ -37,6 +39,9 @@ int CheckXserver(void);
 int Wireless(int);
 int WC=0;
 int MakekeybrdGroup(DIALOG *D,void *arg,int Red,int Green,int Blue,int Xo,int Yo) ;
+int InitConfig(LINACONFIG *lc);
+void CleanLinaConfig(LINACONFIG *lc);
+void *ReadConfig(LINACONFIG *lc) ;
 
 #define WAIT(pid) {\
   pid_t w;\
@@ -95,7 +100,7 @@ int isdisplayinuse(int num) {
   return isunixsocketinuse(buff);
 }
 
-int settty(void) {
+void settty(void) {
  int ierr,op=0,i;
  FILE *pp;
    pp=popen("tty","r");
@@ -395,6 +400,12 @@ int StartServer(void){
    char *args[100],buff[1000],pt[300],job[200];
    char *pgrpath=NULL;
    int i=0,pos=0;
+#ifdef D_STOPSERVER
+// For restarting X server
+     runjob("killall -9 X",WaitForProcess);
+     runjob("killall -9 Xorg",WaitForProcess);
+     remove("/tmp/.X0-lock");
+#endif
 //   if(CheckXserver()) return 1;
    if(isdisplayinuse(0)) return 1;
    Sid=-1;
@@ -964,8 +975,8 @@ int lina( void *parent,void **v,void *pt) {
   d = D.d;
   D.d = d;
   TextBox=1;
-  kgColorTheme(&D,(int)lc.Red,(int)lc.Green,(int)lc.Blue);
-  ModifylinaGc(&(D.gc));    /*  set colors for gui*/
+//  kgColorTheme(&D,(int)lc.Red,(int)lc.Green,(int)lc.Blue);
+//  ModifylinaGc(&(D.gc));    /*  set colors for gui*/
   d = D.d;
   D.bkup = 1; /* set to 1 for backup */
   D.bor_type = 0;
@@ -1385,10 +1396,15 @@ int Runlina(void *arg) {
    char buff[200],*Command;
    void *pt=NULL; /* pointer to send any extra information */
    FILE *pp;
+#ifndef D_STOPSERVER
    if(!isdisplayinuse(0)) {
+#else 
+   {
+#endif
      remove("/tmp/.X0-lock");
      runjob("killall -9 X",WaitForProcess);
      runjob("killall -9 Xorg",WaitForProcess);
+     remove("/tmp/.X0-lock");
    }
    signal(SIGUSR1,User1Signal);
    LoginId=Guest;

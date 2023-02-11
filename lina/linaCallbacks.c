@@ -1,7 +1,7 @@
 
 #include <time.h>
 #include  <sys/time.h>
-#include "kulina.h"
+#include <kulina.h>
 #include "passwdfile.h"
 extern LINACONFIG lc;
 void *RunSessionDia(void *);
@@ -19,6 +19,7 @@ int GetWdev(void);
 int Wireless(int,void *);
 int WirelessStatus(void);
 int keybrdcleanup(void *Tmp,int Grpid);
+int CheckHdmi(void);
 extern char *Wdev;
 extern int Session,Action,PowerDown,TextLogin;
 extern char *LoginId,*Epasswd,Passwd[50],*UserHome,*UserName;
@@ -208,7 +209,7 @@ int linacleanup(void *Tmp) {
   while(imgs[i]!= NULL) {kgFreeImage(imgs[i]);imgs[i]=NULL; i++;}
   printf("Calling keybrdcleanup\n");
   keybrdcleanup(Tmp,lc.KbGrp);
-  printf("Calleg keybrdcleanup\n");
+  printf("Called keybrdcleanup\n");
   fflush(stdout);
   return ret;
 }

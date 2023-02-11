@@ -1,5 +1,5 @@
 //#include _BSD_SOURCE
-#include "kulina.h"
+#include <kulina.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +20,11 @@ int ID=-1,OK;
 extern int Connected;
 char Curssid[100];
 int Runwiredia(void *arg);
+int runjob(char *job,int (*ProcessOut)(int,int,int));
+int CheckProcessCommand(char *procname);
+int CheckProcess(char *procname);
+int CheckSystemd(void);
+int ResetSystemd(void);
 #define WAIT(pid) {\
   pid_t w;\
   int status;\

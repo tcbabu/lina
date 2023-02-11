@@ -7,6 +7,7 @@
 #define LINUX
 #define ZBUFFER
 #define DISPLAY ":0.0"
+#include <unistd.h>
 #include "kulina.h"
 #include "gprivate.h"
 #include "uievent.h"
@@ -68,6 +69,7 @@ static void *root=NULL; /* for back ground setting */
 static int PIX_CLR=255; /* colour allocation for pixmaps */
 
 static int FontSize=15;
+int syncfs(int fd);
 #define IMAGE_BLUE_VAL  (((blue)*(wc->IMAGE->blue_mask)+(1<<(wc->BLUEMASKPOS-1)))/255)
 #define IMAGE_GREEN_VAL ((((green) * (wc->IMAGE->green_mask) \
                   +(1<<(wc->GREENMASKPOS -1)))/255)&(wc->IMAGE->green_mask))
@@ -138,7 +140,7 @@ static  XFontStruct *fontstruct;
 #define Control           XK_Control_L
 #define Alt           XK_Alt_L
 
-union kbinp { short kbint; char kbc[2];} kb;
+static union kbinp { short kbint; char kbc[2];} kb;
 int NCLRS=1024;
 #define CopyPoint(x,y,i) XCopyArea(Dsp,Win,linebuf,Gc,(short)x,(short)(y) ,1,1,i,0)
 #define GetPoint(x,y,i) XCopyArea(Dsp,linebuf,Win,Gc,i,0,1,1,(short)x,(short)(y))
@@ -290,6 +292,7 @@ static int Scan_sh_code[256]={0,0,0,0,0,0,0,0,27,'!',' ',
                   0,0,0,0,0,0,0,0,0,0,
                   0,0,103,104,105,106};
 static int GetShift(unsigned long val);
+XImage * kg_GetImage(DIALOG *D,int x,int y,int width,int height);
 void kgSync(void *Tmp){
    kgWC *wc;
    wc = ((DIALOG *)Tmp)->wc;
@@ -297,7 +300,7 @@ void kgSync(void *Tmp){
 }
 void rmv_pointer()  {}
 void dsp_pointer() {}
-void draw_pointer(x,y) {}
+void draw_pointer(int x,int y) {}
 void _uiTileImage(kgWC *wc,Pixmap pix,XImage *ximage,int wd,int ht);
 void *  kgProcessSelectionRequest(void *Tmp);
 int kgEnableSelection(void *Tmp);
@@ -414,6 +417,10 @@ int kgCheckTrueColor(void) {
   Display *Dsp;
   XVisualInfo visualinfo ;
   Dsp = XOpenDisplay(NULL);
+  if(Dsp == NULL) {
+    setenv("DISPLAY",":0",1);
+    Dsp = XOpenDisplay(NULL);
+  }
   if(Dsp != NULL) {
     ret= XMatchVisualInfo(Dsp, DefaultScreen(Dsp), 32, TrueColor, &visualinfo);
     XCloseDisplay(Dsp);
@@ -462,7 +469,7 @@ void uiSetDefClr(kgWC *wc,int loc,XColor C) {
 }
 int uiSetGuiFixFontSize(DIALOG *D,int size) {
   XGCValues gcv;
-  char FONTNEW[70];
+  char FONTNEW[300];
   Display *Dsp;
   kgWC *wc;
   Dsp = (Display *)WC(D)->Dsp;
@@ -487,7 +494,7 @@ int uiSetGuiFixFontSize(DIALOG *D,int size) {
 }
 int uiSetNoechoFontSize(DIALOG *D,int size) {
   XGCValues gcv;
-  char FONTNEW[70];
+  char FONTNEW[300];
   Display *Dsp;
   kgWC *wc;
   Dsp = (Display *)WC(D)->Dsp;
@@ -512,7 +519,7 @@ int uiSetNoechoFontSize(DIALOG *D,int size) {
 }
 int uiDefaultGuiFontSize(DIALOG *D) {
   static XGCValues gcv;
-  char FONTNEW[70];
+  char FONTNEW[300];
   static  XFontStruct *fontstruct;
   Display *Dsp;
   kgWC *wc;
@@ -547,7 +554,7 @@ int uiDefaultGuiFontSize(DIALOG *D) {
 }
 int uiDefaultDisplayFontSize(Display *Dsp,GC Gc) {
   static XGCValues gcv;
-  char FONTNEW[70];
+  char FONTNEW[300];
   static  XFontStruct *fontstruct;
   sprintf(FONTNEW,"%-s%-2.2d%-s",FONTSTRV,FontSize,FONTSTR2);
     fontstruct= XLoadQueryFont(Dsp,FONTNEW);
@@ -599,6 +606,10 @@ static int GetShift(unsigned long val) {
 int GetDisplaySize(int *xres,int *yres) {
     Display *Dsp;
     Dsp = XOpenDisplay(NULL);
+    if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+    }
     if(Dsp == NULL) {printf(" Error: in opening Display ..\n");exit(0);};
     *xres = DisplayWidth(Dsp,DefaultScreen(Dsp));
     *yres = DisplayHeight(Dsp,DefaultScreen(Dsp));
@@ -608,6 +619,10 @@ int GetDisplaySize(int *xres,int *yres) {
 int kgDisplaySize(int *xres,int *yres) {
     Display *Dsp;
     Dsp = XOpenDisplay(NULL);
+    if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+    }
     if(Dsp == NULL) {printf(" Error: in opening Display ..\n");exit(0);};
     *xres = DisplayWidth(Dsp,DefaultScreen(Dsp));
     *yres = DisplayHeight(Dsp,DefaultScreen(Dsp));
@@ -629,17 +644,18 @@ int kgSendKeyEvent(void *Tmp,int ch) {
   DIALOG *D;
   kgWC *wc;
   int status;
+  int state=0;
   e = (XEvent *)Malloc(sizeof(XEvent));
   k = (XKeyEvent *)e;
   D = (DIALOG *)Tmp;
   wc = WC(D);
   k->type=KeyRelease;
-  k->send_event=1;
+  k->send_event=False;
   k->display=wc->Dsp;
   k->window=wc->Win;
   k->root = DefaultRootWindow(wc->Dsp);
   k->subwindow = wc->Win;
-  k->state = 0;
+  k->state = state;
   code = Revscan_code[ch];
   if(code < 0) {
      fprintf(stderr,"code < 0 %c %x\n",ch,ch);
@@ -649,9 +665,12 @@ int kgSendKeyEvent(void *Tmp,int ch) {
     k->keycode = code;
     k->same_screen = 1;
     k->type=KeyPress;
-    status= XSendEvent(wc->Dsp,wc->Win,False,0,e);
+    k->state = state;
+    status= XSendEvent(wc->Dsp,wc->Win,True,0,e);
     k->type=KeyRelease;
-    status= XSendEvent(wc->Dsp,wc->Win,False,0,e);
+    k->state = state;
+    status= XSendEvent(wc->Dsp,wc->Win,True,0,e);
+//    fprintf(stderr,"Send Key: %c %x\n",ch,ch);
   }
   
   free(e);
@@ -746,6 +765,88 @@ int kgSendControlKeyEvent(void *Tmp,int ch) {
   
   free(e);
 }
+int uiCheckChildern(void *Tmp,Window Win,void *wtmp) {
+/*
+  Checks Window exists or not
+*/
+  int ret=0;
+  DIALOG *D;
+  kgWC *wc;
+  Window win,mywin,root;
+  int nChild,i;
+  XWindowAttributes xwa;
+  D = (DIALOG *)Tmp;
+  wc = WC(D);
+  mywin = wc->Win;
+  win = *((Window *)wtmp);
+  Window Root,Par,*Child;
+//  XQueryTree(Dsp,Win,&Root,&Par,&Child,&nChild);
+//     printf("Win:par,Root,Par: %d %d %d %d,%d\n",Win,par,Root,Par,nChild);
+#if 1
+  if(!XQueryTree(wc->Dsp,Win,&Root,&Par,&Child,&nChild)) {
+     fprintf(stderr,"XQueryTree Failed\n");
+     return 0;
+  }
+//  fprintf(stderr,"nChild = %d\n",nChild);
+  for(i=0;i<nChild;i++) {
+    if( win == (Child[i])) {
+//       fprintf(stderr,"Got Window\n");
+       ret=1;break;
+    }
+    else {
+      if( uiCheckChildern(Tmp,Child[i],wtmp)) {
+//       fprintf(stderr,"Got from Children\n");
+       ret=1;break;
+      }
+    }
+  }
+  if(nChild!= 0) XFree(Child);
+#else
+  if(XGetWindowAttributes(wc->Dsp,win,&xwa)) ret=1;
+#endif
+  return ret;
+}
+int kgCheckWindow(void *Tmp,void *wtmp) {
+/*
+  Checks Window exists or not
+*/
+  int ret=0;
+  DIALOG *D;
+  kgWC *wc;
+  Window win,mywin,root;
+  int nChild,i;
+  XWindowAttributes xwa;
+  D = (DIALOG *)Tmp;
+  wc = WC(D);
+  mywin = wc->Win;
+  win = *((Window *)wtmp);
+  Window Root,Par,*Child;
+//  XQueryTree(Dsp,Win,&Root,&Par,&Child,&nChild);
+//     printf("Win:par,Root,Par: %d %d %d %d,%d\n",Win,par,Root,Par,nChild);
+#if 1
+  if(!XQueryTree(wc->Dsp,DefaultRootWindow(wc->Dsp),&Root,&Par,&Child,&nChild)) {
+     fprintf(stderr,"XQueryTree Failed\n");
+     return 0;
+  }
+//  fprintf(stderr,"nChild = %d\n",nChild);
+  for(i=0;i<nChild;i++) {
+    if( win == (Child[i])) {
+//       fprintf(stderr,"Got Window\n");
+       ret=1;break;
+    }
+    else {
+      if( uiCheckChildern(Tmp,Child[i],wtmp)) {
+//       fprintf(stderr,"Got from Children\n");
+       ret=1;break;
+      }
+    }
+  }
+  if(nChild!= 0) XFree(Child);
+#else
+  if(XGetWindowAttributes(wc->Dsp,win,&xwa)) ret=1;
+#endif
+  return ret;
+}
 int kgSendKeyToWindow(void *Tmp,void *wtmp,int ch) {
   int code;
   XEvent *e;
@@ -753,16 +854,19 @@ int kgSendKeyToWindow(void *Tmp,void *wtmp,int ch) {
   DIALOG *D;
   kgWC *wc;
   Window win,mywin,root;
-  e = (XEvent *)Malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
   D = (DIALOG *)Tmp;
   wc = WC(D);
-  int status;
-  int state = 0;
   mywin = wc->Win;
   win = *((Window *)wtmp);
+  if(!kgCheckWindow(Tmp,wtmp)) return 0;
+  kgSetInputFocus(Tmp,wtmp);  // Can be used
+  e = (XEvent *)Malloc(sizeof(XEvent));
+  k = (XKeyEvent *)e;
+  int status;
+  int state = 0;
   k->type=KeyRelease;
   k->send_event=True;
+  k->send_event=False;
   k->display=wc->Dsp;
   k->window= root;
   k->window= win;
@@ -770,6 +874,8 @@ int kgSendKeyToWindow(void *Tmp,void *wtmp,int ch) {
   k->subwindow =  mywin;
   k->state = state;
   code = Revscan_code[ch];
+  //TCB
+//     fprintf(stderr,"code : %c %x\n",ch,ch);
   if(code < 0) {
      fprintf(stderr,"code < 0 %c %x\n",ch,ch);
      return 0;
@@ -779,10 +885,13 @@ int kgSendKeyToWindow(void *Tmp,void *wtmp,int ch) {
     k->same_screen = 1;
     k->type=KeyPress;
     k->state = state;
-    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
+//    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
+//    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
+    status= XSendEvent(wc->Dsp,win,True,0,e);
     k->type=KeyRelease;
     k->state = state;
-    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
+//    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
+    status= XSendEvent(wc->Dsp,win,True,0,e);
   }
   
   free(e);
@@ -842,7 +951,6 @@ int kgSendLinefeedKeyToWindow(void *Tmp,void *win) {
 }
 int kgSendControlKeyToWindow(void *Tmp,void *wtmp,int ch) {
   int code;
-  kgSetInputFocus(Tmp,wtmp);
   if(ch >= 'a') ch = (ch-'a'+'A');
   if( (ch < 'A') || (ch>'_')){
       fprintf(stderr,"Wrong Control char: %c:%d\n",ch,ch);
@@ -853,14 +961,16 @@ int kgSendControlKeyToWindow(void *Tmp,void *wtmp,int ch) {
   DIALOG *D;
   kgWC *wc;
   Window win,mywin,root;
-  e = (XEvent *)Malloc(sizeof(XEvent));
-  k = (XKeyEvent *)e;
   D = (DIALOG *)Tmp;
   wc = WC(D);
-  int status;
-  int state = ControlMask;
   mywin = wc->Win;
   win = *((Window *)wtmp);
+  if(!kgCheckWindow(Tmp,wtmp)) return 0;
+  kgSetInputFocus(Tmp,wtmp);
+  e = (XEvent *)Malloc(sizeof(XEvent));
+  k = (XKeyEvent *)e;
+  int status;
+  int state = ControlMask;
   k->type=KeyRelease;
   k->send_event=True;
   k->display=wc->Dsp;
@@ -874,9 +984,11 @@ int kgSendControlKeyToWindow(void *Tmp,void *wtmp,int ch) {
     k->type=KeyPress;
     k->state = state;
     k->keycode =  code;
-    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
+//    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
+    status= XSendEvent(wc->Dsp,win,True,0,e);
     k->type=KeyRelease;
-    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
+//    status= XSendEvent(wc->Dsp,win,False,KeyPress|KeyRelease,e);
+    status= XSendEvent(wc->Dsp,win,True,0,e);
   free(e);
   return status;
 }
@@ -1000,6 +1112,10 @@ void * kgGetInputFocus (void *Tmp) {
   }
   else {
     Dsp = XOpenDisplay(NULL);
+    if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+    }
     if(Dsp == NULL) {
      fprintf(stderr,"Failed to Open Display\n");
      return NULL;
@@ -1631,6 +1747,10 @@ int kgCheckCompositor(void) {
 #if 1
   Display *Dsp;
   Dsp = XOpenDisplay(NULL);
+  if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+  }
   Atom cm_atom = XInternAtom (Dsp,"_NET_WM_CM_S0",0);
 //  if(!XCompositeQueryExtension(Dsp,&event_base,&error_base)) {
   if(XGetSelectionOwner(Dsp,cm_atom) == None) {
@@ -1712,6 +1832,10 @@ void  *kgCreateWindow (void *Tmp) {
 //  XInitThreads(); // created problem for True Color
   XInitThreads();
   Dsp = XOpenDisplay(NULL);
+  if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+  }
   if(Dsp == NULL) {printf(" Error: in opening Display ..\n");exit(0);}
   xresmax = DisplayWidth(Dsp,DefaultScreen(Dsp));
   yresmax = DisplayHeight(Dsp,DefaultScreen(Dsp));
@@ -2091,6 +2215,10 @@ void  *ui_create_window(int xpos,int ypos,int xres,int yres,char *title,int dec,
   wc = (kgWC *)Malloc(sizeof(kgWC));
   XInitThreads();
   Dsp = XOpenDisplay(NULL);
+  if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+  }
   if(Dsp == NULL) {printf(" Error: in opening Display ..\n");exit(0);};
   xresmax = DisplayWidth(Dsp,DefaultScreen(Dsp));
   yresmax = DisplayHeight(Dsp,DefaultScreen(Dsp));
@@ -3603,7 +3731,7 @@ short key_press(int *c) { /* Modification as on 29-12-99 */
 }
 
 #endif
-short get_kb(void) {
+short ui_get_kb(void) {
    int ch,ch1;
    int i;
    union kbinp { short kbint; char kbc[2];} kb;
@@ -3650,7 +3778,7 @@ char getch(void) {
    int ierr;
    char ch;
    union kbinp { short kbint; char kbc[2];} kb;
-   while((kb.kbint=get_kb())<=0) {
+   while((kb.kbint=ui_get_kb())<=0) {
 //    CheckWindowExposure();
     usleep(50000);
    }
@@ -4735,7 +4863,9 @@ void kgCleanBackground(void *Tmp,int xo,int yo,int width,int height,float transp
   D = (DIALOG *)Tmp;
   wc = D->wc;
 // Tiling maybe tried but may not work
-  IMAGE = XGetImage(wc->Dsp,wc->Win,xo,yo,width,height,0xffffffff,ZPixmap);
+//  IMAGE = XGetImage(wc->Dsp,wc->Win,xo,yo,width,height,0xffffffff,ZPixmap);
+//TCB 11/21
+  IMAGE = kg_GetImage(D,xo,yo,width,height);
   uiMakeImageTransparent(IMAGE,transparency);
   XPutImage(wc->Dsp,wc->Pix,wc->Gc,IMAGE,0,0,xo,yo,width,height);
 //  _uiTileImage(wc,wc->WIN,wc->IMAGE,EVGAX,EVGAY);
@@ -4852,7 +4982,8 @@ int _uiCheckXpm(char *flname) {
     }
   }
   if(fp != NULL) {
-    fgets(buf,7,fp);
+    char * rval;
+    rval=fgets(buf,7,fp);
     buf[7]='\0';
 //    printf("%s\n",buf);
     if((buf[3]=='X')&&(buf[4]=='P')&&(buf[5]=='M')) ret= 1;
@@ -5302,7 +5433,7 @@ void *uiWriteJpg(char *jpgfile) {
   for(j=0;j<rem;j++) fprintf(fp,"0x%8.8x,",pt[k++]);
   fprintf(fp,"   0x0 };\n");
   fprintf(fp,"  static JPGIMG  %-s_str = {\n",name);
-  fprintf(fp,"    \"JPG\", 1,\"%-s.jpg\",%d,%d,0,NULL,%-s_data \n  };\n",name,h,w,name,name);
+  fprintf(fp,"    \"JPG\", 1,\"%-s.jpg\",%d,%d,0,NULL,%-s_data \n  };\n",name,h,w,name);
   fprintf(fp,"#endif\n");
   fclose(fp);
   FreeJpegImg(img);
@@ -5355,33 +5486,35 @@ void *uiWritePng(char *pngfile) {
   for(j=0;j<rem;j++) fprintf(fp,"0x%2.2x,",pt[k++]);
   fprintf(fp,"   0x0 };\n");
   fprintf(fp,"  static PNGIMG  %-s_str = {\n",name);
-  fprintf(fp,"    \"PNG\",1,\"%-s.png\", %d,%d,%d,%d,%-s_data \n  };\n",name,img->image_width,img->image_height,img->image_rowbytes,img->image_channels,name,name);
+  fprintf(fp,"    \"PNG\",1,\"%-s.png\", %ld,%ld,%ld,%d,%-s_data \n  };\n",name,img->image_width,img->image_height,img->image_rowbytes,img->image_channels,name);
   fprintf(fp,"#endif\n");
   fclose(fp);
 //  FreeJpegImg(img);
   return img;
 }
 int uiFmgToFile(unsigned char *array,int sz,char * flname) {
+  int rval;
 #if 1
   int ot;
   ot = open(flname,O_RDWR|O_CREAT|O_TRUNC,0777);
   if(ot < 0) return -1;
-  write(ot,array,sz);
+  rval = write(ot,array,sz);
   syncfs(ot);
   close(ot);
 #else
   FILE *ot;
   ot = fopen(flname,"w");
-  fwrite(array,sz,1,ot);
+  rval = fwrite(array,sz,1,ot);
   fclose(ot);
 #endif
   return 1;
 }
 int kgFmgToFile(unsigned char *array,int sz,char * flname) {
   int ot;
+  int rval;
   ot = open(flname,O_RDWR|O_CREAT|O_TRUNC,0777);
   if(ot < 0) return -1;
-  write(ot,array,sz);
+  rval = write(ot,array,sz);
   close(ot);
   return 1;
 }
@@ -6489,6 +6622,10 @@ int kgRootImage(void *tmp) {
     int x0=0,y0=0, width, height,dy;
     if(tmp== NULL) return 0;
     Dsp = XOpenDisplay(NULL);
+    if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+    }
     Root = RootWindow(Dsp,DefaultScreen(Dsp));
     Dpth =  DisplayPlanes(Dsp,DefaultScreen(Dsp));
     EVGAX = DisplayWidth(Dsp,DefaultScreen(Dsp));
@@ -6682,6 +6819,10 @@ int kgWindowImage(Window Root,void *tmp) {
     int x0=0,y0=0, width, height,dy;
     if(tmp== NULL) return 0;
     Dsp = XOpenDisplay(NULL);
+    if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+    }
 //    Root = RootWindow(Dsp,DefaultScreen(Dsp));
     Dpth =  DisplayPlanes(Dsp,DefaultScreen(Dsp));
     EVGAX = DisplayWidth(Dsp,DefaultScreen(Dsp));
@@ -6852,6 +6993,10 @@ int kgSetParentImage(void *Tmp,void *Img) {
    Window  Parent;
    D = (DIALOG *)Tmp;
    Dsp = XOpenDisplay(NULL);
+   if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+   }
    Parent = (Window) D->parent;
   
    if(Parent==0) Parent = RootWindow(Dsp,DefaultScreen(Dsp));
@@ -7201,6 +7346,10 @@ void * kgGetRootRawImage(int xo,int yo,int wd,int ht ) {
     unsigned int Dpth=32;
     int x0=0,y0=0, width, height,dy;
     Dsp = XOpenDisplay(NULL);
+    if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+    }
     Root = RootWindow(Dsp,DefaultScreen(Dsp));
     Dpth =  DisplayPlanes(Dsp,DefaultScreen(Dsp));
     EVGAX = DisplayWidth(Dsp,DefaultScreen(Dsp));
@@ -7269,6 +7418,10 @@ void * kgMakeImageFromRaw(unsigned char *Imgdata ,int wd,int ht) {
     int x0=0,y0=0, width, height,dy;
 #if 0
     Dsp = XOpenDisplay(NULL);
+    if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+    }
     Root = RootWindow(Dsp,DefaultScreen(Dsp));
     Dpth =  DisplayPlanes(Dsp,DefaultScreen(Dsp));
     EVGAX = DisplayWidth(Dsp,DefaultScreen(Dsp));
@@ -7330,6 +7483,10 @@ void * kgGetRootImage(void ) {
     unsigned int Dpth=32;
     int x0=0,y0=0, width, height,dy;
     Dsp = XOpenDisplay(NULL);
+    if(Dsp == NULL) {
+      setenv("DISPLAY",":0",1);
+      Dsp = XOpenDisplay(NULL);
+    }
     Root = RootWindow(Dsp,DefaultScreen(Dsp));
     Dpth =  DisplayPlanes(Dsp,DefaultScreen(Dsp));
     EVGAX = DisplayWidth(Dsp,DefaultScreen(Dsp));

@@ -32,7 +32,11 @@
 #define uicnv_x(dc,x) (x*dc->Fx-dc->Sx)
 #define uicnv_y(dc,y) (y*dc->Fy-dc->Sy)
 #define uicnv_z(dc,z) ( ((z)-dc->clip_min)/(dc->clip_max - dc->clip_min)*ZRES )
-#define Fread(pf,c,n) fread(c,1,n,pf)
+#define Fread(pf,c,n)  fread(c,1,n,pf)
+#define FREAD(pf,c,n)  { \
+  int ret; ret=fread(c,1,n,pf); \
+  if(ret != n) {fprintf(stderr,"fread failed \n"); exit(0);} \
+}
 #ifdef UNIX
 #include <unistd.h>
 #include <dirent.h>
@@ -77,6 +81,14 @@ static int B_max=990000,B_min=989000;
      dc->newstr.ystr = -(2.* dc->ze/(oldstr.zstr)) * oldstr.ystr;\
      dc->newstr.zstr = oldstr.zstr;\
  }
+#define WRITE(x,y,z) { \
+	int ret; \
+	ret = write(x,y,z); \
+	if(ret != z) {fprintf(stderr,"Write Failed\n"); exit(0);}\
+}
+#define SYSTEM(cmd) { \
+ int ret; ret = system(cmd); \
+}
 int pscript(char *,char *);
 void remove_back_slash(char *buff) {
  int i=0;
@@ -548,7 +560,7 @@ void kgInit(void) {
 #endif
 void uiInitGbox(DIALOG *D,int i) {
   int l;
-  static entry=0;
+  static int entry=0;
   char flname[200],reviewfile[200];
 
   DIG *G;
@@ -614,7 +626,7 @@ void uiwrite_buf(DIG *G,unsigned char *ch, int n )
         G->rbuf = open(dc->reviewfile,O_CREAT|O_BINARY|O_TRUNC|O_RDWR,0666);
         G->OPEN=1;
       }
-       write(G->rbuf,(void *)G->Rbuff,B_min);
+       WRITE(G->rbuf,(void *)G->Rbuff,B_min);
       j = 0;G->BACK_UP=1;
       for(i=B_min;i<G->Byte;i++)
        G->Rbuff[j++]=G->Rbuff[i];
@@ -733,10 +745,10 @@ void kgGetViewport(DIG *G,float *x1,float *y1,float *x2,float *y2) {
 }
 void gphUserFrame(int fid,float x1,float y1, float x2, float y2)
  {
-     write(fid,&x1,4);
-     write(fid,&y1,4);
-     write(fid,&x2,4);
-     write(fid,&y2,4);
+     WRITE(fid,&x1,4);
+     WRITE(fid,&y1,4);
+     WRITE(fid,&x2,4);
+     WRITE(fid,&y2,4);
  }
 void kgMove2f(DIG *G,float x,float y)
  {
@@ -753,10 +765,10 @@ void kgMove2f(DIG *G,float x,float y)
  }
 void gphMove2f(int fid,float x,float y)
  {
-     write(fid,&L,1);
-     write(fid,&M,1);
-     write(fid,&x,4);
-     write(fid,&y,4);
+     WRITE(fid,&L,1);
+     WRITE(fid,&M,1);
+     WRITE(fid,&x,4);
+     WRITE(fid,&y,4);
  }
 void kgMarkerType(DIG *G,int mtype)
 {
@@ -786,10 +798,10 @@ void kgDraw2f(DIG *G,float x,float y)
  }
 void gphDraw2f(int fid,float x,float y)
  {
-     write(fid,&L,1);
-     write(fid,&D,1);
-     write(fid,&x,4);
-     write(fid,&y,4);
+     WRITE(fid,&L,1);
+     WRITE(fid,&D,1);
+     WRITE(fid,&x,4);
+     WRITE(fid,&y,4);
  }
 void kgCircle2f(DIG *G,float x,float y,float r)
  {
@@ -807,11 +819,11 @@ void kgCircle2f(DIG *G,float x,float y,float r)
 void gphCircle2f(int fid,float x,float y,float r)
  {
      if(r<=0) return;
-     write(fid,&L,1);
-     write(fid,&R,1);
-     write(fid,&x,4);
-     write(fid,&y,4);
-     write(fid,&r,4);
+     WRITE(fid,&L,1);
+     WRITE(fid,&R,1);
+     WRITE(fid,&x,4);
+     WRITE(fid,&y,4);
+     WRITE(fid,&r,4);
  }
 void kgMarker2f(DIG *G,float x,float y)
 {
@@ -835,9 +847,9 @@ void kgLineStyle(DIG *G,int style)
  }
 void gphLineStyle(int fid,int style)
 {
-     write(fid,&L,1);
-     write(fid,&S,1);
-     write(fid,&style,4);
+     WRITE(fid,&L,1);
+     WRITE(fid,&S,1);
+     WRITE(fid,&style,4);
  }
 void kgLineColor(DIG *G,int colr)
  {
@@ -854,9 +866,9 @@ void kgLineColor(DIG *G,int colr)
  }
 void gphLineColor(int fid,int colr)
  {
-     write(fid,&L,1);
-     write(fid,&C,1);
-     write(fid,&colr,4);
+     WRITE(fid,&L,1);
+     WRITE(fid,&C,1);
+     WRITE(fid,&colr,4);
  }
 void kgTextColor(DIG *G,int tcolr)
  {
@@ -873,9 +885,9 @@ void kgTextColor(DIG *G,int tcolr)
  }
 void gphTextColor(int fid,int tcolr)
  {
-     write(fid,&T,1);
-     write(fid,&C,1);
-     write(fid,&tcolr,4);
+     WRITE(fid,&T,1);
+     WRITE(fid,&C,1);
+     WRITE(fid,&tcolr,4);
  }
 void kgTextSize(DIG *G,float h,float w,float g)
  {
@@ -903,17 +915,17 @@ void kgTextSize(DIG *G,float h,float w,float g)
 void gphTextSize(int fid,float h,float w,float g,float w_x1,float w_y1,float w_x2,float w_y2)
  {
      float txt_htx,txt_wty,txt_spy;
-     write(fid,&T,1);
-     write(fid,&S,1);
-     write(fid,&h,4);
-     write(fid,&w,4);
-     write(fid,&g,4);
+     WRITE(fid,&T,1);
+     WRITE(fid,&S,1);
+     WRITE(fid,&h,4);
+     WRITE(fid,&w,4);
+     WRITE(fid,&g,4);
      txt_htx=h/(w_y2-w_y1)*(w_x2-w_x1);
      txt_wty=w/(w_x2-w_x1)*(w_y2-w_y1);
      txt_spy=g/(w_x2-w_x1)*(w_y2-w_y1);
-     write(fid,&txt_htx,4);
-     write(fid,&txt_wty,4);
-     write(fid,&txt_spy,4);
+     WRITE(fid,&txt_htx,4);
+     WRITE(fid,&txt_wty,4);
+     WRITE(fid,&txt_spy,4);
  }
 void uirevtxtsize(DIG *G,float h,float w,float g,float hx,float wy,float spy)
  {
@@ -946,9 +958,9 @@ void kgTextAngle(DIG *G,float ang)
  }
 void gphTextAngle(int fid,float ang)
  {
-     write(fid,&T,1);
-     write(fid,&R,1);
-     write(fid,&ang,4);
+     WRITE(fid,&T,1);
+     WRITE(fid,&R,1);
+     WRITE(fid,&ang,4);
  }
 void kgWriteText( DIG *G,char *c)
  {
@@ -970,10 +982,10 @@ void gphWriteText( int fid,char *c)
      int n=0;
      while(*(c+n) != '\0') n++;
      n++;
-     write(fid,&T,1);
-     write(fid,&W,1);
-     write(fid,&n,4);
-     write(fid,c,n);
+     WRITE(fid,&T,1);
+     WRITE(fid,&W,1);
+     WRITE(fid,&n,4);
+     WRITE(fid,c,n);
      return;
  }
 void kgTextFont(DIG *G,int tf)
@@ -987,9 +999,9 @@ void kgTextFont(DIG *G,int tf)
      ui_txt_font(G,tf);
  }
 void gphTextFont(int fid,int tf) {
-     write(fid,&T,1);
-     write(fid,&F,1);
-     write(fid,&tf,4);
+     WRITE(fid,&T,1);
+     WRITE(fid,&F,1);
+     WRITE(fid,&tf,4);
 }
 void kgPolyFill(DIG *G,int n, float *x, float *y, int flag,int color)
  {
@@ -1009,13 +1021,13 @@ void kgPolyFill(DIG *G,int n, float *x, float *y, int flag,int color)
 void gphPolyFill(int fid,int n, float *x, float *y, int flag,int color)
  {
       if( n<3) return;
-      write(fid,&P,1);
-      write(fid,&P,1);
-      write(fid,&n,4);
-      write(fid,x,4*n);
-      write(fid,y,4*n);
-      write(fid,&flag,4);
-      write(fid,&color,4);
+      WRITE(fid,&P,1);
+      WRITE(fid,&P,1);
+      WRITE(fid,&n,4);
+      WRITE(fid,x,4*n);
+      WRITE(fid,y,4*n);
+      WRITE(fid,&flag,4);
+      WRITE(fid,&color,4);
   }
 void kgBoxFill(DIG *G,float x1,float y1, float x2, float y2,int fl,int ib)
  {
@@ -1037,14 +1049,14 @@ void kgBoxFill(DIG *G,float x1,float y1, float x2, float y2,int fl,int ib)
 void gphBoxFill(int fid,float x1,float y1, float x2, float y2,int fl,int ib)
  {
 
-      write(fid,&P,1);
-      write(fid,&B,1);
-      write(fid,&x1,4);
-      write(fid,&y1,4);
-      write(fid,&x2,4);
-      write(fid,&y2,4);
-      write(fid,&fl,4);
-      write(fid,&ib,4);
+      WRITE(fid,&P,1);
+      WRITE(fid,&B,1);
+      WRITE(fid,&x1,4);
+      WRITE(fid,&y1,4);
+      WRITE(fid,&x2,4);
+      WRITE(fid,&y2,4);
+      WRITE(fid,&fl,4);
+      WRITE(fid,&ib,4);
 
  }
 void kgSetGouraudParams(DIG *G,float p2, float p1, int n, int ib)
@@ -1088,22 +1100,22 @@ void kgGouraudFill(DIG *G,int n, float *x, float *y,float *v)
  }
 void gphSetShadeParams(int fid,float p2, float p1,int startclr, int n, int ib)
  {
-      write(fid,&P,1);
-      write(fid,&H,1);
-      write(fid,&p2,4);
-      write(fid,&p1,4);
-      write(fid,&startclr,4);
-      write(fid,&n,4);
-      write(fid,&ib,4);
+      WRITE(fid,&P,1);
+      WRITE(fid,&H,1);
+      WRITE(fid,&p2,4);
+      WRITE(fid,&p1,4);
+      WRITE(fid,&startclr,4);
+      WRITE(fid,&n,4);
+      WRITE(fid,&ib,4);
  }
 void gphGouraudFill(int fid,int n, float *x, float *y,float *v)
  {
-     write(fid,&P,1);
-     write(fid,&G,1);
-     write(fid,&n,4);
-     write(fid,x,4*n);
-     write(fid,y,4*n);
-     write(fid,v,4*n);
+     WRITE(fid,&P,1);
+     WRITE(fid,&G,1);
+     WRITE(fid,&n,4);
+     WRITE(fid,x,4*n);
+     WRITE(fid,y,4*n);
+     WRITE(fid,v,4*n);
  }
 void uiinitialise(DIG *G)
  {
@@ -1207,20 +1219,20 @@ void kgClearView(DIG *G)
      if(ans) return;
      exit(0);
    };
-   write(pf,(void *)&w_x1,4);
-   write(pf,(void *)&w_y1,4);
-   write(pf,(void *)&w_x2,4);
-   write(pf,(void *)&w_y2,4);
+   WRITE(pf,(void *)&w_x1,4);
+   WRITE(pf,(void *)&w_y1,4);
+   WRITE(pf,(void *)&w_x2,4);
+   WRITE(pf,(void *)&w_y2,4);
    if((ZBUFF==1)||(TIFF)) {
-     write(pf,(void *)&Z,1);
+     WRITE(pf,(void *)&Z,1);
 /*
-     write(pf,(void *)FM,64);
-     write(pf,(void *)&xe,4);
-     write(pf,(void *)&ye,4);
-     write(pf,(void *)&ze,4);
-     write(pf,(void *)&zc,4);
-     write(pf,(void *)&clip_min,4);
-     write(pf,(void *)&clip_max,4);
+     WRITE(pf,(void *)FM,64);
+     WRITE(pf,(void *)&xe,4);
+     WRITE(pf,(void *)&ye,4);
+     WRITE(pf,(void *)&ze,4);
+     WRITE(pf,(void *)&zc,4);
+     WRITE(pf,(void *)&clip_min,4);
+     WRITE(pf,(void *)&clip_max,4);
 */
    }
    Fixshadecolors_hsv(pf);
@@ -1229,8 +1241,8 @@ void kgClearView(DIG *G)
    rbuf=open(reviewfile,O_RDWR|O_BINARY, S_IREAD|S_IWRITE);
    if( rbuf<0) return;
    read_file(rbuf); 
-   while(Byte==B_min){write(pf,(void *)Rbuff,Byte); read_file(rbuf); }
-   write(pf,(void *)Rbuff,Byte);
+   while(Byte==B_min){WRITE(pf,(void *)Rbuff,Byte); read_file(rbuf); }
+   WRITE(pf,(void *)Rbuff,Byte);
    OPEN=1;
    R_Byte=0;
    Byte=0;R_max=0;
@@ -1272,25 +1284,25 @@ void kgClearView(DIG *G)
      if(ans) return;
      exit(0);
    };
-   write(pf,(void *)&dc->w_x1,4);
-   write(pf,(void *)&dc->w_y1,4);
-   write(pf,(void *)&dc->w_x2,4);
-   write(pf,(void *)&dc->w_y2,4);
+   WRITE(pf,(void *)&dc->w_x1,4);
+   WRITE(pf,(void *)&dc->w_y1,4);
+   WRITE(pf,(void *)&dc->w_x2,4);
+   WRITE(pf,(void *)&dc->w_y2,4);
 #if 1
    if(dc->PROJ) {
-     write(pf,(void *)&CZ,1);
-     write(pf,(void *)&dc->w_x1,4);
-     write(pf,(void *)&dc->w_y1,4);
-     write(pf,(void *)&dc->w_x2,4);
-     write(pf,(void *)&dc->w_y2,4);
-     write(pf,(void *)dc->FM,64);
-     write(pf,(void *)&(dc->xe),4);
-     write(pf,(void *)&(dc->ye),4);
-     write(pf,(void *)&(dc->ze),4);
-     write(pf,(void *)&(dc->zc),4);
-     write(pf,(void *)&(dc->clip_min),4);
-     write(pf,(void *)&(dc->clip_max),4);
-     if(dc->ZBUFF) write(pf,(void *)&Z,1);
+     WRITE(pf,(void *)&CZ,1);
+     WRITE(pf,(void *)&dc->w_x1,4);
+     WRITE(pf,(void *)&dc->w_y1,4);
+     WRITE(pf,(void *)&dc->w_x2,4);
+     WRITE(pf,(void *)&dc->w_y2,4);
+     WRITE(pf,(void *)dc->FM,64);
+     WRITE(pf,(void *)&(dc->xe),4);
+     WRITE(pf,(void *)&(dc->ye),4);
+     WRITE(pf,(void *)&(dc->ze),4);
+     WRITE(pf,(void *)&(dc->zc),4);
+     WRITE(pf,(void *)&(dc->clip_min),4);
+     WRITE(pf,(void *)&(dc->clip_max),4);
+     if(dc->ZBUFF) WRITE(pf,(void *)&Z,1);
    }
 //TCBTCB
 //   Fixshadecolors_hsv(pf);
@@ -1302,10 +1314,10 @@ void kgClearView(DIG *G)
    if( G->rbuf<0) return;
    uiread_file(G,G->rbuf); 
    while(G->Byte==G->B_min){
-    write(pf,(void *)G->Rbuff,G->Byte);
+    WRITE(pf,(void *)G->Rbuff,G->Byte);
     uiread_file(G,G->rbuf);
    }
-   write(pf,(void *)G->Rbuff,G->Byte);
+   WRITE(pf,(void *)G->Rbuff,G->Byte);
    G->OPEN=1;
    G->R_Byte=0;
    G->Byte=0;G->R_max=0;
@@ -1344,10 +1356,10 @@ void kgClearView(DIG *G)
    G->BACK_UP=1;
    uiclose_file(G,&(G->rbuf),dc->reviewfile);
    G->rbuf=open(dc->reviewfile,O_RDWR|O_BINARY, S_IREAD|S_IWRITE);
-   if( G->rbuf<0) return;
+   if( G->rbuf<0) return 0;
    uiread_file(G,G->rbuf); 
-   while(G->Byte==B_min){write(pf,(void *)G->Rbuff,G->Byte); uiread_file(G,G->rbuf); }
-   write(pf,(void *)G->Rbuff,G->Byte);
+   while(G->Byte==B_min){WRITE(pf,(void *)G->Rbuff,G->Byte); uiread_file(G,G->rbuf); }
+   WRITE(pf,(void *)G->Rbuff,G->Byte);
    G->OPEN=1;
    G->R_Byte=0;
    G->Byte=0;G->R_max=0;
@@ -1378,9 +1390,9 @@ void kgLineWidth( DIG *G,int dw)
  }
 void gphLineWidth( int fid,int dw)
  {
-  write(fid,&L,1);
-  write(fid,&W,1);
-  write(fid,&dw,4);
+  WRITE(fid,&L,1);
+  WRITE(fid,&W,1);
+  WRITE(fid,&dw,4);
  }
  int uiDraw_arc(DIG *G,float xo,float yo,float r,float ang1,float ang2)
   {
@@ -4744,15 +4756,15 @@ void kgrev_shade_o(DIG *G,FILE *fp)
   float *x,*y,*z,*v;
   kgDC *dc;
   dc= G->dc;
-  Fread(fp,(void *)&n,4);
+  FREAD(fp,(void *)&n,4);
   l = sizeof(float)*n;
   x = (float *)Malloc(l);
   y = (float *)Malloc(l);
   z = (float *)Malloc(l);
   v = (float *)Malloc(l);
-  Fread(fp,(void *)x,l);
-  Fread(fp,(void *)y,l);
-  Fread(fp,(void *)z,l);
+  FREAD(fp,(void *)x,l);
+  FREAD(fp,(void *)y,l);
+  FREAD(fp,(void *)z,l);
   uiwrite_bf(G,&P,1);
   uiwrite_bf(G,&S3,1);
   uiwrite_bf(G,&n,4);
@@ -4777,9 +4789,9 @@ void kgrev_move3f(DIG *G,FILE *fp)
      float x,y,z;
      kgDC *dc;
      dc = G->dc;
-     Fread(fp,(void *)&x,4);
-     Fread(fp,(void *)&y,4);
-     Fread(fp,(void *)&z,4);
+     FREAD(fp,(void *)&x,4);
+     FREAD(fp,(void *)&y,4);
+     FREAD(fp,(void *)&z,4);
      uiwrite_bf(G,&L,1);
      uiwrite_bf(G,&M3,1);
      x = uicnv_x(dc,x);
@@ -4798,9 +4810,9 @@ void kgrev_draw3f(DIG *G,FILE *fp)
      float x,y,z;
      kgDC *dc;
      dc = G->dc;
-     Fread(fp,(void *)&x,4);
-     Fread(fp,(void *)&y,4);
-     Fread(fp,(void *)&z,4);
+     FREAD(fp,(void *)&x,4);
+     FREAD(fp,(void *)&y,4);
+     FREAD(fp,(void *)&z,4);
 
      uiwrite_bf(G,&L,1);
      uiwrite_bf(G,&D3,1);
@@ -4823,16 +4835,16 @@ void kgrev_godr_fill3f(DIG *G,FILE *fp)
   float *x,*y,*z,*v;
      kgDC *dc;
      dc = G->dc;
-  Fread(fp,(void *)&n,4);
+  FREAD(fp,(void *)&n,4);
   l = sizeof(float)*n;
   x = (float *)Malloc(l);
   y = (float *)Malloc(l);
   z = (float *)Malloc(l);
   v = (float *)Malloc(l);
-  Fread(fp,(void *)x,l);
-  Fread(fp,(void *)y,l);
-  Fread(fp,(void *)z,l);
-  Fread(fp,(void *)v,l);
+  FREAD(fp,(void *)x,l);
+  FREAD(fp,(void *)y,l);
+  FREAD(fp,(void *)z,l);
+  FREAD(fp,(void *)v,l);
   uiwrite_bf(G,&P,1);
   uiwrite_bf(G,&G3,1);
   uiwrite_bf(G,&n,4);
@@ -4857,16 +4869,16 @@ void kgrev_poly_fill3f(DIG *G,FILE *fp)
   float *x,*y,*z;
      kgDC *dc;
      dc = G->dc;
-  Fread(fp,(void *)&n,4);
+  FREAD(fp,(void *)&n,4);
   l = sizeof(float)*n;
   x = (float *)Malloc(l);
   y = (float *)Malloc(l);
   z = (float *)Malloc(l);
-  Fread(fp,(void *)x,l);
-  Fread(fp,(void *)y,l);
-  Fread(fp,(void *)z,l);
-  Fread(fp,(void *)&flag,4);
-  Fread(fp,(void *)&color,4);
+  FREAD(fp,(void *)x,l);
+  FREAD(fp,(void *)y,l);
+  FREAD(fp,(void *)z,l);
+  FREAD(fp,(void *)&flag,4);
+  FREAD(fp,(void *)&color,4);
 
   uiwrite_bf(G,&P,1);
   uiwrite_bf(G,&P3,1);
@@ -4891,14 +4903,14 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
    int fl,ib;
      kgDC *dc;
      dc = G->dc;
-   Fread(fp,(void *)&x1,4);
-   Fread(fp,(void *)&y1,4);
-   Fread(fp,(void *)&z1,4);
-   Fread(fp,(void *)&x2,4);
-   Fread(fp,(void *)&y2,4);
-   Fread(fp,(void *)&z2,4);
-   Fread(fp,(void *)&fl,4);
-   Fread(fp,(void *)&ib,4);
+   FREAD(fp,(void *)&x1,4);
+   FREAD(fp,(void *)&y1,4);
+   FREAD(fp,(void *)&z1,4);
+   FREAD(fp,(void *)&x2,4);
+   FREAD(fp,(void *)&y2,4);
+   FREAD(fp,(void *)&z2,4);
+   FREAD(fp,(void *)&fl,4);
+   FREAD(fp,(void *)&ib,4);
       x1 = uicnv_x(dc,x1);
       y1 = uicnv_y(dc,y1);
       x2 = uicnv_x(dc,x2);
@@ -4958,55 +4970,55 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
         break;
         
      case 'l' :
-      Fread(pf,(void *)&ch2,1);
+      FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'm':
-                Fread(pf,(void *)&x,4);
-                Fread(pf,(void *)&y,4);
+                FREAD(pf,(void *)&x,4);
+                FREAD(pf,(void *)&y,4);
                 kgMove2f(G,uicnv_x(dc,x),uicnv_y(dc,y));
          break;
         case 'd':
-                Fread(pf,(void *)&x,4);
-                Fread(pf,(void *)&y,4);
+                FREAD(pf,(void *)&x,4);
+                FREAD(pf,(void *)&y,4);
                 kgDraw2f(G,uicnv_x(dc,x),uicnv_y(dc,y));
                 break;
         case 'l':
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&y2,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&y2,4);
 /*              draw_line(cnv_x(x1),cnv_y(y1),cnv_x(x2),cnv_y(y2));*/
         break;
         case 'i':
-                Fread(pf,(void *)imgfile,100);
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&y2,4);
+                FREAD(pf,(void *)imgfile,100);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&y2,4);
 //                printf("Drawing Image: %-s\n",imgfile);
                 kgDrawImage(G,imgfile,uicnv_x(dc,x1),uicnv_y(dc,y1),
                              uicnv_x(dc,x2),uicnv_y(dc,y2));
         break;
         case 's':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgLineStyle(G,clr);
         break;
         case 'y':
 //                resetstyle();
         break;
         case 'w':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgLineWidth(G,clr);
                 break;
         case 'c':
-                Fread(pf,(void *)&color,4);
+                FREAD(pf,(void *)&color,4);
                 kgLineColor(G,color);
         break;
         case 'r': 
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
                 kgCircle2f(G,uicnv_x(dc,x1),uicnv_y(dc,y1),uicnv_x(dc,x2));
         break;
         case 'M': kgrev_move3f(G,pf);
@@ -5019,16 +5031,16 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
       }
       break;
      case 'm' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'k':
-                Fread(pf,(void *)&x,4);
-                Fread(pf,(void *)&y,4);
+                FREAD(pf,(void *)&x,4);
+                FREAD(pf,(void *)&y,4);
                 kgMarker2f(G,uicnv_x(dc,x),uicnv_y(dc,y));
          break;
         case 't':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgMarkerType(G,clr);
          break;
         default :
@@ -5037,68 +5049,68 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
       }
      break;
      case 't' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'w':
-                Fread(pf,(void *)&n,4);
+                FREAD(pf,(void *)&n,4);
                 tx= (unsigned char *) Malloc((n+1)*sizeof(unsigned));
-                Fread(pf,(void *)tx,n);
+                FREAD(pf,(void *)tx,n);
                 *(tx+n)='\0';
                 kgWriteText(G,(char *)tx);
                 free(tx);
                 break;
         case 'o': 
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
 //                set_txtbold(clr);
                 break;
         case 'h':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
 //                set_htxtbold(clr);
                 break;
         case 'c':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgTextColor(G,clr);
                 break;
         case 'l':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
 //                txtfill(clr);
                 break;
         case 'k':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
 //                txtbkgr(clr);
                 break;
         case 'p':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
 //                txtpattern(clr);
                 break;
         case 'b':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
 //                txtbodr(clr);
                 break;
         case 'f':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgTextFont(G,clr);
                 break;
         case 'a':
-                Fread(pf,(void *)&x,4);
+                FREAD(pf,(void *)&x,4);
 //                txtslant(x);
                 break;
         case 's':
-                Fread(pf,(void *)&y,4);
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&x,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&y2,4);
+                FREAD(pf,(void *)&y,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&x,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&y2,4);
                 uirevtxtsize(G,y*fy,x1*fx,x2*fx,x*fx,y1*fy,y2*fy);
                 break;
         case 'r':
-                Fread(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&x1,4);
                 kgTextAngle(G,x1);
                 break;
         case 'x':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
 //                set_prtxt(clr);
                 break;
         default :
@@ -5107,30 +5119,30 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
        }
       break;
      case 'p' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'b':
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&y2,4);
-                Fread(pf,(void *)&color,4);
-                Fread(pf,(void *)&flag,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&y2,4);
+                FREAD(pf,(void *)&color,4);
+                FREAD(pf,(void *)&flag,4);
                 kgBoxFill(G,uicnv_x(dc,x1),uicnv_y(dc,y1),uicnv_x(dc,x2),uicnv_y(dc,y2),color,flag);
                 break;
         case 'r': 
                 uiwin_circlefill(G);  // Will not work
                 break;
         case 'p':
-                Fread(pf,(void *)&n,4);
+                FREAD(pf,(void *)&n,4);
                 xx=(float *)Malloc(sizeof(float)*n);
                 yy=(float *)Malloc(sizeof(float)*n);
                 check_mem_alloc(yy);
-                Fread(pf,(void *)xx,4*n);
-                Fread(pf,(void *)yy,4*n);
-                Fread(pf,(void *)&flag,4);
-                Fread(pf,(void *)&color,4);
+                FREAD(pf,(void *)xx,4*n);
+                FREAD(pf,(void *)yy,4*n);
+                FREAD(pf,(void *)&flag,4);
+                FREAD(pf,(void *)&color,4);
                 for(i=0;i<n;i++)
                 {
                   xx[i] =uicnv_x(dc,xx[i]); 
@@ -5140,14 +5152,14 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
                 free(xx),free(yy);
                 break;
         case 'g': 
-                Fread(pf,(void *)&n,4);
+                FREAD(pf,(void *)&n,4);
                 xx=(float *)Malloc(sizeof(float)*n);
                 yy=(float *)Malloc(sizeof(float)*n);
                 p=(float *)Malloc(sizeof(float)*n);
                 check_mem_alloc(p);
-                Fread(pf,(void *)xx,4*n);
-                Fread(pf,(void *)yy,4*n);
-                Fread(pf,(void *)p,4*n);
+                FREAD(pf,(void *)xx,4*n);
+                FREAD(pf,(void *)yy,4*n);
+                FREAD(pf,(void *)p,4*n);
                 for(i=0;i<n;i++)
                 {
                   xx[i] =uicnv_x(dc,xx[i]); 
@@ -5161,10 +5173,10 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
                 {
                 float p1,p2;
                 int n,ib;
-                Fread(pf,(void *)&p2,4);
-                Fread(pf,(void *)&p1,4);
-                Fread(pf,(void *)&n,4);
-                Fread(pf,(void *)&ib,4);
+                FREAD(pf,(void *)&p2,4);
+                FREAD(pf,(void *)&p1,4);
+                FREAD(pf,(void *)&n,4);
+                FREAD(pf,(void *)&ib,4);
                 kgSetGouraudParams(G,p2,p1,n,ib);
                 }
                 break;
@@ -5172,11 +5184,11 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
                 {
                 float p1,p2;
                 int sclr,n,ib;
-                Fread(pf,(void *)&p2,4);
-                Fread(pf,(void *)&p1,4);
-                Fread(pf,(void *)&sclr,4);
-                Fread(pf,(void *)&n,4);
-                Fread(pf,(void *)&ib,4);
+                FREAD(pf,(void *)&p2,4);
+                FREAD(pf,(void *)&p1,4);
+                FREAD(pf,(void *)&sclr,4);
+                FREAD(pf,(void *)&n,4);
+                FREAD(pf,(void *)&ib,4);
                 kgSetShadeParams(G,p2,p1,sclr,n,ib);
                 }
                 break;
@@ -5197,14 +5209,14 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
        }
       break;
      case 's' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'c':
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&y2,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&y2,4);
                 kgSetClip(G,uicnv_x(dc,x1),uicnv_y(dc,y1),uicnv_x(dc,x2),uicnv_y(dc,y2));
                 Clips++;
                 break;
@@ -5215,14 +5227,14 @@ void kgrev_box_fill3f(DIG *G,FILE *fp)
       }
       break;
      case 'c' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'h':
-                Fread(pf,(void *)&no,4);
-                Fread(pf,(void *)&ir,4);
-                Fread(pf,(void *)&ib,4);
-                Fread(pf,(void *)&ig,4);
+                FREAD(pf,(void *)&no,4);
+                FREAD(pf,(void *)&ir,4);
+                FREAD(pf,(void *)&ib,4);
+                FREAD(pf,(void *)&ig,4);
                 kgChangeColor(G,no,ir,ig,ib);
                break;
       }
@@ -5246,9 +5258,9 @@ void uicnv_move3f(DIG *G,FILE *fp)
      float x,y,z;
      kgDC *dc;
      dc = G->dc;
-     Fread(fp,(void *)&x,4);
-     Fread(fp,(void *)&y,4);
-     Fread(fp,(void *)&z,4);
+     FREAD(fp,(void *)&x,4);
+     FREAD(fp,(void *)&y,4);
+     FREAD(fp,(void *)&z,4);
      uiwrite_bf(G,&L,1);
      uiwrite_bf(G,&M3,1);
      kgtransfrm(dc,x,y,z);
@@ -5266,9 +5278,9 @@ void uicnv_draw3f(DIG *G,FILE *fp)
      float x,y,z;
      kgDC *dc;
      dc = G->dc;
-     Fread(fp,(void *)&x,4);
-     Fread(fp,(void *)&y,4);
-     Fread(fp,(void *)&z,4);
+     FREAD(fp,(void *)&x,4);
+     FREAD(fp,(void *)&y,4);
+     FREAD(fp,(void *)&z,4);
 
      uiwrite_bf(G,&L,1);
      uiwrite_bf(G,&D3,1);
@@ -5290,16 +5302,16 @@ void uicnv_godr_fill3f(DIG *G,FILE *fp)
   float *x,*y,*z,*v;
   kgDC *dc;
   dc = G->dc;
-  Fread(fp,(void *)&n,4);
+  FREAD(fp,(void *)&n,4);
   l = sizeof(float)*n;
   x = (float *)Malloc(l);
   y = (float *)Malloc(l);
   z = (float *)Malloc(l);
   v = (float *)Malloc(l);
-  Fread(fp,(void *)x,l);
-  Fread(fp,(void *)y,l);
-  Fread(fp,(void *)z,l);
-  Fread(fp,(void *)v,l);
+  FREAD(fp,(void *)x,l);
+  FREAD(fp,(void *)y,l);
+  FREAD(fp,(void *)z,l);
+  FREAD(fp,(void *)v,l);
   uiwrite_bf(G,&P,1);
   uiwrite_bf(G,&G3,1);
   uiwrite_bf(G,&n,4);
@@ -5326,14 +5338,14 @@ void uicnv_shade_o(DIG *G,FILE *fp)
   float *x,*y,*z,*v;
   kgDC *dc;
   dc = G->dc;
-  Fread(fp,(void *)&n,4);
+  FREAD(fp,(void *)&n,4);
   l = sizeof(float)*n;
   x = (float *)Malloc(l);
   y = (float *)Malloc(l);
   z = (float *)Malloc(l);
-  Fread(fp,(void *)x,l);
-  Fread(fp,(void *)y,l);
-  Fread(fp,(void *)z,l);
+  FREAD(fp,(void *)x,l);
+  FREAD(fp,(void *)y,l);
+  FREAD(fp,(void *)z,l);
   uiwrite_bf(G,&P,1);
   uiwrite_bf(G,&G3,1);
   uiwrite_bf(G,&n,4);
@@ -5369,16 +5381,16 @@ void uicnv_poly_fill3f(DIG *G,FILE *fp)
   float *x,*y,*z;
   kgDC *dc;
   dc = G->dc;
-  Fread(fp,(void *)&n,4);
+  FREAD(fp,(void *)&n,4);
   l = sizeof(float)*n;
   x = (float *)Malloc(l);
   y = (float *)Malloc(l);
   z = (float *)Malloc(l);
-  Fread(fp,(void *)x,l);
-  Fread(fp,(void *)y,l);
-  Fread(fp,(void *)z,l);
-  Fread(fp,(void *)&flag,4);
-  Fread(fp,(void *)&color,4);
+  FREAD(fp,(void *)x,l);
+  FREAD(fp,(void *)y,l);
+  FREAD(fp,(void *)z,l);
+  FREAD(fp,(void *)&flag,4);
+  FREAD(fp,(void *)&color,4);
 
   uiwrite_bf(G,&P,1);
   uiwrite_bf(G,&P3,1);
@@ -5404,14 +5416,14 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
    int fl,ib;
    kgDC *dc;
    dc = G->dc;
-   Fread(fp,(void *)&x1,4);
-   Fread(fp,(void *)&y1,4);
-   Fread(fp,(void *)&z1,4);
-   Fread(fp,(void *)&x2,4);
-   Fread(fp,(void *)&y2,4);
-   Fread(fp,(void *)&z2,4);
-   Fread(fp,(void *)&fl,4);
-   Fread(fp,(void *)&ib,4);
+   FREAD(fp,(void *)&x1,4);
+   FREAD(fp,(void *)&y1,4);
+   FREAD(fp,(void *)&z1,4);
+   FREAD(fp,(void *)&x2,4);
+   FREAD(fp,(void *)&y2,4);
+   FREAD(fp,(void *)&z2,4);
+   FREAD(fp,(void *)&fl,4);
+   FREAD(fp,(void *)&ib,4);
       kgtransfrm(dc,x1,y1,z1);
       kgprojection(dc,dc->trnstr);
       x1 = uicnv_x(dc,dc->newstr.xstr);
@@ -5465,58 +5477,58 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
         pop_clip();
         set_window(W_x1,W_y1,W_x2,W_y2);
         clip_limit(W_x1,W_y1,W_x2,W_y2);
-        Fread(pf,(void *)FM,64);
-        Fread(pf,(void *)&xe,4);
-        Fread(pf,(void *)&ye,4);
-        Fread(pf,(void *)&ze,4);
-        Fread(pf,(void *)&zc,4);
-        Fread(pf,(void *)&clip_min,4);
-        Fread(pf,(void *)&clip_max,4);
+        FREAD(pf,(void *)FM,64);
+        FREAD(pf,(void *)&xe,4);
+        FREAD(pf,(void *)&ye,4);
+        FREAD(pf,(void *)&ze,4);
+        FREAD(pf,(void *)&zc,4);
+        FREAD(pf,(void *)&clip_min,4);
+        FREAD(pf,(void *)&clip_max,4);
         t_clip_const(clip_min,clip_max);
 */
         kgSetZbuffer(G,1);
         break;
         
      case 'l' :
-      Fread(pf,(void *)&ch2,1);
+      FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'm':
-                Fread(pf,(void *)&x,4);
-                Fread(pf,(void *)&y,4);
+                FREAD(pf,(void *)&x,4);
+                FREAD(pf,(void *)&y,4);
                 kgMove2f(G,uicnv_x(dc,x),uicnv_y(dc,y));
          break;
         case 'd':
-                Fread(pf,(void *)&x,4);
-                Fread(pf,(void *)&y,4);
+                FREAD(pf,(void *)&x,4);
+                FREAD(pf,(void *)&y,4);
                 kgDraw2f(G,uicnv_x(dc,x),uicnv_y(dc,y));
                 break;
         case 'l':
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&y2,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&y2,4);
 /*              draw_line(cnv_x(x1),cnv_y(y1),cnv_x(x2),cnv_y(y2));*/
         break;
         case 's':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgLineStyle(G,clr);
         break;
         case 'y':
 //                resetstyle();
         break;
         case 'w':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgLineWidth(G,clr);
                 break;
         case 'c':
-                Fread(pf,(void *)&color,4);
+                FREAD(pf,(void *)&color,4);
                 kgLineColor(G,clr);
         break;
         case 'r': 
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
                 kgCircle2f(G,uicnv_x(dc,x1),uicnv_y(dc,y1),uicnv_x(dc,x2));
         break;
         case 'M': uicnv_move3f(G,pf);
@@ -5524,10 +5536,10 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
         case 'D': uicnv_draw3f(G,pf);
          break;
        /* case 
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&color,4);*/
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&color,4);*/
                 /*circle_fill(cnv_x(x1),cnv_y(y1),cnv_x(x2),color);*/
         default :
                printf(" Wrong Code in line :%c%c \n",ch,ch2);
@@ -5535,16 +5547,16 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
       }
       break;
      case 'm' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'k':
-                Fread(pf,(void *)&x,4);
-                Fread(pf,(void *)&y,4);
+                FREAD(pf,(void *)&x,4);
+                FREAD(pf,(void *)&y,4);
                 kgMarker2f(G,uicnv_x(dc,x),uicnv_y(dc,y));
          break;
         case 't':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgMarkerType(G,clr);
          break;
         default :
@@ -5553,61 +5565,61 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
       }
      break;
      case 't' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'w':
-                Fread(pf,(void *)&n,4);
+                FREAD(pf,(void *)&n,4);
                 tx= (unsigned char *) Malloc((n+1)*sizeof(unsigned));
-                Fread(pf,(void *)tx,n);
+                FREAD(pf,(void *)tx,n);
                 *(tx+n)='\0';
                 kgWriteText(G,(char *)tx);
                 free(tx);
                 break;
         case 'o': 
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 break;
         case 'h':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 break;
         case 'c':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgTextColor(G,clr);
                 break;
         case 'l':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 break;
         case 'k':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 break;
         case 'p':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 break;
         case 'b':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 break;
         case 'f':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
                 kgTextFont(G,clr);
                 break;
         case 'a':
-                Fread(pf,(void *)&x,4);
+                FREAD(pf,(void *)&x,4);
                 break;
         case 's':
-                Fread(pf,(void *)&y,4);
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&x,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&y2,4);
+                FREAD(pf,(void *)&y,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&x,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&y2,4);
                 uirevtxtsize(G,y*fy,x1*fx,x2*fx,x*fx,y1*fy,y2*fy);
                 break;
         case 'r':
-                Fread(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&x1,4);
                 kgTextAngle(G,x1);
                 break;
         case 'x':
-                Fread(pf,(void *)&clr,4);
+                FREAD(pf,(void *)&clr,4);
 //                set_prtxt(clr);
                 break;
         default :
@@ -5616,30 +5628,30 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
        }
       break;
      case 'p' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'b':
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&y2,4);
-                Fread(pf,(void *)&color,4);
-                Fread(pf,(void *)&flag,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&y2,4);
+                FREAD(pf,(void *)&color,4);
+                FREAD(pf,(void *)&flag,4);
                 kgBoxFill(G,uicnv_x(dc,x1),uicnv_y(dc,y1),uicnv_x(dc,x2),uicnv_y(dc,y2),color,flag);
                 
                 break;
         case 'r': //win_circlefill();
                 break;
         case 'p':
-                Fread(pf,(void *)&n,4);
+                FREAD(pf,(void *)&n,4);
                 xx=(float *)Malloc(sizeof(float)*n);
                 yy=(float *)Malloc(sizeof(float)*n);
                 check_mem_alloc(yy);
-                Fread(pf,(void *)xx,4*n);
-                Fread(pf,(void *)yy,4*n);
-                Fread(pf,(void *)&flag,4);
-                Fread(pf,(void *)&color,4);
+                FREAD(pf,(void *)xx,4*n);
+                FREAD(pf,(void *)yy,4*n);
+                FREAD(pf,(void *)&flag,4);
+                FREAD(pf,(void *)&color,4);
                 for(i=0;i<n;i++)
                 {
                   xx[i] =uicnv_x(dc,xx[i]); 
@@ -5649,14 +5661,14 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
                 free(xx),free(yy);
                 break;
         case 'g': 
-                Fread(pf,(void *)&n,4);
+                FREAD(pf,(void *)&n,4);
                 xx=(float *)Malloc(sizeof(float)*n);
                 yy=(float *)Malloc(sizeof(float)*n);
                 p=(float *)Malloc(sizeof(float)*n);
                 check_mem_alloc(p);
-                Fread(pf,(void *)xx,4*n);
-                Fread(pf,(void *)yy,4*n);
-                Fread(pf,(void *)p,4*n);
+                FREAD(pf,(void *)xx,4*n);
+                FREAD(pf,(void *)yy,4*n);
+                FREAD(pf,(void *)p,4*n);
                 for(i=0;i<n;i++)
                 {
                   xx[i] =uicnv_x(dc,xx[i]); 
@@ -5670,10 +5682,10 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
                 {
                 float p1,p2;
                 int n,ib;
-                Fread(pf,(void *)&p2,4);
-                Fread(pf,(void *)&p1,4);
-                Fread(pf,(void *)&n,4);
-                Fread(pf,(void *)&ib,4);
+                FREAD(pf,(void *)&p2,4);
+                FREAD(pf,(void *)&p1,4);
+                FREAD(pf,(void *)&n,4);
+                FREAD(pf,(void *)&ib,4);
 //                set_godr(p2,p1,n,ib);
                 kgSetShadeParams(G,p2,p1,64,n,ib);
                 }
@@ -5682,11 +5694,11 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
                 {
                 float p1,p2;
                 int sclr,n,ib;
-                Fread(pf,(void *)&p2,4);
-                Fread(pf,(void *)&p1,4);
-                Fread(pf,(void *)&sclr,4);
-                Fread(pf,(void *)&n,4);
-                Fread(pf,(void *)&ib,4);
+                FREAD(pf,(void *)&p2,4);
+                FREAD(pf,(void *)&p1,4);
+                FREAD(pf,(void *)&sclr,4);
+                FREAD(pf,(void *)&n,4);
+                FREAD(pf,(void *)&ib,4);
                 kgSetShadeParams(G,p2,p1,sclr,n,ib);
                 }
                 break;
@@ -5707,14 +5719,14 @@ void uicnv_box_fill3f(DIG *G,FILE *fp)
        }
       break;
      case 's' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'c':
-                Fread(pf,(void *)&x1,4);
-                Fread(pf,(void *)&y1,4);
-                Fread(pf,(void *)&x2,4);
-                Fread(pf,(void *)&y2,4);
+                FREAD(pf,(void *)&x1,4);
+                FREAD(pf,(void *)&y1,4);
+                FREAD(pf,(void *)&x2,4);
+                FREAD(pf,(void *)&y2,4);
                 kgSetClip(G,uicnv_x(dc,x1),uicnv_y(dc,y1),uicnv_x(dc,x2),uicnv_y(dc,y2));
 break;
         case 'p':
@@ -5723,14 +5735,14 @@ break;
       }
       break;
      case 'c' :
-     Fread(pf,(void *)&ch2,1);
+     FREAD(pf,(void *)&ch2,1);
       switch((int)ch2)
       {
         case 'h':
-                Fread(pf,(void *)&no,4);
-                Fread(pf,(void *)&ir,4);
-                Fread(pf,(void *)&ib,4);
-                Fread(pf,(void *)&ig,4);
+                FREAD(pf,(void *)&no,4);
+                FREAD(pf,(void *)&ir,4);
+                FREAD(pf,(void *)&ib,4);
+                FREAD(pf,(void *)&ig,4);
                 kgChangeColor(G,no,ir,ib,ig);
                break;
       }
@@ -5756,7 +5768,7 @@ break;
         G->OPEN=1;
      }
      G->BACK_UP=1;
-     write(*rbuf,(void *)G->Rbuff,G->Byte);
+     WRITE(*rbuf,(void *)G->Rbuff,G->Byte);
    }
    G->Byte=0;G->R_max=0;
    close(*rbuf);
@@ -5789,7 +5801,7 @@ break;
    }
    if(G->Byte!=0){
 //     printf("Write: %s : %d\n",flname,G->Byte);
-     write(*rbuf,(void *)G->Rbuff,G->Byte);
+     WRITE(*rbuf,(void *)G->Rbuff,G->Byte);
    }
    G->Byte=0;G->R_max=0;
    G->BACK_UP=1;
@@ -5800,7 +5812,7 @@ break;
    dc = G->dc;
    G->cmdbuf = open(dc->cmdsfile,O_CREAT|O_BINARY|O_TRUNC|O_RDWR,0666);
    if(G->Byte!=0){
-     write(G->cmdbuf,(void *)G->Rbuff,G->Byte);
+     WRITE(G->cmdbuf,(void *)G->Rbuff,G->Byte);
    }
    G->Byte=0;G->R_max=0;
   }
@@ -5854,8 +5866,8 @@ void kgCallObject(DIG *G,int obj,float sx,float sy,float fx,float fy)
    if (in <=0) return;
    uiclose_file(G,&(G->rbuf),dc->reviewfile);
    G->rbuf=open(dc->reviewfile,O_RDWR|O_BINARY|O_APPEND, S_IREAD|S_IWRITE);
-   while( (bytes=read(in,buf,1024))==1024) write(G->rbuf,buf,1024);
-   write(G->rbuf,buf,bytes);
+   while( (bytes=read(in,buf,1024))==1024) WRITE(G->rbuf,buf,1024);
+   WRITE(G->rbuf,buf,bytes);
    close(in);
  }
 void kgOpenObject(DIG *G,int obj) {
@@ -6850,7 +6862,7 @@ void uireview_cmds(DIG *G)
   {
    char ch;
    ch ='P';
-   write(hbuf,(void *)&ch,1);
+   WRITE(hbuf,(void *)&ch,1);
 //   NO_HCOPY=0;
   }
 #if 0
@@ -6859,14 +6871,14 @@ void uireview_cmds(DIG *G)
    char ch;
    ch ='P';
    if(ZBUFF) TIFF=1;
-   write(hbuf,(void *)&ch,1);
+   WRITE(hbuf,(void *)&ch,1);
    close(hbuf);
 #if 1
    Runprinterdia(parent);
 #else
-   if(TIFF != 1) system("kgpscript");
+   if(TIFF != 1) SYSTEM("kgpscript");
    else {
-      system("tiff 300");
+      SYSTEM("tiff 300");
    }
    uiPrintFile("GRAF");
 #endif
@@ -6884,12 +6896,12 @@ void uireview_cmds(DIG *G)
    ch ='P';
    dc->TIFF =0;
    if(dc->ZBUFF) dc->TIFF=1;
-   write(G->hbuf,(void *)&ch,1);
+   WRITE(G->hbuf,(void *)&ch,1);
    close(G->hbuf);
    if(dc->TIFF != 1){
       printf("Creating PostScript File...\n");
 //      sprintf(command,"kgpscript  -i%-s -o%-s",dc->plotfile,flname);
-//      system(command);
+//      SYSTEM(command);
       pscript(dc->plotfile,flname);
    }
    else {
@@ -6903,7 +6915,7 @@ void uireview_cmds(DIG *G)
       kgWriteImage(png,pngfile);
       kgFreeImage(png);
       sprintf(command,"mv %-s %-s",pngfile,flname);
-      system(command);
+      SYSTEM(command);
       kgCleanDir(dir);
       free(dir);
    }
@@ -6920,12 +6932,12 @@ void uireview_cmds(DIG *G)
    ch ='P';
    dc->TIFF =0;
    if(dc->ZBUFF) dc->TIFF=1;
-   write(G->hbuf,(void *)&ch,1);
+   WRITE(G->hbuf,(void *)&ch,1);
    close(G->hbuf);
    if(dc->TIFF != 1){
       printf("Creating PostScript File...\n");
 //      sprintf(command,"kgpscript   -i%-s -o%-s",dc->plotfile,flname);
-//      system(command);
+//      SYSTEM(command);
       pscript(dc->plotfile,flname);
    }
    else {
@@ -6939,7 +6951,7 @@ void uireview_cmds(DIG *G)
       kgWriteImage(png,pngfile);
       kgFreeImage(png);
       sprintf(command,"mv %-s %-s",pngfile,flname);
-      system(command);
+      SYSTEM(command);
       kgCleanDir(dir);
       free(dir);
    }
@@ -6956,12 +6968,12 @@ void uireview_cmds(DIG *G)
    ch ='P';
    dc->TIFF =0;
    if(dc->ZBUFF) dc->TIFF=1;
-   write(G->hbuf,(void *)&ch,1);
+   WRITE(G->hbuf,(void *)&ch,1);
    close(G->hbuf);
    if(dc->TIFF != 1){
       printf("Creating PostScript File...\n");
 //      sprintf(command,"kgpscript  -i%-s -o%-s",dc->plotfile,flname);
-//      system(command);
+//      SYSTEM(command);
       pscript(dc->plotfile,flname);
    }
    else {
@@ -6975,7 +6987,7 @@ void uireview_cmds(DIG *G)
       kgWriteImage(png,pngfile);
       kgFreeImage(png);
       sprintf(command,"mv %-s %-s",pngfile,flname);
-      system(command);
+      SYSTEM(command);
       kgCleanDir(dir);
       free(dir);
    }
@@ -6999,7 +7011,7 @@ void uireview_cmds(DIG *G)
    }
    else {
      if(ZBUFF) TIFF=1;
-     write(hbuf,(void *)&ch,1);
+     WRITE(hbuf,(void *)&ch,1);
      close(hbuf);
      PrintPages(parent,0);
      TIFF=0;
@@ -7013,7 +7025,7 @@ void uireview_cmds(DIG *G)
    char ch;
    ch ='P';
      if(ZBUFF) TIFF=1;
-     write(hbuf,(void *)&ch,1);
+     WRITE(hbuf,(void *)&ch,1);
      close(hbuf);
      MakePage(bw,hbuf);
      TIFF=0;
@@ -7032,20 +7044,20 @@ void uireview_cmds(DIG *G)
    pf=G->hbuf;
    if( pf< 0) { exit(0);};
    ch='v';
-   write(pf,(void *)&ch,1);
-   write(pf,(void *)&dc->vu_x1,4);
-   write(pf,(void *)&dc->vu_y1,4);
-   write(pf,(void *)&dc->vu_x2,4);
-   write(pf,(void *)&dc->vu_y2,4);
+   WRITE(pf,(void *)&ch,1);
+   WRITE(pf,(void *)&dc->vu_x1,4);
+   WRITE(pf,(void *)&dc->vu_y1,4);
+   WRITE(pf,(void *)&dc->vu_x2,4);
+   WRITE(pf,(void *)&dc->vu_y2,4);
    ch='C';
-   write(pf,(void *)&ch,1);
-   write(pf,(void *)&dc->w_x1,4);
-   write(pf,(void *)&dc->w_y1,4);
-   write(pf,(void *)&dc->w_x2,4);
-   write(pf,(void *)&dc->w_y2,4);
+   WRITE(pf,(void *)&ch,1);
+   WRITE(pf,(void *)&dc->w_x1,4);
+   WRITE(pf,(void *)&dc->w_y1,4);
+   WRITE(pf,(void *)&dc->w_x2,4);
+   WRITE(pf,(void *)&dc->w_y2,4);
    if((dc->ZBUFF)||(dc->TIFF)) {
      if(dc->PROJ) update_gr_info(G);
-     write(pf,(void *)&Z,1);
+     WRITE(pf,(void *)&Z,1);
    }
 #if 0
    Fixshadecolors_hsv(pf);
@@ -7055,8 +7067,8 @@ void uireview_cmds(DIG *G)
    G->rbuf=open(dc->reviewfile,O_RDWR|O_BINARY, S_IREAD|S_IWRITE);
    if( G->rbuf<0) return;
    uiread_file(G,G->rbuf); 
-   while(G->Byte==B_min){write(pf,(void *)G->Rbuff,G->Byte); uiread_file(G,G->rbuf); }
-   write(pf,(void *)G->Rbuff,G->Byte);
+   while(G->Byte==B_min){WRITE(pf,(void *)G->Rbuff,G->Byte); uiread_file(G,G->rbuf); }
+   WRITE(pf,(void *)G->Rbuff,G->Byte);
    G->OPEN=1;
    G->R_Byte=0;
    G->Byte=0;G->R_max=0;
@@ -7071,7 +7083,7 @@ void uireview_cmds(DIG *G)
    pf=G->hbuf;
    if( pf< 0) { exit(0);};
    ch='A';
-   write(pf,(void *)&ch,1);
+   WRITE(pf,(void *)&ch,1);
    uihcopy(G);
    return;
  }
@@ -7084,7 +7096,7 @@ void uireview_cmds(DIG *G)
    pf=G->hbuf;
    if( pf< 0) { exit(0);};
    ch='S';
-   write(pf,(void *)&ch,1);
+   WRITE(pf,(void *)&ch,1);
    uihcopy(G);
    return;
  }
@@ -7581,23 +7593,24 @@ void kgGetRGB(DIG *G,int no,int *r,int *g,int *b) {
   }
  void gphChangeColor(int fid,int no,int ir,int ig,int ib)
   {
-     write(fid,&C,1);
-     write(fid,&H,1);
-     write(fid,&no,4);
-     write(fid,&ir,4);
-     write(fid,&ib,4);
-     write(fid,&ig,4);
+     WRITE(fid,&C,1);
+     WRITE(fid,&H,1);
+     WRITE(fid,&no,4);
+     WRITE(fid,&ir,4);
+     WRITE(fid,&ib,4);
+     WRITE(fid,&ig,4);
   }
  int Chng_sh_clr(int no,int ir,int ib,int ig,int file)
   {
      int ret=1;
-     write(file,(void *)&C,1);
-     write(file,(void *)&H,1);
-     write(file,(void *)&no,4);
-     write(file,(void *)&ir,4);
-     write(file,(void *)&ib,4);
-     write(file,(void *)&ig,4);
+     WRITE(file,(void *)&C,1);
+     WRITE(file,(void *)&H,1);
+     WRITE(file,(void *)&no,4);
+     WRITE(file,(void *)&ir,4);
+     WRITE(file,(void *)&ib,4);
+     WRITE(file,(void *)&ig,4);
   }
+#if 0
 void check_abort(void *parent)
  {
    union kbinp { short kbint; char kbc[2];} kb;
@@ -7608,6 +7621,7 @@ void check_abort(void *parent)
    }
    return;
  }
+#endif
 void kgPointerZoom(DIG *G) {
  float xmin,ymin,xmax,ymax;
  int MAG=0;

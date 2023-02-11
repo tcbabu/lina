@@ -577,7 +577,7 @@ short key_press(int *c)
     return(keypress);
    }
 
- short get_kb(int t)
+short get_kb(int t)
  {
    int ch,ch1;
    int i;

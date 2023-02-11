@@ -1,0 +1,1 @@
+int kgMakeKeybrd(void *Tmp,int Type,int Vis,int Btype,int Bfont,int Charclr,int Butclr,int Fillclr,float Rfac,float Trans) {

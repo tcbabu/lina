@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include "headers.h"
 #include "passwdfile.h"
 void *RunGetSessionDia(void *arg,SESSIONINFO *spt);

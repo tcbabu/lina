@@ -8,6 +8,8 @@
 #include <math.h>
 #include <string.h>
 #include "wireless.h"
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define WAIT(pid) {\
   pid_t w;\

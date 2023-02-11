@@ -23,8 +23,8 @@ static void gmDummyImage(void) {
 }
 void uiInitGm(void) {
   static int entry=0;
-static   ImageInfo *image_info=NULL;
-static   ExceptionInfo exception;
+  static   ImageInfo *image_info=NULL;
+  static   ExceptionInfo exception;
   if( entry==0 ) {
 //    fprintf(stderr,"Init GM\n");
     entry=1;
@@ -92,6 +92,9 @@ void *uiGetgmImage(char *tmp) {
   image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
+  strcpy(png->Sign,"IMG");
   strcpy(png->Sign,"IMG");
   strncpy(png->flname,flname,499);
   png->image_width= image->columns;
@@ -148,6 +151,9 @@ void *kgGetInlineImage(char *blob,int length) {
   image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
+  strcpy(png->Sign,"IMG");
   strcpy(png->Sign,"IMG");
   strcpy(png->flname,"inline");
   png->image_width= image->columns;
@@ -157,7 +163,6 @@ void *kgGetInlineImage(char *blob,int length) {
   png->yoffset=0;
   png->bkgrclr=-1;
   png->rzfac =1.0;
-  GetImageInfo(Image_info);
   GetExceptionInfo(Exception);
   png->info = Image_info;
   png->exce = Exception;
@@ -240,6 +245,8 @@ void *uiCreateCleangmImage_o(unsigned long xsize,unsigned long ysize,int bkred,i
   SyncImagePixels(image);
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->image_width= image->columns;
   png->image_height= image->rows;
@@ -248,7 +255,6 @@ void *uiCreateCleangmImage_o(unsigned long xsize,unsigned long ysize,int bkred,i
   png->yoffset=0;
   png->bkgrclr=-1;
   png->rzfac =1.0;
-  GetImageInfo(Image_info);
   GetExceptionInfo(Exception);
   png->info = Image_info;
   png->exce = Exception;
@@ -279,7 +285,7 @@ void *uiCreateCleangmImage(unsigned long xsize,unsigned long ysize,int bkred,int
 //TCB 07/21
   GetExceptionInfo(Exception);
 #if 1
-  FormatString(size, "%dx%d", xsize,ysize);
+  FormatString(size, "%ldx%ld", xsize,ysize);
   (void) CloneString(&Image_info->size, size);
   tmpimg=AllocateImage(Image_info);
   if(tmpimg == NULL) {
@@ -311,7 +317,7 @@ void *uiCreateCleangmImage(unsigned long xsize,unsigned long ysize,int bkred,int
    return uiCreateCleangmImage_o(xsize,ysize,bkred,bkgreen,bkblue,opacity);
   }
   if((image->columns != xsize) ||(image->rows!=ysize)) {
-     fprintf(stderr, "Size of Pixels :%d:%d %d:%d\n",image->columns,xsize,image->rows,ysize);
+     fprintf(stderr, "Size of Pixels :%ld:%ld %ld:%ld\n",image->columns,xsize,image->rows,ysize);
   }
     k=0;
     for(j=0;j<ysize;j++) {
@@ -326,6 +332,8 @@ void *uiCreateCleangmImage(unsigned long xsize,unsigned long ysize,int bkred,int
   SyncImagePixels(image);
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->image_width= image->columns;
   png->image_height= image->rows;
@@ -365,7 +373,7 @@ void *uiCreategmImage(unsigned long *data,unsigned long xsize,unsigned long ysiz
   GetImageInfo(Image_info);
   GetExceptionInfo(Exception);
 //  tmpimg=AllocateImage((ImageInfo *) NULL);
-  FormatString(size, "%dx%d", xsize,ysize);
+  FormatString(size, "%ldx%ld", xsize,ysize);
   (void) CloneString(&Image_info->size, size);
   tmpimg=AllocateImage(Image_info);
   tmpimg->columns=xsize;
@@ -412,6 +420,8 @@ void *uiCreategmImage(unsigned long *data,unsigned long xsize,unsigned long ysiz
   SyncImagePixels(image);
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->image_width= image->columns;
   png->image_height= image->rows;
@@ -420,7 +430,6 @@ void *uiCreategmImage(unsigned long *data,unsigned long xsize,unsigned long ysiz
   png->yoffset=0;
   png->bkgrclr=-1;
   png->rzfac =1.0;
-  GetImageInfo(Image_info);
   GetExceptionInfo(Exception);
   png->info = Image_info;
   png->exce = Exception;
@@ -487,6 +496,8 @@ void *uiCreategmImage_1(unsigned long *data,unsigned long xsize,unsigned long ys
   SyncImagePixels(image);
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->image_width= image->columns;
   png->image_height= image->rows;
@@ -495,7 +506,6 @@ void *uiCreategmImage_1(unsigned long *data,unsigned long xsize,unsigned long ys
   png->yoffset=0;
   png->bkgrclr=-1;
   png->rzfac =1.0;
-  GetImageInfo(Image_info);
   GetExceptionInfo(Exception);
   png->info = Image_info;
   png->exce = Exception;
@@ -645,6 +655,8 @@ void *uiResizegmImage(GMIMG *png,float fac) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = xoffset;
@@ -712,6 +724,8 @@ void *uiThumbnailgmImage(GMIMG *png,unsigned long w,unsigned long h) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = xoffset;
@@ -818,7 +832,11 @@ void *uiChangeSizegmImage(GMIMG *png,unsigned long w,unsigned long h,int Fltr) {
   resize_image->background_color.green=0;
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = xoffset;
@@ -872,6 +890,8 @@ void *uiHalfSizegmImage(GMIMG *png) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = xoffset;
@@ -923,6 +943,8 @@ void *uiScalegmImage(GMIMG *png,float fac) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = xoffset;
@@ -985,6 +1007,8 @@ void *uiCropgmImage(GMIMG *png,int xl,int yl,int xu,int yu) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
@@ -1026,6 +1050,8 @@ void *uiRotateAboutgmImage(GMIMG *png,float angle,int xo,int yo) {
   ExceptionInfo *Exception;
   image = (Image *)(png->image);
   uiInitGm();
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   w = image->columns;
   h = image->rows;
   dl=((double)(xo*xo+yo*yo));
@@ -1183,6 +1209,8 @@ void *uiRotategmImage(GMIMG *png,float angle) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
@@ -1235,6 +1263,8 @@ void *uiAppendgmImage(GMIMG *png1,GMIMG *png2) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
@@ -1283,6 +1313,8 @@ void *uiShadegmImage(GMIMG *png) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
@@ -1333,6 +1365,8 @@ void *uiReduceNoisegmImage(GMIMG *png) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
@@ -1384,6 +1418,8 @@ void *uiBlurgmImage(GMIMG *png) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
@@ -1435,13 +1471,14 @@ void *uiEmbossgmImage(GMIMG *png) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
   png->yoffset = 0;
   png->bkgrclr = bkgrclr;
   png->rzfac = 1.0;
-  GetImageInfo(Image_info);
   GetExceptionInfo(Exception);
   png->info = Image_info;
   png->exce = Exception;
@@ -1487,13 +1524,14 @@ void *uiSharpengmImage(GMIMG *png) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
   png->yoffset = 0;
   png->bkgrclr = bkgrclr;
   png->rzfac = 1.0;
-  GetImageInfo(Image_info);
   GetExceptionInfo(Exception);
   png->info = Image_info;
   png->exce = Exception;
@@ -1539,6 +1577,8 @@ void *uiSpreadgmImage(GMIMG *png) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
@@ -1547,7 +1587,6 @@ void *uiSpreadgmImage(GMIMG *png) {
   png->rzfac = 1.0;
   png->info = NULL;
   png->exce = NULL;
-  GetImageInfo(Image_info);
   GetExceptionInfo(Exception);
   png->info = Image_info;
   png->exce = Exception;
@@ -1592,6 +1631,9 @@ void *uiEnhancegmImage(GMIMG *png) {
   resize_image->background_color.opacity=255;
   png = (GMIMG *)Malloc(sizeof(GMIMG));
   png->image = resize_image;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
+  strcpy(png->Sign,"IMG");
   strcpy(png->Sign,"IMG");
   png->incode=0;
   png->xoffset = 0;
@@ -1769,7 +1811,7 @@ void *uiShadowgmImage_o(GMIMG *png,int xoffset,int yoffset) {
   SyncImagePixels(dimage);
   pixels =GetImagePixels(dimage,0,0,dimage->columns,dimage->rows);
   if((dimage->columns != w) ||(dimage->rows!=h)) {
-     printf( "Size of Pixels :%d:%d %d:%d\n",image->columns,w,image->rows,h);
+     printf( "Size of Pixels :%ld:%d %ld:%d\n",image->columns,w,image->rows,h);
   }
   spixels =GetImagePixels(image,0,0,image->columns,image->rows);
   tmpimg = dimage;
@@ -1803,6 +1845,9 @@ void *uiShadowgmImage_o(GMIMG *png,int xoffset,int yoffset) {
   SyncImagePixels(dimage);
   dpng = (GMIMG *)Malloc(sizeof(GMIMG));
   dpng->image = dimage;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
+  strcpy(png->Sign,"IMG");
   strcpy(dpng->Sign,"IMG");
   dpng->image_width= dimage->columns;
   dpng->image_height= dimage->rows;
@@ -1964,6 +2009,9 @@ void *uiCopygmImage_o(GMIMG *png) {
   SyncImagePixels(tmpimg);
   dpng = (GMIMG *)Malloc(sizeof(GMIMG));
   dpng->image = tmpimg;
+  Image_info=CloneImageInfo((ImageInfo *) NULL);
+  GetImageInfo(Image_info);
+  strcpy(png->Sign,"IMG");
   strcpy(dpng->Sign,"IMG");
   dpng->image_width= tmpimg->columns;
   dpng->image_height= tmpimg->rows;

@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +12,7 @@
 #include "headers.h"
 #include "passwdfile.h"
 #include "uimages.c"
+int WriteSessionsFile(Dlink *Slist);
 int CheckString(char *s1,char *s2);
 int SearchString(char *s1,char *s2);
 #define Isize 42
@@ -381,6 +382,12 @@ char *GetHomeDir(LINACONFIG *lc,int no) {
    Usr =(USERINFO *)Getrecord(lc->Ulist);
    return Usr->Home;
 }
+char *GetShell(LINACONFIG *lc,int no) {
+   USERINFO *Usr;
+   Dposition(lc->Ulist,no);
+   Usr =(USERINFO *)Getrecord(lc->Ulist);
+   return Usr->Shell;
+}
 void *GetUserImage(LINACONFIG *lc,int no) {
    USERINFO *Usr;
    Dposition(lc->Ulist,no);
@@ -449,10 +456,18 @@ char *GetSessionCommand(LINACONFIG *lc,int Index) {
   if(ses->Command[0]=='\0') return NULL;
   else return ses->Command;
 }
+int ProcessPasswd(char *Passwd) {
+  int i,l;
+  l = strlen(Passwd)-1;
+  i=l;
+  while( (i> 0)&&(Passwd[i]<=' ')) {Passwd[i]='\0';i--;}
+  return 1;
+}
 int CheckLogin(LINACONFIG *lc,int Index,char *password) {
     int ret=0;
     char *p, *correct, *supplied, *salt;
     if (Index<=0 ) return 0;
+    ProcessPasswd(password);
     correct = GetUserPw(lc,Index);
     salt = strdup(correct);
     if (salt == NULL) return 2;
@@ -472,43 +487,24 @@ int CheckLogin(LINACONFIG *lc,int Index,char *password) {
     return ret;
 }
 int InitConfig(LINACONFIG *lc) {
-#if 0
-  lc->Red=210;
-  lc->Green=230;
-  lc->Blue=210;
-  lc->ButRed=210;
-  lc->ButGreen=230;
-  lc->ButBlue=210;
-  lc->DateRed=210;
-  lc->DateGreen=230;
-  lc->DateBlue=210;
-  lc->FontRed=10;
-  lc->FontGreen=20;
-  lc->FontBlue=10;
-  lc->HighRed=100;
-  lc->HighGreen=230;
-  lc->HighBlue=210;
-#else
-  lc->Red=147;
-  lc->Green=0;
-  lc->Blue=0;
-  lc->ButRed=181;
-  lc->ButGreen=0;
-  lc->ButBlue=0;
+  lc->Red=216;
+  lc->Green=226;
+  lc->Blue=216;
+  lc->ButRed=216;
+  lc->ButGreen=226;
+  lc->ButBlue=216;
   lc->DateRed=216;
-  lc->DateGreen=0;
-  lc->DateBlue=0;
-  lc->FontRed=216;
-  lc->FontGreen=216;
-  lc->FontBlue=152;
-  lc->HighRed=216;
-  lc->HighGreen=0;
-  lc->HighBlue=216;
-#endif
+  lc->DateGreen=226;
+  lc->DateBlue=216;
+  lc->FontRed=39;
+  lc->FontGreen=44;
+  lc->FontBlue=39;
+  lc->HighRed=226;
+  lc->HighGreen=255;
+  lc->HighBlue=255;
   lc->Transparency = 0.1;
-  lc->fac = 0.1;
+  lc->fac = 0.0;
   lc->Bkgr[0]='\0';
-  strcpy(lc->Bkgr,"/usr/share/lina/ninjagirl.jpg");
   lc->RootPic[0]='\0';
   lc->UserPic[0]='\0';
   lc->Ulist=NULL;
@@ -518,7 +514,7 @@ int InitConfig(LINACONFIG *lc) {
   lc->Uimg=NULL;
   lc->Mask=NULL;
   strcpy(lc->DefUser,"Guest");
-  strcpy(lc->DefSession,"KDE");
+  strcpy(lc->DefSession,"XFCE");
   lc->Action=1;
   lc->Powerdown=3;
   lc->Session=1;
@@ -526,7 +522,7 @@ int InitConfig(LINACONFIG *lc) {
   lc->TextMode=1;
   lc->SafeMode=1;
   lc->ShowTime=1;
-  lc->DateFont=16;
+  lc->DateFont=25;
 }
 #define SkipCommentLine {\
   i=0;\
@@ -808,22 +804,6 @@ void *ReadConfig(LINACONFIG *lc) {
     strcpy(spt->Name,"XFCE");
     strcpy(spt->Command,"startxfce4");
     Dadd(lc->Slist,spt);
-    spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"LXDE");
-    strcpy(spt->Command,"ck-launch-session lxsession");
-    Dadd(lc->Slist,spt);
-    spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"OpenBox");
-    strcpy(spt->Command,"openbox-session");
-    Dadd(lc->Slist,spt);
-    spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"Unity");
-    strcpy(spt->Command,"unity");
-    Dadd(lc->Slist,spt);
-    spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"Cinnamon");
-    strcpy(spt->Command,"cinnamon-session-cinnamon");
-    Dadd(lc->Slist,spt);
     WriteSessionsFile(lc->Slist);
   }
   if(lc->TextMode) {
@@ -976,10 +956,6 @@ Dlink *ReadSessionsFile(void) {
       fprintf(fp,"KDE : startkde\n");
       fprintf(fp,"GNOME: gnome-session\n");
       fprintf(fp,"XFCE: startxfce4\n");
-      fprintf(fp,"LXDE: ck-launch-session lxsession\n");
-      fprintf(fp,"OpenBox: openbox-session\n");
-      fprintf(fp,"Cinnamon: cinnamon-session-cinnamon\n");
-      fprintf(fp,"Unity: unity\n");
       fclose(fp);
       fp = fopen("/usr/share/config/lina/session","r");
     }
@@ -1010,8 +986,6 @@ int WriteSessionsFile(Dlink *Slist) {
   FILE *fp;
   char *pt;
   SESSIONINFO *spt;
-  mkdir("/usr/share/config",0755);
-  mkdir("/usr/share/config/lina",0755);
   fp = fopen("/usr/share/config/lina/session","w");
   if(fp != NULL) {
     Resetlink(Slist);

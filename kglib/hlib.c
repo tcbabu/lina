@@ -1126,7 +1126,7 @@ static void win_boxfill()
   read_buf(&color,4);
 }
 
-static win_circle()
+static int win_circle()
 {
   float x1,y1,r;
   int xa,ya,rd;
@@ -1141,7 +1141,7 @@ static win_circle()
   return(0);
 }
 
-static win_circlefill()
+static int win_circlefill()
 {
   float x1,y1,r;
   unsigned char color;
@@ -2935,7 +2935,7 @@ static void win_txt_color( void)
   t_color= color;
   fprintf(TX_F,"Zc%d\n",t_color);
  }
-static t_txt_color(int color) {
+static void t_txt_color(int color) {
 #ifdef MONO
   if(color != 0 ) color =15;
 #endif

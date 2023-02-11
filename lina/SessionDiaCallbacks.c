@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include "passwdfile.h"
 extern LINACONFIG lc;
 extern int Session,Action,PowerDown;

@@ -1,0 +1,1019 @@
+#include <kulina.h>
+static char BUFF[100];
+
+static char Label1[]="`1234567890-=";
+static char Label2[] ="qwertyuiop[]\\";
+static char Label3[] = "asdfghjkl;'";
+static char Label4[] = "zxcvb";
+static char Label5[] = "nm,./";
+static char Label6[]="~!@#$%^&*()_+";
+static char Label7[] ="QWERTYUIOP{}|";
+static char Label8[] = "ASDFGHJKL:\"";
+static char Label9[] = "ZXCVB";
+static char Label10[] = "NM<>?";
+typedef struct _butimgdata {
+  void *B;
+  void *kb;
+  int index;
+  char str[100];
+  char ustr[100];
+} IMDT;
+int kgCheckEventDelivery(void *Tmp) {
+  int ret=1;
+#if 0   // Not Working
+  DIALOG *D;
+  KBEVENT ev;
+  D = (DIALOG *)Tmp;
+  usleep(4000);
+  if ((kgCheckEvent(D,&ev)== 0) || (ev.event != 5)) {
+    usleep(20000);
+    if ((kgCheckEvent(D,&ev)== 0) || (ev.event != 5)) {
+      usleep(100000);
+      if ((kgCheckEvent(D,&ev)== 0) || (ev.event != 5))ret =0;
+      else kgPushBackEvent(D);
+    }
+    else kgPushBackEvent(D);
+  }
+  else kgPushBackEvent(D);
+#endif
+  return ret;
+}
+int kgShowKey(int ch) {
+//  usleep(22000);
+  return 1;
+}
+int kgGetKeybrdSize(void *Tmp,int *xl,int *yl) {
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(Kbrd== NULL) {
+    *xl=0; *yl=0; return 0;
+  }
+  else {
+   DIP *P;
+   P = (DIP *)kgGetNamedWidget(D,"Keybrdbkgr");
+   if(P == NULL) {
+    *xl=0; *yl=0; return 0;
+   }
+   else {
+     *xl = P->x2 - P->x1;
+     *yl = P->y2 - P->y1;
+     return 1;
+   }
+  }
+}
+int kgShiftKeybrd(void *Tmp,int xs,int ys) {
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(Kbrd== NULL) {
+    return 0;
+  }
+  else {
+     kgShiftGrp(Tmp,Kbrd->GrpId,xs,ys);
+     return 1;
+  }
+}
+static void *MakeBkgrImage(int xl,int yl,int r,int g,int b,float fac) {
+   void *Img,*fid,*Img1;
+   float h,s,v,rf,gf,bf,vm;
+   if(fac<= 0.00001) {
+     fid = kgInitImage(xl,yl,1);
+     kgUserFrame(fid,0.,0.,(float)xl,(float)yl);
+     kgChangeColor(fid,551,(int)r,(int)g,(int)b);
+     kgBoxFill(fid,0.,0.,xl,yl,551,0);
+   }
+   else {
+     fid = kgInitImage(xl,yl,8);
+     kgUserFrame(fid,0.,0.,(float)xl,(float)yl);
+     kgChangeColor(fid,551,(int)r,(int)g,(int)b);
+     kgRoundedRectangleFill(fid,(float)xl*0.5,(float)yl*0.5,
+                        (float)xl+2,(float)yl+2,0,551,fac);
+   }
+   Img = kgGetSharpImage(fid);
+   kgCloseImage(fid);
+   return Img;
+}
+static void *MakeStringImage(int xl,int yl,int r,int g,int b,float fac, int tc,int utc,int font,char*str,char *ustr) {
+   void *Img,*fid,*Img1;
+   float h,s,v,rf,gf,bf,vm,w,xp,yp;
+   int R,G,B;
+   float ln;
+   
+   
+   if(fac<= 0.00001) {
+     fid = kgInitImage(xl,yl,4);
+     kgUserFrame(fid,0.,0.,(float)xl,(float)yl);
+     kgChangeColor(fid,551,(int)r,(int)g,(int)b);
+     kgBoxFill(fid,0.,0.,xl,yl,551,0);
+   }
+   else {
+     fid = kgInitImage(xl,yl,4);
+     kgUserFrame(fid,0.,0.,(float)xl,(float)yl);
+     kgChangeColor(fid,551,(int)r,(int)g,(int)b);
+     kgRoundedRectangleFill(fid,(float)xl*0.5,(float)yl*0.5,
+                        (float)xl+2,(float)yl+2,0,551,fac);
+   }
+   kgGetDefaultRGB(tc,&R,&G,&B);
+   kgChangeColor(fid,tc,R,G,B);
+   kgTextColor(fid,tc);
+   kgTextFont(fid,font);
+   h = yl/2.5;
+   w = 0.8*h;
+   xp= 2*w;
+   yp= (yl-h)/2.0;
+   kgTextSize(fid,h,w,0.);
+   ln = kgStringLength(fid,str);
+   if(ln> (xl-w) ) {
+     float fac;
+     fac = (xl-w)/ln;
+     w = w*fac;
+     kgTextSize(fid,h,w,0.);
+     ln = kgStringLength(fid,str);
+   }
+   xp = ((float)xl -ln)*0.5;
+   kgMove2f(fid,xp,yp);
+   kgWriteText(fid,str);
+   if((ustr != NULL)&&(ustr[0]!='\0')) {
+     h = yl/3.5;
+     w = h;
+     xp= xl-1.5*w;
+     yp= yl -1.2*h;
+     kgGetDefaultRGB(utc,&R,&G,&B);
+     kgChangeColor(fid,utc,R,G,B);
+     kgTextColor(fid,utc);
+     kgTextSize(fid,h,w,0.);
+     kgMove2f(fid,xp,yp);
+     kgWriteText(fid,ustr);
+   }
+   Img = kgGetSmoothImage(fid);
+//   Img = kgGetResizedImage(fid);
+   kgCloseImage(fid);
+   return Img;
+}
+static char *kgButtonTitle1(char * str,void *pt,char *ustr) {
+  KEYBRD *Kbrd;
+  Kbrd = (KEYBRD *)pt;
+  sprintf(BUFF,"!h15!d!h51!z%-s!f%2.2d!c%2.2d%-s!g !c%2.2d!z23!u%-s",Kbrd->Sfac,Kbrd->Bfont,Kbrd->Bclr,str,Kbrd->FillClr,ustr);
+//  printf("%s\n",BUFF);
+  return BUFF;
+}
+static char *Procpy1(char *des,char *src,void *pt,char *ustr) {
+   strcpy(des,kgButtonTitle1(src,pt,ustr));
+   return des;
+}
+static char *kgButtonTitle(char * str,void *pt) {
+  KEYBRD *Kbrd;
+  Kbrd = (KEYBRD *)pt;
+  sprintf(BUFF,"!h15!d!h51!z%-s!f%2.2d!c%2.2d%-s!g !g",Kbrd->Sfac,Kbrd->Bfont,Kbrd->Bclr,str);
+//  printf("%s\n",BUFF);
+  return BUFF;
+}
+static char *Procpy(char *des,char *src,void *pt) {
+   strcpy(des,kgButtonTitle(src,pt));
+   return des;
+}
+
+static int ProcessShift(void *Tmp) {
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+ switch(Kbrd->ShiftPress) {
+    case 0:
+//      ProcessCapsLock(D);
+      kgSetGrpVisibility(D,Kbrd->ongrp,0);
+      switch(Kbrd->CapsLock) {
+        case 0: 
+          kgSetGrpVisibility(D,Kbrd->grp2,0);
+          kgSetGrpVisibility(D,Kbrd->cgrp,0);
+          kgSetGrpVisibility(D,Kbrd->sgrp,1);
+          kgSetGrpVisibility(D,Kbrd->grp1,1);
+          break;
+        case 1: 
+          kgSetGrpVisibility(D,Kbrd->grp1,0);
+          kgSetGrpVisibility(D,Kbrd->sgrp,0);
+          kgSetGrpVisibility(D,Kbrd->cgrp,1);
+          kgSetGrpVisibility(D,Kbrd->grp2,1);
+          break;
+      }
+      kgSetGrpVisibility(D,Kbrd->offgrp,1);
+      kgUpdateGrp(D,Kbrd->offgrp);
+      break;
+    case 1:
+      kgSetGrpVisibility(D,Kbrd->offgrp,0);
+      switch(Kbrd->CapsLock) {
+        case 1: 
+          kgSetGrpVisibility(D,Kbrd->grp1,0);
+          kgSetGrpVisibility(D,Kbrd->cgrp,0);
+          kgSetGrpVisibility(D,Kbrd->sgrp,1);
+          kgSetGrpVisibility(D,Kbrd->grp2,1);
+          break;
+        case 0: 
+          kgSetGrpVisibility(D,Kbrd->grp2,0);
+          kgSetGrpVisibility(D,Kbrd->sgrp,0);
+          kgSetGrpVisibility(D,Kbrd->cgrp,1);
+          kgSetGrpVisibility(D,Kbrd->grp1,1);
+          break;
+      }
+      kgSetGrpVisibility(D,Kbrd->ongrp,1);
+      kgUpdateGrp(D,Kbrd->ongrp);
+     break;
+ }
+ kgUpdateOn(D);
+ return;
+}
+static int ProcessCapsLock(void *Tmp) {
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  Kbrd->ShiftPress=0;
+#if 0
+  switch(Kbrd->CapsLock) {
+    case 0: 
+      kgSetGrpVisibility(D,Kbrd->cgrp,0);
+      kgSetGrpVisibility(D,Kbrd->sgrp,1);
+      kgUpdateGrp(D,Kbrd->sgrp);
+      break;
+    case 1: 
+      kgSetGrpVisibility(D,Kbrd->sgrp,0);
+      kgSetGrpVisibility(D,Kbrd->cgrp,1);
+      kgUpdateGrp(D,Kbrd->cgrp);
+      break;
+  }
+  kgUpdateOn(D);
+#else
+  ProcessShift(Tmp);
+#endif
+  return 1;
+}
+static int ProcessLabel(void *Tmp,int butno,char *Label) {
+  int CurWid;
+  char ch;
+  DIALOG *D;
+  KEYBRD *Kbrd;
+  D = (DIALOG *)Tmp;
+  Kbrd = D->Kbrd;
+  CurWid = Kbrd->CurWid;
+  if(D->InputWid >= 0) {
+     Kbrd->CurWid = D->InputWid;
+     CurWid = Kbrd->CurWid;
+  }
+  if(CurWid< 0) return 0;
+  kgSetCurrentWidget(D,CurWid);
+  ch= Label[butno-1];
+  kgSendKeyEvent(D,ch);
+  if(Kbrd->ShiftPress) {
+    Kbrd->ShiftPress=0;
+    ProcessShift(D);
+  }
+  return 1;
+}
+static void *GetButImg(DIN *B,KEYBRD *kb) {
+   int xl,yl;
+   int r,g,b;
+   int clr;
+   if(B->type > 1){
+       return NULL;
+   }
+   xl =B->lngth;
+   yl =B->width;
+   clr =kb->ButClr;
+   if(clr < -1) {
+     clr = -clr;
+     b = (clr%1000)%1000; // Funny single operator failed
+     g = (clr/1000)%1000;
+     r = clr/1000000;
+   }
+   else {
+     if(clr == -1) clr= 1;
+     kgGetDefaultRGB(clr,&r,&g,&b);
+   }
+   return MakeBkgrImage(xl,yl,r,g,b,B->fac);
+}
+static void *GetStringImg(DIN *B,int index,KEYBRD *kb,char *str,char *ustr) {
+   int xl,yl;
+   int r,g,b;
+   int clr;
+   void *img=NULL;
+   BUT_STR * but;
+   but = B->buts;
+   if(B->type > 1) {
+       but[index].xpmn=img;
+       return NULL;
+   }
+   xl =B->lngth;
+   yl =B->width;
+   clr =kb->ButClr;
+   if(clr < -1) {
+     clr = -clr;
+     b = (clr%1000)%1000; // Funny single operator failed
+     g = (clr/1000)%1000;
+     r = clr/1000000;
+   }
+   else {
+     if(clr == -1) clr= 1;
+     kgGetDefaultRGB(clr,&r,&g,&b);
+   }
+   
+   img = MakeStringImage(xl,yl,r,g,b,B->fac,kb->Bclr,kb->FillClr,kb->Bfont,str,ustr);
+   but[index].xpmn=img;
+   return img;
+}
+static void *CreateButImage(void *Tmp) {
+    IMDT *im;
+    im = (IMDT *)(Tmp);
+    GetStringImg((DIN *)(im->B),im->index,(KEYBRD *)(im->kb),im->str,im->ustr);
+    free(im);
+    return NULL;
+  
+}
+int  keybrd0button1callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label1);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label1);
+  kgShowKey('a');
+  return ret;
+}
+static void ProcessTitle(DIN *B,void *pt){
+   int i,n;
+   IMDT *im;
+   KEYBRD *Kbrd;
+   Kbrd = (KEYBRD *)pt;
+   char buff[100];
+
+   BUT_STR * but;
+   but = B->buts;
+   n = B->nx * B->ny;
+   B->type = Kbrd->Btype;
+   B->fac = Kbrd->Rfac;
+   for(i=0;i<n;i++) {
+    but[i].bkgr = Kbrd->ButClr;
+    if(B->type > 1)  {
+      strcpy(buff,but[i].title);
+      Procpy(but[i].title,buff,Kbrd);
+      but[i].xpmn = NULL;
+    }
+    else {
+      im = (IMDT *) malloc(sizeof(IMDT));
+      im->B = B;
+      im->kb = Kbrd;
+      strcpy(im->str,but[i].title);
+      im->ustr[0]='\0';
+      im->index = i;
+//      but[i].xpmn = GetStringImg(B,i,Kbrd,but[i].title,NULL);
+//      GetStringImg(B,i,Kbrd,but[i].title,NULL);
+//      CreateButImage((void *)(im));
+      DoInAnyThread(Kbrd->Thds,CreateButImage,(void *)im);
+      but[i].title[0]='\0';
+    }
+   }
+}
+int ProcessInit(DIN *B,KEYBRD *Kbrd,char *Label,char *Label1,int inx) {
+   int i,n;
+   char buff[3],buff1[3];
+   IMDT *im;
+   BUT_STR * but;
+   n = B->nx * B->ny;
+   but = B->buts;
+   B->type = Kbrd->Btype;
+   B->fac = Kbrd->Rfac;
+   if(B->type > 1)  {
+    for(i=0;i<inx;i++) {
+      buff[0]= Label[i];
+      buff[1]='\0';
+      if(buff[0]=='!') {buff[1]='!';buff[2]='\0';}
+      but[i].bkgr = Kbrd->ButClr;
+      Procpy(but[i].title,buff,Kbrd);
+      but[i].xpmn = NULL;
+    }
+    for(i=inx;i<n;i++) {
+      buff[0]= Label[i];
+      buff[1]='\0';
+      if(buff[0]=='!') {buff[1]='!';buff[2]='\0';}
+      buff1[0]= Label1[i];
+      buff1[1]='\0';
+      if(buff1[0]=='!') {buff1[1]='!';buff1[2]='\0';}
+      but[i].bkgr = Kbrd->ButClr;
+      Procpy1(but[i].title,buff,Kbrd,buff1);
+      but[i].xpmn = NULL;
+    }
+   }
+   else {
+    for(i=0;i<inx;i++) {
+      buff[0]= Label[i];
+      buff[1]='\0';
+      if(buff[0]=='!') {buff[1]='!';buff[2]='\0';}
+      but[i].bkgr = Kbrd->ButClr;
+      im = (IMDT *) malloc(sizeof(IMDT));
+      im->B = B;
+      im->kb = Kbrd;
+      strcpy(im->str,buff);
+      im->ustr[0]='\0';
+      im->index = i;
+//      GetStringImg(B,i,Kbrd,buff,NULL);
+//      CreateButImage((void *)(im));
+      DoInAnyThread(Kbrd->Thds,CreateButImage,(void *)im);
+      but[i].title[0]='\0';
+    }
+    for(i=inx;i<n;i++) {
+      buff[0]= Label[i];
+      buff[1]='\0';
+      if(buff[0]=='!') {buff[1]='!';buff[2]='\0';}
+      buff1[0]= Label1[i];
+      buff1[1]='\0';
+      if(buff1[0]=='!') {buff1[1]='!';buff1[2]='\0';}
+      but[i].bkgr = Kbrd->ButClr;
+      im = (IMDT *) malloc(sizeof(IMDT));
+      im->B = B;
+      im->kb = Kbrd;
+      strcpy(im->str,buff);
+      strcpy(im->ustr,buff1);
+      im->index = i;
+//      GetStringImg(B,i,Kbrd,buff,buff1);
+//      CreateButImage((void *)(im));
+      DoInAnyThread(Kbrd->Thds,CreateButImage,(void *)im);
+      but[i].title[0]='\0';
+    }
+   }
+   return 1;
+}
+void  keybrd0button1init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label1,Label6,0);
+}
+int  keybrd0button2callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label2);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label2);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button2init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label2,Label7,10);
+}
+int  keybrd0button3callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label3);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label3);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button3init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label3,Label8,9);
+}
+int  keybrd0button4callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label4);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label4);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button4init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label4,NULL,n);
+}
+int  keybrd0button5callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label5);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label5);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button5init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label5,Label10,2);
+}
+int  keybrd0button6callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    Cap lock
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  Kbrd->CapsLock = (Kbrd->CapsLock+1)%2;
+  ProcessCapsLock(D);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button6init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int  keybrd0button7callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label6);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label6);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button7init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label6,NULL,n);
+}
+int  keybrd0button8callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label7);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label7);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button8init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label7,NULL,n);
+}
+int  keybrd0button9callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label8);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label8);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button9init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label8,NULL,n);
+}
+int  keybrd0button10callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label9);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label9);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button10init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label9,NULL,n);
+}
+int  keybrd0button11callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  ProcessLabel(Tmp,butno,Label10);
+  if(!kgCheckEventDelivery(Tmp)) ProcessLabel(Tmp,butno,Label10);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button11init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessInit(B,(KEYBRD *)pt,Label10,NULL,n);
+}
+int  keybrd0button12callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  Kbrd->CapsLock = (Kbrd->CapsLock+1)%2;
+  ProcessCapsLock(D);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button12init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int  keybrd0button13callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(D->InputWid >= 0) {
+     Kbrd->CurWid = D->InputWid;
+  }
+  if(Kbrd->CurWid < 0) ret= 0;
+  else {
+    kgSetCurrentWidget(D,Kbrd->CurWid);
+    kgSendBackspaceKeyEvent(Tmp);
+    if(!kgCheckEventDelivery(Tmp)) kgSendBackspaceKeyEvent(Tmp);
+  }
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button13init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int  keybrd0button14callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(D->InputWid >= 0) {
+     Kbrd->CurWid = D->InputWid;
+  }
+  if(Kbrd->CurWid < 0) return 0;
+  kgSetCurrentWidget(D,Kbrd->CurWid);
+  switch(butno) {
+    case 1: 
+      kgSendLeftKeyEvent(Tmp);
+      if(!kgCheckEventDelivery(Tmp)) kgSendLeftKeyEvent(Tmp);
+      break;
+    case 2: 
+      kgSendRightKeyEvent(Tmp);
+      if(!kgCheckEventDelivery(Tmp)) kgSendRightKeyEvent(Tmp);
+      break;
+  }
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button14init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int  keybrd0button15callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(D->InputWid >= 0) {
+     Kbrd->CurWid = D->InputWid;
+  }
+  if(Kbrd->CurWid < 0) return 0;
+  kgSetCurrentWidget(D,Kbrd->CurWid);
+  kgSendEscapeKeyEvent(Tmp);
+  if(!kgCheckEventDelivery(Tmp)) kgSendEscapeKeyEvent(Tmp);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button15init(DIN *B,void *pt) {
+   int n;
+   n = B->nx * B->ny;
+   ProcessTitle(B,(KEYBRD *)pt);
+   return;
+}
+int  keybrd0button16callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(D->InputWid >= 0) {
+     Kbrd->CurWid = D->InputWid;
+  }
+  if(Kbrd->CurWid < 0) ret= 0;
+  else {
+    kgSetCurrentWidget(D,Kbrd->CurWid);
+    kgSendEnterKeyEvent(Tmp);
+    if(!kgCheckEventDelivery(Tmp)) kgSendEnterKeyEvent(Tmp);
+  }
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button16init(DIN *B,void *pt) {
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int  keybrd0button17callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(D->InputWid >= 0) {
+     Kbrd->CurWid = D->InputWid;
+  }
+  if(Kbrd->CurWid < 0) ret= 0;
+  else {
+    kgSetCurrentWidget(D,Kbrd->CurWid);
+    kgSendTabKeyEvent(Tmp);
+    if(!kgCheckEventDelivery(Tmp)) kgSendTabKeyEvent(Tmp);
+  }
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button17init(DIN *B,void *pt) {
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int  keybrd0button18callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(D->InputWid >= 0) {
+     Kbrd->CurWid = D->InputWid;
+  }
+  if(Kbrd->CurWid < 0) ret= 0;
+  else {
+   kgSetCurrentWidget(D,Kbrd->CurWid);
+   kgSendHomeKeyEvent(Tmp);
+    if(!kgCheckEventDelivery(Tmp)) kgSendHomeKeyEvent(Tmp);
+  }
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button18init(DIN *B,void *pt) {
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int  keybrd0button19callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(D->InputWid >= 0) {
+     Kbrd->CurWid = D->InputWid;
+  }
+  if(Kbrd->CurWid < 0) ret= 0;
+  else {
+    kgSetCurrentWidget(D,Kbrd->CurWid);
+    kgSendEndKeyEvent(Tmp);
+    if(!kgCheckEventDelivery(Tmp)) kgSendEndKeyEvent(Tmp);
+  }
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button19init(DIN *B,void *pt) {
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int  keybrd0button20callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  Kbrd->ShiftPress = (Kbrd->ShiftPress+1)%2;
+  ProcessShift(D);
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button20init(DIN *B,void *pt) {
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int  keybrd0button21callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  KEYBRD *Kbrd;
+  Kbrd = D->Kbrd;
+  if(D->InputWid >= 0) {
+     Kbrd->CurWid = D->InputWid;
+  }
+  if(Kbrd->CurWid < 0) ret= 0;
+  else {
+    kgSetCurrentWidget(D,Kbrd->CurWid);
+    kgSendSpaceKeyEvent(Tmp);
+    if(!kgCheckEventDelivery(Tmp)) kgSendSpaceKeyEvent(Tmp);
+  }
+  kgShowKey('a');
+  return ret;
+}
+void  keybrd0button21init(DIN *B,void *pt) {
+   ProcessTitle(B,(KEYBRD *)pt);
+}
+int keybrd0init(void *Tmp) {
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  /* you add any initialisation here */
+  int ret = 1;
+  DIALOG *D;void *pt;
+  D = (DIALOG *)Tmp;
+  pt = D->pt;
+  return ret;
+}
+int keybrd0cleanup(void *Tmp) {
+  /* you add any cleanup/mem free here */
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  int ret = 1;
+  DIALOG *D;void *pt;
+  D = (DIALOG *)Tmp;
+  pt = D->pt;
+  return ret;
+}
+int keybrd0CallBack(void *Tmp,void *tmp) {
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+    tmp :  Pointer to KBEVENT  
+   ***********************************/ 
+  int ret = 0;
+  DIALOG *D;
+  KBEVENT *kbe;
+  D = (DIALOG *)Tmp;
+  kbe = (KBEVENT *)tmp;
+  if(kbe->event ==1) {
+    if(kbe->button ==1) {
+    }
+  }
+  return ret;
+}
+int keybrd0ResizeCallBack(void *Tmp) {
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  int ret = 0;
+  int xres,yres,dx,dy;
+  DIALOG *D;
+  D = (DIALOG *)Tmp;
+  kgGetWindowSize(D,&xres,&yres);
+  dx = xres - D->xl;
+  dy = yres - D->yl;
+  /* extra code */
+  D->xl= xres;
+  D->yl= yres;
+  kgRedrawDialog(D);
+  return ret;
+}
+int keybrd0WaitCallBack(void *Tmp) {
+  /*********************************** 
+    Tmp :  Pointer to DIALOG  
+    Called while waiting for event  
+    return value 1 will close the the UI  
+   ***********************************/ 
+  int ret = 0;
+  return ret;
+}

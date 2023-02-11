@@ -1,0 +1,20 @@
+D      //GUI dimensions xo,yo,xl,yl,lw,rw,tw,bw,df,bor_type,bkup
+10 10 400 400
+4 4 4 4
+0 4 1 0 1 1 0 0 0 0 1 0 0.000000 0 100 100 0
+//Msg Scroll
+s
+s     //code
+18 29  //x1,y1
+6 //Size 
+NULL //prompt 
+" " //item
+" " //item
+" " //item
+" " //item
+" " //item
+" " //item
+NULL  //  
+378 216 //x2,y2
+0 //hide
+"msgbox"

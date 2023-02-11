@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #define _GNU_SOURCE
 typedef struct _DevRec {
   char device[50];
@@ -14,9 +14,11 @@ int PReso,HReso,PVis=1,HVis=1,Hpos=0;
 int ProcessXrandr(int pip0,int pip1,int Pid);
 static int HDMI=0;
 int Device=0;
-int Xres,Yres;
+extern int Xres,Yres;
 int Cxres,Cyres,Dxres,Dyres,Pxres=-1,Pyres,Hxres=-1,Hyres;
 int runjob(char *job,int (*ProcessOut)(int,int,int));
+int GetLine(int pip0,char *buff);
+int SearchString(char *s1,char *s2);
 int ProcessXrandr(int pip0,int pip1,int Pid) {
      char buff[1000],device[20],connection[20],reso[30],*rpt;
      int ch,i=0,j,found=0,Vis;

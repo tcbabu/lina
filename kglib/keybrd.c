@@ -14,6 +14,7 @@ static int FillClr=101;
 static float Btrans=0.0;
 static unsigned char R=230,G=60,B=0;
 int ButClr=-1;
+int kgMakeDefaultKeybrd0(DIALOG *D,int xo,int yo,int Vis);
 static char *kgButtonTitle(char * str) {
   sprintf(BUFF,"!z%-s!f%2.2d!c%2.2d%-s",Sfac,Bfont,Bclr,str);
 //  printf("%s\n",BUFF);

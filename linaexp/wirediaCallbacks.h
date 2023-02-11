@@ -1,0 +1,13 @@
+int  wirediabutton1callback(int butno,int i,void *Tmp) ;
+void  wirediabutton1init(DIN *B,void *pt) ;
+int  wirediasplbutton1callback(int butno,int i,void *Tmp) ;
+void  wirediasplbutton1init(DIL *B,void *pt) ;
+int  wirediasplbutton2callback(int butno,int i,void *Tmp) ;
+void  wirediasplbutton2init(DIL *B,void *pt) ;
+int  wirediabrowser1callback(int item,int i,void *Tmp) ;
+void  wirediabrowser1init(DIX *X,void *pt) ;
+int wirediainit(void *Tmp) ;
+int wirediacleanup(void *Tmp) ;
+int wirediaCallBack(void *Tmp,void *tmp) ;
+int wirediaResizeCallBack(void *Tmp) ;
+int wirediaWaitCallBack(void *Tmp) ;

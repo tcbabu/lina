@@ -1,0 +1,48 @@
+int InitWireless(void) {
+      FILE *fp;
+      char buff[500];
+      if(!GetWdev()) return 0;
+      fp = fopen("/tmp/dhclient.conf","w");
+      if(fp==NULL) break;
+      runjob("ip route del default",WaitForProcess);
+      fprintf(fp,"interface \"%-s\"{\n",Wdev);
+      fprintf(fp,"prepend domain-name-servers 127.0.0.1;\n");
+      fprintf(fp,"request subnet-mask, broadcast-address, time-offset, routers,\n");
+      fprintf(fp,"       domain-name, domain-name-servers, host-name;\n");
+//      fprintf(fp,"require subnet-mask, domain-name-servers;\n");
+      fprintf(fp,"require subnet-mask;\n");
+      fprintf(fp,"}\n");
+      fclose(fp);
+      remove("/var/lib/dhclient/dhclient.leases");
+      if((CheckProcess("wpa_supplicant"))) {
+         if (!CheckCliConnection()){
+           if(!CheckSystemd()){
+             MakeConfigFile();
+             sprintf(buff,"wpa_supplicant -i%-s -u -c/tmp/wpa.conf -B",Wdev);
+             runjob(buff,WaitForProcess);
+             sleep(1);
+           }
+           fprintf (stderr,"Systemd is Running...\n");
+#if 1
+           if (!CheckCliConnection()) {
+             fprintf(stderr,"No cli connection Reset Systemd\n");
+             ResetSystemd() ;
+             if (!CheckCliConnection()) {
+               fprintf(stderr,"Reset Systemd:No cli connection\n");
+             }
+           }
+#endif
+         }
+         if (!CheckCliConnection()) {printf("No cli connection\n");break;}
+      }
+      else {
+        fprintf(stderr,"wpa_supplicant not running\n");
+        MakeConfigFile();
+        sprintf(buff,"wpa_supplicant -i%-s -u -c/tmp/wpa.conf -B",Wdev);
+        runjob(buff,WaitForProcess);
+      }
+      runjob("cat /etc/wpa_supplicant.conf",ProcessWconf);
+      sprintf(buff,"ip link set  %s up",Wdev);
+      runjob(buff,WaitForProcess);
+      return 1;
+}

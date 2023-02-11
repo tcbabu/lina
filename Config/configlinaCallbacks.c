@@ -1,4 +1,4 @@
-#include "kulina.h"
+#include <kulina.h>
 #include "passwdfile.h"
 #include "headers.h"
 extern int Enabled;
@@ -197,6 +197,7 @@ void  configlinabrowser1init(DICH *C,void *pt) {
   kgSetSwitch(C,1,(lc.TextMode));
   kgSetSwitch(C,2,(lc.SafeMode));
   kgSetSwitch(C,3,(lc.ShowTime));
+  printf("configlinabrowser1init\n");
 }
 int  configlinabrowser2callback(int item,int i,void *Tmp) {
   /*********************************** 
@@ -291,6 +292,7 @@ int configlinainit(void *Tmp) {
   DIALOG *D;void *pt;
   D = (DIALOG *)Tmp;
   pt = D->pt;
+  printf("Init Enabled= %d\n",Enabled);
   return ret;
 }
 int configlinacleanup(void *Tmp) {
@@ -455,6 +457,7 @@ void  configlinabutton3init(DIN *B,void *pt) {
    kgChangeButtonColor(B,2,lc.FontRed,lc.FontGreen,lc.FontBlue);
    kgChangeButtonColor(B,3,lc.ButRed,lc.ButGreen,lc.ButBlue);
    kgChangeButtonColor(B,4,lc.DateRed,lc.DateGreen,lc.DateBlue);
+  printf("configlinabutton3init\n");
 }
 int  configlinabrowser4callback(int item,int i,void *Tmp) {
   /*********************************** 

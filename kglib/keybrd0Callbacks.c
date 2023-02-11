@@ -12,6 +12,8 @@ static char Label7[] ="QWERTYUIOP{}|";
 static char Label8[] = "ASDFGHJKL:\"";
 static char Label9[] = "ZXCVB";
 static char Label10[] = "NM<>?";
+void kgModifyTextWidget(void *Tmp,int ch);
+static int ProcessShift(void *Tmp);
 typedef struct _butimgdata {
   void *B;
   void *kb;
@@ -152,7 +154,7 @@ static void *MakeStringImage(int xl,int yl,int bclr,float fac, int tc,int utc,in
      xp= xl-1.5*w;
      yp= yl -1.2*h;
      kgTextColor(fid,utc);
-     kgTextSize(fid,h,w,0.);
+     kgTextSize(fid,h*0.7,w*0.7,0.);
      kgMove2f(fid,xp,yp);
      kgWriteText(fid,ustr);
    }
@@ -164,7 +166,7 @@ static void *MakeStringImage(int xl,int yl,int bclr,float fac, int tc,int utc,in
 static char *kgButtonTitle1(char * str,void *pt,char *ustr) {
   KEYBRD *Kbrd;
   Kbrd = (KEYBRD *)pt;
-  sprintf(BUFF,"!h15!d!h51!z%-s!f%2.2d!c%2.2d%-s!g !c%2.2d!z23!u%-s",Kbrd->Sfac,Kbrd->Bfont,Kbrd->Bclr,str,Kbrd->FillClr,ustr);
+  sprintf(BUFF,"!h15!d!h51!z%-s!f%2.2d!c%2.2d%-s!g !c%2.2d!z23!u%-s",Kbrd->Sfac,Kbrd->Bfont,Kbrd->Bclr,str,Kbrd->Bclr,ustr);
 //  printf("%s\n",BUFF);
   return BUFF;
 }
@@ -231,7 +233,7 @@ static int ProcessShift(void *Tmp) {
      break;
  }
  kgUpdateOn(D);
- return;
+ return 0;
 }
 static int ProcessCapsLock(void *Tmp) {
   DIALOG *D;
@@ -265,6 +267,7 @@ static int ProcessLabel(void *Tmp,int butno,char *Label) {
   KEYBRD *Kbrd;
   D = (DIALOG *)Tmp;
   Kbrd = D->Kbrd;
+  Kbrd->CurWid =-1;
   CurWid = Kbrd->CurWid;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
@@ -273,7 +276,8 @@ static int ProcessLabel(void *Tmp,int butno,char *Label) {
   if(CurWid>= 0) {
   kgSetCurrentWidget(D,CurWid);
   ch= Label[butno-1];
-  kgSendKeyEvent(D,ch);
+//  kgSendKeyEvent(D,ch);
+  kgModifyTextWidget(D,ch);
   }
   else {
     if(Kbrd->TargetWindow != NULL) {
@@ -325,7 +329,7 @@ static void *GetStringImg(DIN *B,int index,KEYBRD *kb,char *str,char *ustr) {
    yl =B->width;
    clr =kb->ButClr;
   
-   img = MakeStringImage(xl,yl,clr,B->fac,kb->Bclr,kb->FillClr,kb->Bfont,str,ustr);
+   img = MakeStringImage(xl,yl,clr,B->fac,kb->Bclr,kb->Bclr,kb->Bfont,str,ustr);
    but[index].xpmn=img;
    return img;
 }
@@ -822,6 +826,7 @@ int  keybrd0button13callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
   }
@@ -860,6 +865,7 @@ int  keybrd0button14callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
   }
@@ -914,6 +920,7 @@ int  keybrd0button15callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
   }
@@ -952,6 +959,7 @@ int  keybrd0button16callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
   }
@@ -987,6 +995,7 @@ int  keybrd0button17callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
   }
@@ -1022,6 +1031,7 @@ int  keybrd0button18callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
   }
@@ -1057,6 +1067,7 @@ int  keybrd0button19callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
   }
@@ -1116,6 +1127,7 @@ int  keybrd0button21callback(int butno,int i,void *Tmp) {
   n = B->nx*B->ny;
   KEYBRD *Kbrd;
   Kbrd = D->Kbrd;
+  Kbrd->CurWid =-1;
   if(D->InputWid >= 0) {
      Kbrd->CurWid = D->InputWid;
   }
@@ -1128,8 +1140,9 @@ int  keybrd0button21callback(int butno,int i,void *Tmp) {
   }
   else {
     kgSetCurrentWidget(D,Kbrd->CurWid);
-    kgSendSpaceKeyEvent(Tmp);
-    if(!kgCheckEventDelivery(Tmp)) kgSendSpaceKeyEvent(Tmp);
+//    kgSendSpaceKeyEvent(Tmp);
+//    if(!kgCheckEventDelivery(Tmp)) kgSendSpaceKeyEvent(Tmp);
+    kgModifyTextWidget(D,32);
   }
   kgShowKey('a');
   return ret;
