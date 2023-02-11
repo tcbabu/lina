@@ -72,3 +72,4 @@ clean	:
 	$(MAKE) -C Config clean
 	$(MAKE) -C SetPhoto  clean
 	$(MAKE) -C wireless  clean
+	rm -f TARBALL/configlina TARBALL/SetPhoto TARBALL/lina
