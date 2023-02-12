@@ -17,6 +17,7 @@ lina	: lina.o linaCallbacks.o main.o SessionDia.o SessionDiaCallbacks.o \
 	 pskdia.o pskdiaCallbacks.o DateTime.o    hdmi.o \
 	 msgbox.o msgboxCallbacks.o \
  	-I$(KULINA)/include $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread  -lcrypt
+	 cp lina $(KULINA)/TARBALL
 lina.o	: lina.c images.c
 	 $(CC) -c lina.c
 wireless.o	: wireless.c 
@@ -27,6 +28,7 @@ main.o	: main.c
 	 $(CC) -c main.c
 clean	:  
 	   rm -f *.o lina
+	   rm -f $(KULINA)/TARBALL/lina
 install	: lina 
 	 install -m 755 -s lina $(PREFIX)/sbin/lina
 	 mkdir -p /usr/share/lina

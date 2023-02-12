@@ -3,6 +3,7 @@ include config.mak
 CC	=cc -pthread
 SetPhoto	: SetPhoto.o SetPhotoCallbacks.o main.o
 	 $(CC) -o SetPhoto SetPhoto.o SetPhotoCallbacks.o main.o -I$(KULINA)/include $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread  
+	 cp SetPhoto $(KULINA)/TARBALL
 SetPhoto.o	: SetPhoto.c 
 	 $(CC) -c SetPhoto.c
 SetPhotoCallbacks.o	: SetPhotoCallbacks.c 
@@ -11,6 +12,7 @@ main.o	: main.c
 	 $(CC) -c main.c
 clean	:  
 	   rm -f *.o SetPhoto
+	   rm -f $(KULINA)/TARBALL/SetPhoto
 install	: SetPhoto
 	 install -m 755 -s SetPhoto $(PREFIX)/bin/SetPhoto
 	 mkdir -p /usr/share/lina

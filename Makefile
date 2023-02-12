@@ -58,12 +58,19 @@ Config/configlina	: lib/libgm.a lib/libkulina.a $(CONFIGFILES)
 	echo "KULINA=$(PWD)">>Config/config.mak
 	$(MAKE) -C Config
 wireless/wireless	:
+	echo "PREFIX=$(PREFIX)">wireless/config.mak
+	echo "KULINA=$(PWD)">>wireless/config.mak
 	$(MAKE) -C wireless
 install	: lina/lina SetPhoto/SetPhoto Config/configlina wireless/wireless
 	  $(MAKE) -C lina install
 	  $(MAKE) -C Config install
 	  $(MAKE) -C SetPhoto install
 	  $(MAKE) -C wireless install
+
+tarball : TARBALL/lina TARBALL/SetPhoto TARBALL/configlina TARBALL/wireless
+	  mv TARBALL lina-1.2
+	  tar czf lina-1.2.tgz lina-1.2
+	  mv lina-1.2 TARBALL
 clean	:
 	 rm -rf lib/* share/* bin/* man/*
 	$(MAKE) -C OpenSource clean
@@ -72,4 +79,4 @@ clean	:
 	$(MAKE) -C Config clean
 	$(MAKE) -C SetPhoto  clean
 	$(MAKE) -C wireless  clean
-	rm -f TARBALL/configlina TARBALL/SetPhoto TARBALL/lina
+	rm -f TARBALL/configlina TARBALL/SetPhoto TARBALL/lina TARBALL/wireless lina-1.2.tgz
