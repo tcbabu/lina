@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+
 int  ConnectSSID(char *ssid);
 int  ScanSSID();
 int  InitWpa(void);
@@ -56,7 +59,7 @@ int main(int argc,char *argv[]){
          if(fork()!= 0) exit(0);
        }
        else {
-        waitpid(sid,&status);
+        waitpid(sid,&status,0);
         exit(0);
        }
        break;
@@ -81,6 +84,7 @@ int main(int argc,char *argv[]){
          if((i+1) < argc ) SSID = argv[i+1];
          i++;
        }
+       ConnectSSID(SSID);
        OK=1;
        break;
      case 'i':
@@ -104,25 +108,5 @@ int main(int argc,char *argv[]){
     i++;
   }
   if (!OK) Usage();
-  system("killall -9 wpa_supplicant");
-  GetWdev();
-  while(CheckProcess("wpa_supplicant") );
-  if(InitWpa()) {
-#if 0
-    switch(argv[1][1]) {
-     case 'c':
-       if(argc < 3) fprintf(stderr," ssid not given\n");
-       ConnectSSID(argv[2]);
-     break;
-     case 's':
-       ScanSSID();
-     break;
-    }
-#else
-     printf("SSID: %s PSK:%s\n",SSID,PSK);
-     if(SSID != NULL)ConnectSSID(SSID);
-     else Usage();
-#endif
-  }
   return 1;
 }

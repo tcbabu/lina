@@ -9,4 +9,4 @@ install -m 644 ninjagirl.jpg  /usr/share/lina
 install -m 644 configlina.desktop /usr/share/applications/
 install -m 755 -s lina /usr/sbin/lina
 install -m 644 lina.init  /usr/share/lina
-install -m 755 wireless  /usr/bin/
+install -m 755 wireless  /usr/sbin/
