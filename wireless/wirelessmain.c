@@ -11,20 +11,25 @@ int GetWdev(void);
 int CheckProcess(char *);
 int DeleteSSID (char *);
 int WirelessStatus(void);
+int  DisconnectSSID(void);
+char *GetPreferredSSID(void);
 
 char *PSK=NULL,*SSID=NULL;
 extern char *Wdev;
 int Usage(void) {
     fprintf(stderr," Usage: \n"
-                   " wireless -<option>  [<ssid>]\n"
+                   " wireless -<option>  \n"
                    " option: \n"
                    "  i:  wireless inteface\n"
                    "  l:  list ssid \n"
                    "  c <ssid>: connect ssid\n"
-                   "  d <ssid>: delete ssid\n"
+                   "  C : connect the best ssid\n"
+                   "  d : disconnect wireless\n"
+                   "  r <ssid>: delete ssid\n"
                    "  p <psk> : psk (needed for first use of ssid)\n"
                    "  s:  status\n"
-                   "  B:  go background\n");
+                   "  B:  go background\n"
+		   "Note: flags '-i <ssid>' and '-B' should be in the beginnimg\n ");
     exit(1);
 }
 
@@ -33,6 +38,7 @@ int main(int argc,char *argv[]){
   int i;
   int OK=0;
   int sid,status;
+  char *spt;
   
   
   if(argc<2) {
@@ -71,13 +77,18 @@ int main(int argc,char *argv[]){
        }
        break;
      case 'd':
+       DisconnectSSID();
+       OK = 1;
+       break;
+     case 'r':
        if(och != '\0') SSID = argv[i]+2;
        else {
          if((i+1) < argc ) SSID = argv[i+1];
          i++;
        }
        DeleteSSID(SSID);
-       exit(0);
+       OK = 1;
+       break;
      case 'c':
        if(och != '\0') SSID = argv[i]+2;
        else {
@@ -95,18 +106,29 @@ int main(int argc,char *argv[]){
        }
        break;
      case 'l':
-       if(InitWpa()) {
-         ScanSSID();
-       }
-       exit(0);
+       InitWpa();
+       ScanSSID();
+       OK=1;
+       break;
      case 's':
        GetWdev();
        WirelessStatus();
-       exit(0);
+       OK=1;
+       break;
+     case 'C':
+       spt = GetPreferredSSID();
+       if(spt != NULL){
+	       printf("Connecting %s\n",spt);
+	       ConnectSSID(spt);
+       }
+       else printf("Could not get ssid\n");
+       OK=1;
+       break;
+
        
     }
     i++;
   }
   if (!OK) Usage();
-  return 1;
+  return OK;
 }

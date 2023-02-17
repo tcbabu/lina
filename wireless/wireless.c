@@ -10,20 +10,19 @@
 #include <fcntl.h>
 #define StrongLevel -35  // ie 100 % anything higher than -35 is 100%o
 #define WeakLevel   -95 // ie 1&
-Dlink *Scanlist=NULL;
+static Dlink *Scanlist=NULL;
 char *Wdev=NULL,Edev[100];
-char EnvFile[200];
-int SYSTEMD=0;
-int DBUS=0;
-int ID=-1,OK;
-int Connected=0;
-char Curssid[100];
-int Runwiredia(void *arg);
-int MakeDhclient(void);
+static char EnvFile[200];
+static int SYSTEMD=0;
+static int DBUS=0;
+static int ID=-1,OK;
+static int Connected=0;
+static char Curssid[100];
+static int MakeDhclient(void);
 int InitWpa(void);
-int WC=0;
-char Bcaddr[50];
-char *IPADDR=NULL;
+static int WC=0;
+static char Bcaddr[50];
+static char *IPADDR=NULL;
 extern char *PSK;
 #define WAIT(pid) {\
   pid_t w;\
@@ -36,19 +35,18 @@ extern char *PSK;
                    }\
                } while (!WIFEXITED(status) && !WIFSIGNALED(status));\
 }
-int CheckProcess(char *);
-int CheckString(char *s1,char *s2);
+static int CheckProcess(char *);
 int SearchString(char *s1,char *s2);
 int GetLine(int pip0,char *buff);
 int WaitForProcess(int pip0,int pip1,int Pid);
 int runjob(char *job,int (*ProcessOut)(int,int,int));
 int changejob(char *job);
-char * WirelessIpaddr(char *dev);
 int GetWdev(void);
-int CheckCliConnection(void);
-int runbin(char *job);
+char * WirelessStatus(void);
+static int CheckCliConnection(void);
+static int runbin(char *job);
 
-int CheckProcess(char *procname) {
+static int CheckProcess(char *procname) {
    char buff[500];
    int Id=0,Okay=0,count=0,ln;
    char tty[50],dummy[50],program[100];
@@ -73,112 +71,7 @@ int CheckProcess(char *procname) {
      pclose(pp);
    return Okay;
 }
-int CheckProcessCommand(char *procname) {
-   char buff[500];
-   int Id=0,Okay=0,count=0,ln;
-   char tty[50],dummy[50],program[100];
-   FILE *pp;
-     ln = strlen(procname);
-     pp = popen("ps -elf","r");
-     fgets(buff,499,pp);
-     while( fgets(buff,499,pp) != NULL) {
-        if(SearchString(buff,procname)>=0 ) {
-          Okay=1;
-          break;
-        }
-     }
-     pclose(pp);
-   return Okay;
-}
-
-int ProcessWconf(int pip0,int pip1,int Pid) {
-     char buff[1000],ssid[200],psk[200],flname[200];
-     char *pt;
-     FILE *fp=NULL;
-     int ch,i=0,j,k,KILL=0;
-     mkdir("/usr/share/config",0755);
-     mkdir("/usr/share/config/lina",0700);
-     mkdir("/usr/share/config/lina/Wireless",0700);
-
-     while((ch=GetLine(pip0,buff)) ) {
-         if(ch< 0) {continue;}
-         i=0;
-         while (buff[i]==' ') i++;
-         if(buff[i]=='#') continue;
-         if((buff[i]< ' ')&&(buff[i]!='\t')) continue;
-         if(SearchString(buff+i,(char *)"network")>=0) {
-           do {
-             if(ch< 0) {continue;}
-             i=0;
-             while (buff[i]==' ') i++;
-             if(buff[i]=='#') continue;
-             if((buff[i]< ' ')&&(buff[i]!='\t')) continue;
-             pt =buff+i;
-             if((j=SearchString(pt,(char *)"ssid"))>=0) {
-               pt =pt+j;
-               if((j=SearchString(pt,(char *)"\""))>=0) {
-                  pt = pt+j+1;
-                  k = SearchString(pt,(char *)"\"");
-                  pt[k]='\0';
-                  strcpy(ssid,pt);
-                  sprintf(flname,"/usr/share/config/lina/Wireless/%-s",ssid);
-                  fp = fopen(flname,"w");
-                  i=k+1;
-                  pt=pt+k+1;
-               }
-             }
-             if((j=SearchString(pt,(char *)"psk"))>=0) {
-               pt = pt+j;
-               if((j=SearchString(pt,(char *)"\""))>=0) {
-                  pt = pt+j+1;
-                  k = SearchString(pt,(char *)"\"");
-                  pt[k]='\0';
-                  strcpy(psk,pt);
-                  if(fp!= NULL) {
-                    fprintf(fp,"%-s\n",psk);
-                    fclose(fp);
-                    fp=NULL;
-                  }
-                  i=k+1;
-                  pt=pt+k+1;
-               }
-             }
-             if((j=SearchString(pt,(char *)"}"))>=0) {
-               if(fp != NULL) fclose(fp);
-               fp=NULL;
-               break;
-             }
-           } while((ch=GetLine(pip0,buff)) );
-         }
-     }
-//     if(!KILL) killpg(Sid,SIGKILL);
-     return 1;
-}
-int ProcessEnv(int pip0,int pip1,int Pid) {
-     char buff[1000],flname[200];
-     char *pt;
-     int ch,i=0,j,ret=0;
-
-     while((ch=GetLine(pip0,buff)) ) {
-         if(ch< 0) {continue;}
-         i=0;
-         while (buff[i]==' ') i++;
-         if(buff[i]=='#') continue;
-         if((buff[i]< ' ')&&(buff[i]!='\t')) continue;
-         if(SearchString(buff+i,(char *)"EnvironmentFile")>=0) {
-             pt =buff+i;
-             if((j=SearchString(pt,(char *)"-"))>=0) {
-               pt =pt+j+1;
-               sscanf(pt,"%s",EnvFile);
-               printf("EnvFile = %s\n",EnvFile);
-               ret=1;
-               break;
-             }
-         }
-     }
-     return ret;
-}
-int ProcessStatus(int pip0,int pip1,int Pid) {
+static int ProcessStatus(int pip0,int pip1,int Pid) {
      char buff[1000];
      int ch,i=0,j;
 //   Skipa line
@@ -204,87 +97,36 @@ int ProcessStatus(int pip0,int pip1,int Pid) {
      }
      return OK;
 }
-int ProcessState_o(int pip0,int pip1,int Pid) {
-     char buff[1000];
-     int ch,i=0,j;
-//   Skipa line
-     Curssid[0]='\0';
-     OK=0;
-     while((ch=GetLine(pip0,buff)) ) {
-         if(ch< 0) {continue;}
-         if((j=SearchString(buff,(char *)"Failed to connect"))>=0) {
-           OK=0;
-           break;
-         }
-         if((j=SearchString(buff,(char *)"wpa_state=COMPLETED"))>=0) {
-             OK=1;
-         }
-     }
-     return OK;
-}
-int ProcessState(int pip0,int pip1,int Pid) {
-     char buff[1000];
-     int ch,i=0,j;
-     FILE *fp;
-     unsigned char *pt;
-//   Skipa line
-     Curssid[0]='\0';
-     OK=0;
-     fp = fdopen(pip0,"r");
-     while( fgets(buff,1000,fp) != NULL) {
-         pt = strstr(buff,"Failed to connect");
-         if(pt!= NULL) {OK=0;break;}
-         pt = strstr(buff,"wpa_state=COMPLETED");
-         if(pt!= NULL) {OK=1;break;}
-     }
-     fclose(fp);
-     return OK;
-}
-int GetState(void) {
-    OK=0;
-    runjob("wpa_cli status",ProcessState);
-    if(OK==0) { sleep(1);runjob("wpa_cli status",ProcessState);}
-    if(OK==0) { sleep(1);runjob("wpa_cli status",ProcessState);}
-    if(OK==0) { sleep(1);runjob("wpa_cli status",ProcessState);}
-    return OK;
-}
-int ProcessCli(int pip0,int pip1,int Pid) {
+static int ProcessCli(int pip0,int pip1,int Pid) {
      char buff[1000];
      int ch,i=0,j;
      OK=0;
      while((ch=GetLine(pip0,buff)) ) {
-         printf("ProcessCli: %s",buff);
          if(ch< 0) {continue;}
          if((j=SearchString(buff,(char *)"Failed to connect"))>=0) {
            OK=0;
            break;
          }
          if((j=SearchString(buff,(char *)"wpa_state"))>=0) {
-           printf("CLI OKAY\n");
            OK=1;
            break;
          }
      }
      return OK;
 }
-int ProcessScan(int pip0,int pip1,int Pid) {
+static int ProcessScan(int pip0,int pip1,int Pid) {
      char buff[1000],bssid[100],ssid[200],psk[200],flname[200];
      char *pt;
      FILE *fp=NULL;
      int ch,i=0,j,k,sig,NOTOK;
      NETLIST *nt,*tnt;
-//   Skipa line
+
+     k=0;
      while((ch=GetLine(pip0,buff)) ) {
          if(ch< 0) {continue;}
-         else break;
-     }
-     while((ch=GetLine(pip0,buff)) ) {
-         if(ch< 0) {continue;}
-         else break;
-     }
-   
-     while((ch=GetLine(pip0,buff)) ) {
-         if(ch< 0) {continue;}
+	 k++;
+//         printf(" Scan: %s\n",buff);
+	 if(k<=2) continue;
          if(Scanlist==NULL) Scanlist=Dopen();
          nt = (NETLIST *)malloc(sizeof(NETLIST));
          pt =  buff;
@@ -314,6 +156,7 @@ int ProcessScan(int pip0,int pip1,int Pid) {
          i=0;  while (pt[i]!='\t') i++;pt[i]='\0';
          sscanf(pt,"%d",&(nt->sig));
          sig = nt->sig;
+#if 0
          if(sig >= StrongLevel) nt->sig=100;
          if(sig <= WeakLevel) nt->sig=1;
          else {
@@ -322,6 +165,11 @@ int ProcessScan(int pip0,int pip1,int Pid) {
            sig = ((sig/25.0)+0.5);
            nt->sig = sig*25;
          }
+#else
+           sig = -90 - sig;
+           sig = (-sig*100)/60.0;
+           nt->sig = sig;
+#endif
          pt = pt+i+1;
          i=0;  while (pt[i]!='\t') i++;pt[i]='\0';
          pt = pt+i+1;
@@ -329,6 +177,7 @@ int ProcessScan(int pip0,int pip1,int Pid) {
          strcpy(nt->ssid,pt);
          Dadd(Scanlist,nt);
      }
+     if(Scanlist==NULL) return 0;
      NOTOK=1;
      while(NOTOK) {
        NOTOK=0;
@@ -351,7 +200,7 @@ int ProcessScan(int pip0,int pip1,int Pid) {
      }
      return 1;
 }
-int ProcessAdd(int pip0,int pip1,int Pid) {
+static int ProcessAdd(int pip0,int pip1,int Pid) {
      char buff[1000];
      char *pt;
      FILE *fp=NULL;
@@ -368,7 +217,7 @@ int ProcessAdd(int pip0,int pip1,int Pid) {
      ID=id;
      return id;
 }
-int ProcessSet(int pip0,int pip1,int Pid) {
+static int ProcessSet(int pip0,int pip1,int Pid) {
      char buff[1000],status[100];
      char *pt;
      FILE *fp=NULL;
@@ -389,7 +238,7 @@ int ProcessSet(int pip0,int pip1,int Pid) {
 //     printf("Returning\n");
      return OK;
 }
-int CleanNetworks(void) {
+static int CleanNetworks(void) {
   char buff[100];
   int id;
   runjob("wpa_cli add_network",ProcessAdd);
@@ -398,7 +247,7 @@ int CleanNetworks(void) {
     runjob(buff,WaitForProcess);
   }
 }
-int addnetwork(NETLIST *nt) {
+static int addnetwork(NETLIST *nt) {
   char buff[500];
   runjob("wpa_cli add_network",ProcessAdd);
   if(ID<0) ID=0;
@@ -429,8 +278,8 @@ int addnetwork(NETLIST *nt) {
   }
   return OK;
 }
-int AddNetworks(void) {
-  char buff[100];
+static int AddNetworks(void) {
+  char buff[1000];
   FILE *fp;
   char **Onets,*ssid;
   int i;
@@ -440,7 +289,9 @@ int AddNetworks(void) {
     Dempty(Scanlist);
     Scanlist=NULL;
   }
-  CleanNetworks();
+//  CleanNetworks();
+  sprintf(buff,"ip link set %-s up",Wdev);
+  runjob(buff,NULL);
   runjob("wpa_cli scan",WaitForProcess);
   for(i=0;i<4;i++){
     sleep(i+1);
@@ -450,7 +301,6 @@ int AddNetworks(void) {
     
   }
   if(Scanlist!=NULL) {
-    printf("Got Scanlist\n");
     Resetlink(Scanlist);
     i=0;
     while ( (nt=(NETLIST *)Getrecord(Scanlist)) != NULL) {
@@ -461,7 +311,6 @@ int AddNetworks(void) {
       fp = fopen(buff,"r");
       nt->psk[0]='\0';
       if(fp != NULL) {
-	      printf("%s \n",buff);
         nt->sec=0;
         fscanf(fp,"%s",nt->psk);
         if(fscanf(fp,"%d%d",&(nt->proto),&(nt->group))<=0) {
@@ -476,7 +325,7 @@ int AddNetworks(void) {
   }
   return 1;
 }
-int AddOldNetworks(void) {
+static int AddOldNetworks(void) {
   char buff[100];
   FILE *fp;
   char **Onets,*ssid;
@@ -519,7 +368,7 @@ int AddOldNetworks(void) {
   }
   return 1;
 }
-int ConnectNetwork(NETLIST *nt) {
+static int ConnectNetwork(NETLIST *nt) {
     char buff[100];
     int id;
 #if 1
@@ -542,7 +391,7 @@ int ConnectNetwork(NETLIST *nt) {
     if(!OK) {sleep(3); runjob(buff,ProcessSet);}
     return OK;
 }
-int MakeConfigFile(void) {
+static int MakeConfigFile(void) {
   int ret=0;
   FILE *fp=NULL;
   fp = fopen("/tmp/wpa.conf","w");
@@ -557,7 +406,7 @@ int MakeConfigFile(void) {
   }
   return ret;
 }
-int GetSSIDid(Dlink *S,char *ssid) {
+static int GetSSIDid(Dlink *S,char *ssid) {
   int id=0;
   NETLIST *nt;
   Resetlink(S);
@@ -570,15 +419,14 @@ int GetSSIDid(Dlink *S,char *ssid) {
 }
 int  ScanSSID() {
   NETLIST *nt;
-  if(Scanlist==NULL) {
-        AddNetworks();
-  }
+  AddNetworks();
+//  AddOldNetworks();
   Resetlink(Scanlist);
   while( (nt=Getrecord(Scanlist))!=NULL) {
-       printf("%s\n",nt->ssid);
+       printf("%s %d\n",nt->ssid,nt->sig);
   }
 }
-int  DisconnectSSID() {
+int  DisconnectSSID(void) {
   char buff[200];
   if(!GetWdev()) return 0;
   sprintf(buff,"ip link set %s down",Wdev);
@@ -586,7 +434,7 @@ int  DisconnectSSID() {
   return 1;
 }
  
-int MakeDhclient(void) {
+static int MakeDhclient(void) {
    FILE *fp;
    char buff[500];
    fp = fopen("/tmp/dhclient.conf","w");
@@ -647,7 +495,43 @@ int  DeleteSSID(char *ssid) {
  remove(buff);
  Dposition(Scanlist,id);
  Ddelete(Scanlist);
- fprintf(stderr,"Removed %s\n",nt->ssid);
+ fprintf(stderr,"Removed %s\n",ssid);
+}
+static int CompareSignal(void *s1,void *s2) {
+	int ret=0;
+	ret = strcmp((char *)s1,(char *)s2);
+	return ret;
+}
+char *GetPreferredSSID(void) {
+    NETLIST *pt;
+    char *spt=NULL;
+    char **ssids=NULL;
+    int ret=0;
+    int i=0;
+       
+    ret = InitWpa();
+    if(Scanlist==NULL) {
+        AddNetworks();
+    } 
+    if(Dcount(Scanlist)==0 ) return NULL;
+    Dsort(Scanlist,CompareSignal);
+    Resetlink(Scanlist);
+    ssids=kgFileMenu("/usr/share/config/lina/Wireless","*");
+    if(ssids==NULL) return NULL;
+    while( (pt = (NETLIST *) Getrecord(Scanlist))!= NULL) {
+	    printf ("%s %d\n",pt->ssid,pt->sig);
+	    i=0;
+	    while(ssids[i]!= NULL) {
+		    if(strcmp(pt->ssid,ssids[i])==0) {
+			    spt=(char *) malloc(strlen(pt->ssid)+1);
+			    strcpy(spt,pt->ssid);
+			    break;
+		    }
+		    i++;
+	    }
+	    if(spt != NULL) break;
+    }
+    return spt;
 }
 int  ConnectSSID(char *ssid) {
   char buff[500];
@@ -660,11 +544,17 @@ int  ConnectSSID(char *ssid) {
   unsigned char *pt;
   FILE *fp;
   ret = InitWpa();
-  if (ret==0) {
+  ipaddr = WirelessStatus();
+//  if (ret==0) {
+  {
     servip[0]='\0';
     Bcaddr[0]='\0';
-    ipaddr = IPADDR;
+//    ipaddr = IPADDR;
     if(ipaddr != NULL) {
+      if(strcmp(Curssid,ssid)==0){
+ 	 fprintf(stderr,"%s Connected\n",ssid);
+	 return 1;
+      }	
       sprintf(buff,"ip addr del %s dev %s",ipaddr,Wdev);
       printf("%s \n",buff);
       system(buff);
@@ -733,7 +623,7 @@ int  ConnectSSID(char *ssid) {
   }
   return ret;
 }
-int runbin(char *job){
+static int runbin(char *job){
    FILE *fp,*fp1;
    char *args[50],buff[1000],command[200],pt[200];
    int pip[2],pid,pipe2[2];
@@ -837,8 +727,8 @@ int runbin(char *job){
 int GetWdev(void) {
   char **devs,**files,buff[200];
   int i,j,OK=0;
-  devs=kgFolderMenu("/sys/class/net");
   if(Wdev != NULL) { OK=1; return 1;}
+  devs=kgFolderMenu("/sys/class/net");
   if(devs!=NULL) {
    i=0;
    while(devs[i]!=NULL) {
@@ -863,7 +753,7 @@ int GetWdev(void) {
    }
    kgFreeDouble((void **)devs);
   }
-//  printf("Wireless Device : %s\n",Wdev);
+  printf("Wireless Device : %s\n",Wdev);
   return OK;
 }
 char * WirelessStatus(void) {
@@ -896,6 +786,7 @@ char * WirelessStatus(void) {
     pt = (char *) malloc(strlen(ipaddr)+1);
     strcpy(pt,ipaddr);
     runjob("wpa_cli status",ProcessStatus);
+    IPADDR=pt;
   }
   else {
     pt=NULL;
@@ -905,240 +796,12 @@ char * WirelessStatus(void) {
   return pt;
 
 }
-char * WirelessIpaddr(char *dev) {
-  char buff[500],ipaddr[50];
-  FILE *fp;
-  int n,pp2,OK=0;
-  char wdev[100];
-  unsigned char *pt,*rpt=NULL;
-  Connected=0;
-
-  if(dev==NULL) {
-   if(GetWdev()==0) return NULL;
-   strcpy(wdev,Wdev);
-  }
-  else strcpy(wdev,dev);
-  sprintf(buff,"ip addr list dev %-s",wdev);
-  fp = popen(buff,"r");
-//  fgets(buff,500,fp);
-//  printf("%s",buff);
-  while ( fgets(buff,500,fp) != NULL) {
-//      printf("%s",buff);
-      pt = strstr(buff,"inet ");
-      if( pt != NULL) {
-          pt += 5;
-          sscanf(pt,"%s",ipaddr);
-          rpt = (unsigned char *) malloc(strlen(ipaddr)+1);
-          strcpy(rpt,ipaddr);
-      }
-      pt = strstr(buff,"brd ");
-      if( pt != NULL) {
-          pt += 4;
-          sscanf(pt,"%s",Bcaddr);
-      }
-  }
-  pclose(fp);
-  printf("Ipaddr : %s\n",rpt);
-  return rpt;
-}
-int CheckCliConnection(void){
+static int CheckCliConnection(void){
    OK=0;
    runjob("wpa_cli status",ProcessCli);
    return OK;
 }
-int CheckSystemd(void) {
-  FILE *fp=NULL;
-  char buff[500];
-  int ret=0;
-  EnvFile[0]='\0';
-  if(CheckProcess("systemd")) {
-    ret =1;
-    SYSTEMD=1;
-#if 1
-    printf("systemd is running...\n");
-    runjob("cat /lib/systemd/system/wpa_supplicant.service",ProcessEnv);
-    if(EnvFile[0]=='\0')
-       runjob("cat /usr/lib/systemd/system/wpa_supplicant.service",ProcessEnv);
-//    fp = fopen("/etc/sysconfig/wpa_supplicant","w");
-    if(EnvFile[0]!='\0')fp = fopen(EnvFile,"w");
-    if(fp != NULL) {
-      fprintf(fp,"INTERFACES=\"-i%-s\"\n",Wdev);
-      fprintf(fp,"DRIVERS=\" \"\n");
-      fprintf(fp,"OTHER_ARGS=\" -s -B\"\n");
-      fclose(fp);
-      printf("Restarting wpa_supplicant\n");
-      runjob("systemctl restart wpa_supplicant",WaitForProcess);
-      sleep(1);
-      MakeConfigFile();
-      sprintf(buff,"wpa_supplicant  -i%-s -u  -c/tmp/wpa.conf -B",Wdev);
-      printf("%s\n",buff);
-      runjob(buff,WaitForProcess);
-      sleep(1);
-      CheckProcessCommand("wpa_supplicant");
-      if(EnvFile[0]!='\0') fp = fopen(EnvFile,"w");
-      fprintf(fp,"INTERFACES=\"-i%-s\"\n",Wdev);
-      fprintf(fp,"DRIVERS=\" \"\n");
-      fprintf(fp,"OTHER_ARGS=\" \"\n");
-      fclose(fp);
-    }
-#else
-    DBUS =1;
-    runjob("systemctl stop dbus",WaitForProcess);
-#endif
-  }
-  else printf("Systemd is not running...\n");
-  return ret;
-}
-int ResetSystemd(void) {
-  FILE *fp=NULL;
-  int ret=0;
-  char buff[500];
-  EnvFile[0]='\0';
-  if(CheckProcess("systemd")) {
-    ret =1;
-    SYSTEMD=1;
-    printf("Reset Systemd: systemd is running...\n");
-    runjob("cat /lib/systemd/system/wpa_supplicant.service",ProcessEnv);
-    if(EnvFile[0]=='\0')
-       runjob("cat /usr/lib/systemd/system/wpa_supplicant.service",ProcessEnv);
-    if(EnvFile[0]!='\0')fp = fopen(EnvFile,"w");
-    if(fp != NULL) {
-      fprintf(fp,"INTERFACES=\"-i%-s\"\n",Wdev);
-      fprintf(fp,"DRIVERS=\" \"\n");
-      fprintf(fp,"OTHER_ARGS=\" -s -B\"\n");
-      fclose(fp);
-      printf("Restarting wpa_supplicant\n");
-      runjob("systemctl restart wpa_supplicant",WaitForProcess);
-      printf("ResetSystemd: MakeConfigFile\n");
-      sleep(1);
-      MakeConfigFile();
-      sprintf(buff,"wpa_supplicant  -i%-s -u  -c/tmp/wpa.conf -B",Wdev);
-      printf("%s\n",buff);
-      runjob(buff,WaitForProcess);
-      sleep(1);
-      if(!CheckProcess("wpa_supplicant")) {
-        printf("Retrying: %s\n",buff);
-        runjob(buff,WaitForProcess);
-      }
-      else {
-        printf("wpa_supplicant running\n");
-        CheckProcessCommand("wpa_supplicant");
-      }
-#if 1
-      if(EnvFile[0]!='\0') fp = fopen(EnvFile,"w");
-      fprintf(fp,"INTERFACES=\"-i%-s\"\n",Wdev);
-      fprintf(fp,"DRIVERS=\" \"\n");
-      fprintf(fp,"OTHER_ARGS=\" \"\n");
-      fclose(fp);
-#endif
-      sleep(1);
-    }
-  }
-  else printf("Systemd is not running...\n");
-  return ret;
-}
  
-int  Wireless(int key) {
-  FILE *fp;
-  int n,ret =0,OK=0; 
-  char buff[500];
-  static int pid=0;
-//  FILE *pp=NULL;
-  static int pp=0,pp2=0;
-  if(Scanlist == NULL){
-        AddNetworks();
-        AddOldNetworks();
-  }
-  
-  switch(key) {
-    case 1: 
-      OK=0;
-      ret = OK;
-      if(!GetWdev()) break;
-      fp = fopen("/tmp/dhclient.conf","w");
-      if(fp==NULL) break;
-      runjob("ip route del default",WaitForProcess);
-      fprintf(fp,"interface \"%-s\"{\n",Wdev);
-//      fprintf(fp,"prepend domain-name-servers 127.0.0.1;\n");
-      fprintf(fp,"request subnet-mask, broadcast-address, time-offset, routers,"
-        " domain-name, domain-name-servers, domain-search, host-name, "
-	" netbios-name-servers, netbios-scope, interface-mtu, ntp-servers;\n");
-      fprintf(fp,"require subnet-mask, domain-name-servers, "
-	      " broadcast-address, routers ;\n");
-      fprintf(fp,"}\n");
-      fclose(fp);
-      remove("/var/lib/dhclient/dhclient.leases");
-      if((CheckProcess("wpa_supplicant"))) {
-         if (!CheckCliConnection()){
-           if(!CheckSystemd()){
-             MakeConfigFile();
-             sprintf(buff,"wpa_supplicant -i%-s -u -c/tmp/wpa.conf -B",Wdev);
-             runjob(buff,WaitForProcess);
-             sleep(1);
-           }
-           printf ("Systemd is Running...\n");
-#if 1
-           if (!CheckCliConnection()) {
-             printf("No cli connection Resetting Systemd\n");
-             ResetSystemd() ;
-             if (!CheckCliConnection()) {
-               printf("Reset Systemd, but no cli connection\n");
-             }
-           }
-#endif
-         }
-         if (!CheckCliConnection()) {printf("No cli connection\n");break;}
-      }
-      else {
-        printf("wpa_supplicant not running\n");
-        MakeConfigFile();
-        sprintf(buff,"wpa_supplicant -i%-s -u -c/tmp/wpa.conf -B",Wdev);
-        runjob(buff,WaitForProcess);
-      }
-      runjob("cat /etc/wpa_supplicant.conf",ProcessWconf);
-      sprintf(buff,"ip link set  %s up",Wdev);
-      runjob(buff,WaitForProcess);
-#if 0
-      if(Scanlist == NULL){
-        AddNetworks();
-        AddOldNetworks();
-      }
-#endif
-      Connected=0;
-//      ret=Runwiredia(Parent);
-#if 1
-      sprintf(buff,"dhclient -cf /tmp/dhclient.conf -v %-s",Wdev);
-      pp2=runbin(buff);
-      while((n=read(pp2,buff,100)) ==100) {
-           printf("%s",buff);
-           buff[strlen("bound to")]='\0';
-           if(strcmp(buff,"bound to")==0) OK=1;
-      }
-      if(OK) {
-              printf("Connected Wireless\n");
-      }
-      else printf("Failed Wireless\n");
-      ret= OK;
-#endif
-      break;
-    case 0: 
-      Connected=1;
-      if(!GetWdev()) break;
-#if 1
-      sprintf(buff,"ip link set %-s down",Wdev);
-      pp2=runbin(buff);
-      while((n=read(pp2,buff,100)) ==100) {
-           printf("%s",buff);
-      }
-      printf("Disonnected Wireless\n");
-#endif
-        ret = (ret+1)%2;
-      break;
-      default:
-      break;
-  }
-  return ret;
-}
 int  InitWpa(void) {
   unsigned char buff[300];
   int wait=0;
@@ -1157,16 +820,20 @@ int  InitWpa(void) {
      printf("%s\n",buff);
      runjob(buff,WaitForProcess);
    }
+#if 0
    runjob("wpa_cli scan",NULL);
    ipaddr = WirelessStatus();
    ret =0;
-   if(ipaddr != NULL) ret =1;
+   if(ipaddr != NULL) {
+	   ret =1;
+           IPADDR =ipaddr;
+   }
    printf("%s : %s\n",Wdev,ipaddr);
+#endif
   }
   else  {
     printf("Could not get Wdev\n");
     ret= 0;
   }
-  IPADDR =ipaddr;
   return ret;
 }
