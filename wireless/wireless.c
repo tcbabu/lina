@@ -45,6 +45,7 @@ int GetWdev(void);
 char * WirelessStatus(void);
 static int CheckCliConnection(void);
 static int runbin(char *job);
+int  CheckSupplicant(void);
 
 static int CheckProcess(char *procname) {
    char buff[500];
@@ -325,6 +326,28 @@ static int AddNetworks(void) {
   }
   return 1;
 }
+static int ScanNetworks(void) {
+  char buff[1000];
+  FILE *fp;
+  char **Onets,*ssid;
+  int i;
+  Dlink *Dlist=NULL;
+  NETLIST *nt;
+  if(Scanlist!=NULL) {
+    Dempty(Scanlist);
+    Scanlist=NULL;
+  }
+//  CleanNetworks();
+  runjob("wpa_cli scan",WaitForProcess);
+  for(i=0;i<4;i++){
+    sleep(i+1);
+    runjob("wpa_cli scan_results",ProcessScan);
+    if(Scanlist!=NULL)break;
+    printf("Scanlist NULL\n");
+    
+  }
+  return 1;
+}
 static int AddOldNetworks(void) {
   char buff[100];
   FILE *fp;
@@ -419,8 +442,8 @@ static int GetSSIDid(Dlink *S,char *ssid) {
 }
 int  ScanSSID() {
   NETLIST *nt;
-  AddNetworks();
-//  AddOldNetworks();
+  CheckSupplicant();
+  ScanNetworks();
   Resetlink(Scanlist);
   while( (nt=Getrecord(Scanlist))!=NULL) {
        printf("%s %d\n",nt->ssid,nt->sig);
@@ -836,4 +859,23 @@ int  InitWpa(void) {
     ret= 0;
   }
   return ret;
+}
+int  CheckSupplicant(void){
+  unsigned char buff[300];
+  int wait=0;
+  int ret=0;
+  if(GetWdev()) {
+   while(!CheckProcess("wpa_supplicant") ){
+     MakeConfigFile();
+     wait++;
+     if(wait > 10) {
+       fprintf(stderr,"Failed to start wpa_supplicant\n");
+       return 0;
+     }
+     sprintf(buff,"wpa_supplicant -i%-s -c/tmp/wpa.conf -B",Wdev);
+     printf("%s\n",buff);
+     runjob(buff,WaitForProcess);
+   }
+ }
+ return 1;
 }

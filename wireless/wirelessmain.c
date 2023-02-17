@@ -106,7 +106,7 @@ int main(int argc,char *argv[]){
        }
        break;
      case 'l':
-       InitWpa();
+       GetWdev();
        ScanSSID();
        OK=1;
        break;
