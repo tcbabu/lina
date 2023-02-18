@@ -2,6 +2,7 @@ typedef struct _net_list {
   int id;
   int sig;
   int sec;
+  int freq;
   char ssid[200];
   char bssid[50];
   int status; //0 disabled 1 enabled 2 current

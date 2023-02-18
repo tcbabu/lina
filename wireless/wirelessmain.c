@@ -29,7 +29,7 @@ int Usage(void) {
                    "  p <psk> : psk (needed for first use of ssid)\n"
                    "  s:  status\n"
                    "  B:  go background\n"
-		   "Note: flags '-i <ssid>' and '-B' should be in the beginnimg\n ");
+		   );
     exit(1);
 }
 
@@ -57,7 +57,6 @@ int main(int argc,char *argv[]){
     och=argv[i][2];
     switch(argv[i][1]){
      default: 
-       Usage();
        break;
      case 'B':
        sid = fork();
@@ -68,6 +67,42 @@ int main(int argc,char *argv[]){
         waitpid(sid,&status,0);
         exit(0);
        }
+       break;
+     case 'i':
+       if(och != '\0') Wdev = argv[i]+2;
+       else {
+         if((i+1) < argc ) Wdev = argv[i+1];
+         i++;
+       }
+       break;
+     case 'r':
+     case 'c':
+     case 'p':
+       if(och == '\0') i++;
+       break;
+     }
+     i++;
+  }
+  i=1;
+  while (i< argc) {
+    if(argv[i][0]!='-') Usage();
+    if(argv[i][1]=='\0') Usage();
+    och=argv[i][2];
+    switch(argv[i][1]){
+     default: 
+       Usage();
+       break;
+     case 'B':
+#if 0
+       sid = fork();
+       if(sid==0) {
+         if(fork()!= 0) exit(0);
+       }
+       else {
+        waitpid(sid,&status,0);
+        exit(0);
+       }
+#endif
        break;
      case 'p':
        if(och != '\0') PSK = argv[i]+2;
@@ -86,6 +121,7 @@ int main(int argc,char *argv[]){
          if((i+1) < argc ) SSID = argv[i+1];
          i++;
        }
+       printf("Deleting %s\n",SSID);
        DeleteSSID(SSID);
        OK = 1;
        break;
@@ -99,11 +135,13 @@ int main(int argc,char *argv[]){
        OK=1;
        break;
      case 'i':
+#if 1
        if(och != '\0') Wdev = argv[i]+2;
        else {
          if((i+1) < argc ) Wdev = argv[i+1];
          i++;
        }
+#endif
        break;
      case 'l':
        GetWdev();
@@ -127,6 +165,7 @@ int main(int argc,char *argv[]){
 
        
     }
+    if(OK)break;
     i++;
   }
   if (!OK) Usage();

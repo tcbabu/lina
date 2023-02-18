@@ -46,6 +46,7 @@ char * WirelessStatus(void);
 static int CheckCliConnection(void);
 static int runbin(char *job);
 int  CheckSupplicant(void);
+static int CompareSignal(void *s1,void *s2) ;
 
 static int CheckProcess(char *procname) {
    char buff[500];
@@ -153,6 +154,7 @@ static int ProcessScan(int pip0,int pip1,int Pid) {
          strcpy(nt->bssid,pt);
          pt = pt+i+1;
          i=0;  while (pt[i]!='\t') i++;pt[i]='\0';
+         sscanf(pt,"%d",&(nt->freq));
          pt = pt+i+1;
          i=0;  while (pt[i]!='\t') i++;pt[i]='\0';
          sscanf(pt,"%d",&(nt->sig));
@@ -167,8 +169,8 @@ static int ProcessScan(int pip0,int pip1,int Pid) {
            nt->sig = sig*25;
          }
 #else
-           sig = -90 - sig;
-           sig = (-sig*100)/60.0;
+//           sig = -90 - sig;
+//           sig = (-sig*100)/60.0;
            nt->sig = sig;
 #endif
          pt = pt+i+1;
@@ -294,8 +296,8 @@ static int AddNetworks(void) {
   sprintf(buff,"ip link set %-s up",Wdev);
   runjob(buff,NULL);
   runjob("wpa_cli scan",WaitForProcess);
-  for(i=0;i<4;i++){
-    sleep(i+1);
+  for(i=0;i<2;i++){
+    sleep(6);
     runjob("wpa_cli scan_results",ProcessScan);
     if(Scanlist!=NULL)break;
     printf("Scanlist NULL\n");
@@ -339,8 +341,8 @@ static int ScanNetworks(void) {
   }
 //  CleanNetworks();
   runjob("wpa_cli scan",WaitForProcess);
-  for(i=0;i<4;i++){
-    sleep(i+1);
+  for(i=0;i<2;i++){
+    sleep(6);
     runjob("wpa_cli scan_results",ProcessScan);
     if(Scanlist!=NULL)break;
     printf("Scanlist NULL\n");
@@ -445,8 +447,10 @@ int  ScanSSID() {
   CheckSupplicant();
   ScanNetworks();
   Resetlink(Scanlist);
+  Dsort(Scanlist,CompareSignal);
+  Resetlink(Scanlist);
   while( (nt=Getrecord(Scanlist))!=NULL) {
-       printf("%s %d\n",nt->ssid,nt->sig);
+       printf("%s \t%dMHz  \t%ddB\n",nt->ssid,nt->freq,nt->sig);
   }
 }
 int  DisconnectSSID(void) {
@@ -521,8 +525,11 @@ int  DeleteSSID(char *ssid) {
  fprintf(stderr,"Removed %s\n",ssid);
 }
 static int CompareSignal(void *s1,void *s2) {
-	int ret=0;
-	ret = strcmp((char *)s1,(char *)s2);
+	int ret=-1;
+	int sig1,sig2;
+	sig1=((NETLIST*) s1)->sig;
+	sig2=((NETLIST*) s2)->sig;
+	if(sig1<sig2) ret=1;
 	return ret;
 }
 char *GetPreferredSSID(void) {
@@ -537,12 +544,16 @@ char *GetPreferredSSID(void) {
         AddNetworks();
     } 
     if(Dcount(Scanlist)==0 ) return NULL;
+    Resetlink(Scanlist);
     Dsort(Scanlist,CompareSignal);
     Resetlink(Scanlist);
     ssids=kgFileMenu("/usr/share/config/lina/Wireless","*");
     if(ssids==NULL) return NULL;
     while( (pt = (NETLIST *) Getrecord(Scanlist))!= NULL) {
-	    printf ("%s %d\n",pt->ssid,pt->sig);
+	    printf ("%s \t%dMHz \t%ddb\n",pt->ssid,pt->freq,pt->sig);
+    }
+    Resetlink(Scanlist);
+    while( (pt = (NETLIST *) Getrecord(Scanlist))!= NULL) {
 	    i=0;
 	    while(ssids[i]!= NULL) {
 		    if(strcmp(pt->ssid,ssids[i])==0) {
