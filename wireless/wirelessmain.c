@@ -157,6 +157,7 @@ int main(int argc,char *argv[]){
        spt = GetPreferredSSID();
        if(spt != NULL){
 	       printf("Connecting %s\n",spt);
+               DisconnectSSID();
 	       ConnectSSID(spt);
        }
        else printf("Could not get ssid\n");

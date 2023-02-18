@@ -455,9 +455,15 @@ int  ScanSSID() {
 }
 int  DisconnectSSID(void) {
   char buff[200];
+  char *ipaddr;
   if(!GetWdev()) return 0;
-  sprintf(buff,"ip link set %s down",Wdev);
+  ipaddr = WirelessStatus();
+  if(ipaddr != NULL) {
+  sprintf(buff,"ip addr del %s dev  %s ",ipaddr,Wdev);
   system(buff);
+  }
+//  sprintf(buff,"ip link set %s down",Wdev);
+//  system(buff);
   return 1;
 }
  
@@ -577,18 +583,22 @@ int  ConnectSSID(char *ssid) {
   char *ipaddr,servip[50];
   unsigned char *pt;
   FILE *fp;
-  ret = InitWpa();
   ipaddr = WirelessStatus();
+#if 1
+  if(ipaddr != NULL) {
+      if(strcmp(Curssid,ssid)==0){
+ 	 fprintf(stderr,"%s Connected\n",ssid);
+	 return 1;
+      }
+  }
+#endif
+  ret = InitWpa();
 //  if (ret==0) {
   {
     servip[0]='\0';
     Bcaddr[0]='\0';
 //    ipaddr = IPADDR;
     if(ipaddr != NULL) {
-      if(strcmp(Curssid,ssid)==0){
- 	 fprintf(stderr,"%s Connected\n",ssid);
-	 return 1;
-      }	
       sprintf(buff,"ip addr del %s dev %s",ipaddr,Wdev);
       printf("%s \n",buff);
       system(buff);
