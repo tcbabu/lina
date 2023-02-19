@@ -1,3 +1,9 @@
+Dated 15th Feb 2023
+Updated 'wireless' program.
+Now it can be used to bring up wireless lan.
+'wireless -C ' can connect to best SSID avaitable.
+One can consider adding it to a startup script.
+
 Ver 2.0
 Dated 12 Aug 2021
 Quite a few changes, improved kglib is used.

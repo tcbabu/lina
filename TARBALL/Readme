@@ -28,7 +28,7 @@ also ( any case I do not like kdm). So I was looking for a
 different Display Manager, nothing was satisfactory and I
 ended up developing 'lina'. 
 
-'lina' installs 3 programs:
+'lina' installs 4 programs:
 
 1. lina : Kulina Login/Display Manger
 
@@ -39,6 +39,12 @@ to enable/disable 'lina', but use it your own risk.
 3. SetPhoto : tool for users to select their login photo. Photo of
 any size can be selected. LINA will select and resize the center portion
 of the photo.
+
+4. wireless : indepndent tool to connect to wireless lan.
+   Now it can be used to bring up wireless lan.
+   'wireless -C ' can connect to best SSID avaitable.
+   One can consider adding it to a startup script.
+
 
 
 LINA has options for selection of user and session type. It has a button 
@@ -85,5 +91,11 @@ Any case remember to 'run configlina' with super user powers.
 'configlina' is installed in /usr/sbin, which may not be in the PATH
 list of ordinay users. So one may have to try 
     'sudo /usr/sbin/configlina'.
+
+Added as on 1stMar 18
+
+In Ver 1.2 a have fixed bug in setting the shell environment
+variable. Actually it was left to default, now it changed to
+the one specified in /etc/passwd, just over looked it.
 
 I appreciate your feedback.
