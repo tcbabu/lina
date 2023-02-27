@@ -787,7 +787,7 @@ void *ReadConfig(LINACONFIG *lc) {
        spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
        strncpy(spt->Name,Field,29);
        strncpy(spt->Command,pt,99);
-       Dadd(lc->Slist,spt);
+       if(kgWhich(spt->Command)!=NULL) Dadd(lc->Slist,spt);
     }
     fclose(fp);
   } //if
@@ -795,17 +795,18 @@ void *ReadConfig(LINACONFIG *lc) {
     spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
     strcpy(spt->Name,"KDE");
     strcpy(spt->Command,"startkde");
-    Dadd(lc->Slist,spt);
+    if(kgWhich(spt->Command) != NULL) Dadd(lc->Slist,spt);
     spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
     strcpy(spt->Name,"GNOME");
     strcpy(spt->Command,"gnome-session");
-    Dadd(lc->Slist,spt);
+    if(kgWhich(spt->Command) != NULL) Dadd(lc->Slist,spt);
     spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
     strcpy(spt->Name,"XFCE");
     strcpy(spt->Command,"startxfce4");
-    Dadd(lc->Slist,spt);
+    if(kgWhich(spt->Command) != NULL) Dadd(lc->Slist,spt);
     WriteSessionsFile(lc->Slist);
   }
+#if 0
   if(lc->TextMode) {
     spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
     strcpy(spt->Name,"Text Console");
@@ -818,6 +819,7 @@ void *ReadConfig(LINACONFIG *lc) {
     strcpy(spt->Command,"xterm -geometry 80x24-0-0");
     Dappend(lc->Slist,spt);
   }
+#endif
 #if 0
   if(lc->RootPic[0]=='\0') {
     lc->Rimg = kgGetImageCopy(NULL,&rimg_str);
