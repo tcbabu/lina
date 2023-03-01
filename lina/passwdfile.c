@@ -463,7 +463,7 @@ int ProcessPasswd(char *Passwd) {
   while( (i> 0)&&(Passwd[i]<=' ')) {Passwd[i]='\0';i--;}
   return 1;
 }
-int CheckLogin(LINACONFIG *lc,int Index,char *password) {
+int CheckLogin_o(LINACONFIG *lc,int Index,char *password) {
     int ret=0;
     char *p, *correct, *supplied, *salt;
     if (Index<=0 ) return 0;
@@ -486,6 +486,24 @@ int CheckLogin(LINACONFIG *lc,int Index,char *password) {
     free(salt);
     return ret;
 }
+int CheckLogin(LINACONFIG *lc,int Index,char *password) {
+    int ret=0;
+    char *p, *correct, *supplied, *salt;
+    if (Index<=0 ) return 0;
+    ProcessPasswd(password);
+    correct = GetUserPw(lc,Index);
+    salt = strdup(correct);
+    if (salt == NULL) return 2;
+    supplied = crypt(password, salt);
+    if (supplied == NULL) ret= 4; 
+    else{   
+       ret= !strcmp(supplied, correct);
+       free(supplied);
+    }
+    free(salt);
+    return ret;
+}
+
 int InitConfig(LINACONFIG *lc) {
   lc->Red=216;
   lc->Green=226;
