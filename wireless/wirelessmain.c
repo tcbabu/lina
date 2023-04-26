@@ -50,6 +50,7 @@ int main(int argc,char *argv[]){
      mkdir( "/usr/share/config/lina",0700);
      mkdir( "/usr/share/config/lina/wireless",0700);
   }
+ if( GetWdev() == 0) return 0;
   i=1;
   while (i< argc) {
     if(argv[i][0]!='-') Usage();

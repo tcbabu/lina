@@ -546,6 +546,7 @@ char *GetPreferredSSID(void) {
     int i=0;
        
     ret = InitWpa();
+    if(ret == 0) return NULL;
     if(Scanlist==NULL) {
         AddNetworks();
     } 

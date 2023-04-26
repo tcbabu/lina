@@ -15,6 +15,7 @@
 int WriteSessionsFile(Dlink *Slist);
 int CheckString(char *s1,char *s2);
 int SearchString(char *s1,char *s2);
+void *MakeXsessionList(void);
 #define Isize 42
 #define Tsize 32
 //Dlink *Ulist=NULL;
@@ -518,6 +519,13 @@ int InitConfig(LINACONFIG *lc) {
   lc->ShowTime=1;
   lc->DateFont=25;
 }
+int CompExec(void *tmp1,void *tmp2) {
+    char *id1,*id2;
+    id1 = ((SESSIONINFO *)tmp1)->Command;
+    id2 = ((SESSIONINFO *)tmp2)->Command;
+    if(strcmp(id1,id2)== 0) return 1;
+    else return 0;
+}
 #define SkipCommentLine {\
   i=0;\
   while(buff[i]==' ')i++;\
@@ -763,7 +771,9 @@ void *ReadConfig(LINACONFIG *lc) {
   lc->Uthumb = kgChangeSizeImage(img1,Tsize,Tsize);
   kgFreeImage(img);
   kgFreeImage(img1);
-  lc->Slist=Dopen();
+  //lc->Slist=Dopen();
+  lc->Slist= (Dlink *)MakeXsessionList();
+  if(lc->Slist==NULL) lc->Slist=Dopen();
   fp = fopen("/usr/share/config/lina/session","r");
   if(fp==NULL) fopen("/etc/xdg/lina/session","r");
   if(fp != NULL) {
@@ -772,34 +782,25 @@ void *ReadConfig(LINACONFIG *lc) {
        pt=strchr(buff,':');
        pt[0]='\0';
        pt++;
-//       while(*pt==' ') pt++;
-//       j=0;while(pt[j]>= ' ')j++;
-//       pt[j]='\0';
        if(sscanf(buff,"%s",Field)<= 0) continue;
        ProcessValuePointer(pt);
-//       sscanf(pt,"%s",Value);
        spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
        strncpy(spt->Name,Field,29);
        strncpy(spt->Command,pt,99);
        if(kgWhich(spt->Command)!=NULL) Dadd(lc->Slist,spt);
+       else free(spt);
     }
     fclose(fp);
   } //if
-  else {
+  if(Dcount(lc->Slist)==0 ){
     spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"KDE");
-    strcpy(spt->Command,"startkde");
+    strcpy(spt->Name,"KulinaSession");
+    strcpy(spt->Command,"execjob");
     if(kgWhich(spt->Command) != NULL) Dadd(lc->Slist,spt);
-    spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"GNOME");
-    strcpy(spt->Command,"gnome-session");
-    if(kgWhich(spt->Command) != NULL) Dadd(lc->Slist,spt);
-    spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"XFCE");
-    strcpy(spt->Command,"startxfce4");
-    if(kgWhich(spt->Command) != NULL) Dadd(lc->Slist,spt);
-    WriteSessionsFile(lc->Slist);
+    else free(spt);
   }
+  Drmvdup_cond(lc->Slist,CompExec);
+//  WriteSessionsFile(lc->Slist);
 #if 0
   if(lc->TextMode) {
     spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));

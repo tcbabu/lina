@@ -3,11 +3,11 @@ include config.mak
 CC	=cc -pthread -g
 configlina	: configlina.o configlinaCallbacks.o main.o passwdfile.o \
 		  AddDelSession.o AddDelSessionCallbacks.o \
-		  GetSessionDia.o GetSessionDiaCallbacks.o
+		  GetSessionDia.o GetSessionDiaCallbacks.o GetXsessions.o
 	 $(CC) -o configlina configlina.o configlinaCallbacks.o \
 		  main.o passwdfile.o \
 		  GetSessionDia.o GetSessionDiaCallbacks.o \
-		  AddDelSession.o AddDelSessionCallbacks.o \
+		  AddDelSession.o AddDelSessionCallbacks.o GetXsessions.o \
 		  -I$(KULINA)/include $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread  -lcrypt
 	 cp configlina $(KULINA)/TARBALL/
 configlina.o	: configlina.c 

@@ -15,6 +15,7 @@
 int WriteSessionsFile(Dlink *Slist);
 int CheckString(char *s1,char *s2);
 int SearchString(char *s1,char *s2);
+void *MakeXsessionList(void);
 #define Isize 42
 #define Tsize 32
 //Dlink *Ulist=NULL;
@@ -195,6 +196,13 @@ int CompId(void *tmp1,void *tmp2) {
     if(strcmp(id1,id2)>0) return 1;
     else return 0;
    
+}
+int CompExec(void *tmp1,void *tmp2) {
+    char *id1,*id2;
+    id1 = ((SESSIONINFO *)tmp1)->Command;
+    id2 = ((SESSIONINFO *)tmp2)->Command;
+    if(strcmp(id1,id2)==0) return 1;
+    else return 0;
 }
 void MakeUserImages(LINACONFIG *lc,USERINFO *Usr) {
   void *img,*img1;
@@ -769,7 +777,9 @@ void *ReadConfig(LINACONFIG *lc) {
   lc->Uthumb = kgChangeSizeImage(img1,Tsize,Tsize);
   kgFreeImage(img);
   kgFreeImage(img1);
-  lc->Slist=Dopen();
+  lc->Slist=(Dlink *)MakeXsessionList();
+  printf("Xsession: count=%d\n",Dcount(lc->Slist));
+  if(lc->Slist==NULL)lc->Slist=Dopen();
   fp = fopen("/usr/share/config/lina/session","r");
   if(fp==NULL) fopen("/etc/xdg/lina/session","r");
   if(fp != NULL) {
@@ -793,16 +803,8 @@ void *ReadConfig(LINACONFIG *lc) {
   } //if
   else {
     spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"KDE");
-    strcpy(spt->Command,"startkde");
-    Dadd(lc->Slist,spt);
-    spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"GNOME");
-    strcpy(spt->Command,"gnome-session");
-    Dadd(lc->Slist,spt);
-    spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
-    strcpy(spt->Name,"XFCE");
-    strcpy(spt->Command,"startxfce4");
+    strcpy(spt->Name,"Kulina Safe");
+    strcpy(spt->Command,"kglaunch");
     Dadd(lc->Slist,spt);
     WriteSessionsFile(lc->Slist);
   }
@@ -818,6 +820,7 @@ void *ReadConfig(LINACONFIG *lc) {
     strcpy(spt->Command,"xterm -geometry 80x24-0-0");
     Dappend(lc->Slist,spt);
   }
+  Drmvdup_cond(lc->Slist,CompExec);
 #if 0
   if(lc->RootPic[0]=='\0') {
     lc->Rimg = kgGetImageCopy(NULL,&rimg_str);
@@ -953,9 +956,7 @@ Dlink *ReadSessionsFile(void) {
   if(fp==NULL) {
     fp = fopen("/usr/share/config/lina/session","w");
     if(fp != NULL) {
-      fprintf(fp,"KDE : startkde\n");
-      fprintf(fp,"GNOME: gnome-session\n");
-      fprintf(fp,"XFCE: startxfce4\n");
+      fprintf(fp,"KulinaSafe: kglaunch\n");
       fclose(fp);
       fp = fopen("/usr/share/config/lina/session","r");
     }
