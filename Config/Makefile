@@ -9,7 +9,7 @@ configlina	: configlina.o configlinaCallbacks.o main.o passwdfile.o \
 		  GetSessionDia.o GetSessionDiaCallbacks.o \
 		  AddDelSession.o AddDelSessionCallbacks.o GetXsessions.o \
 	   	  -Wl,-rpath=/usr/share/lina/lib \
-		  -I$(KULINA)/include -L$KULINA/lib -Wl,-Bstatic $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a -lcrypt -Wl,-Bdynamic  -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread  
+		  -I$(KULINA)/include -L$(KULINA)/lib -Wl,-Bstatic $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a -lcrypt -Wl,-Bdynamic  -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread  
 	 cp configlina $(KULINA)/TARBALL/
 configlina.o	: configlina.c 
 	 $(CC) -c configlina.c

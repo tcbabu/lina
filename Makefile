@@ -46,7 +46,13 @@ lib/libgm.a	: $(GMFILES)
 	$(MAKE) -C OpenSource 
 	$(MAKE) -C OpenSource install
 
+lib/libcrypt.a	: libcrypt/libcrypt.a
+		  cp libcrypt/libcrypt.a lib/
+		  cp libcrypt/crypt.h include/
+
 lina/lina	: lib/libgm.a lib/libkulina.a lib/libcrypt.a $(LINAFILES)
+	cp libcrypt/libcrypt.a lib/
+	cp libcrypt/crypt.h include/
 	echo "PREFIX=$(PREFIX)">lina/config.mak
 	echo "KULINA=$(PWD)">>lina/config.mak
 	$(MAKE) -C lina
@@ -54,7 +60,7 @@ SetPhoto/SetPhoto	: lib/libgm.a lib/libkulina.a $(SETPHOTOFILES)
 	echo "PREFIX=$(PREFIX)">SetPhoto/config.mak
 	echo "KULINA=$(PWD)">>SetPhoto/config.mak
 	$(MAKE) -C SetPhoto
-Config/configlina	: lib/libgm.a lib/libkulina.a $(CONFIGFILES)
+Config/configlina	: lib/libgm.a lib/libkulina.a lib/libcrypt.a $(CONFIGFILES)
 	echo "PREFIX=$(PREFIX)">Config/config.mak
 	echo "KULINA=$(PWD)">>Config/config.mak
 	$(MAKE) -C Config
