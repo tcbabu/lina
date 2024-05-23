@@ -28,7 +28,7 @@ LINAFILES = $(foreach part, lina, $(wildcard $(addprefix $(part)/,*.[ch])))
 CONFIGFILES = $(foreach part, Config, $(wildcard $(addprefix $(part)/,*.[ch])))
 SETPHOTOFILES = $(foreach part, SetPhoto, $(wildcard $(addprefix $(part)/,*.[ch])))
 
-all	: lina/lina SetPhoto/SetPhoto Config/configlina wireless/wireless
+all	: lina/lina SetPhoto/SetPhoto Config/configlina wireless/wireless lib/libcrypt.a
 
 lib/libkulina.a	: lib/libgm.a $(KGLIBFILES) 
 	echo "PREFIX=$(PWD)">kglib/config.mak
@@ -45,7 +45,8 @@ lib/libgm.a	: $(GMFILES)
 	echo "export PKG_CONFIG_PATH=$(PWD)/lib/pkgconfig:/usr/X11R76/lib/pkgconfig">>OpenSource/config.mak
 	$(MAKE) -C OpenSource 
 	$(MAKE) -C OpenSource install
-lina/lina	: lib/libgm.a lib/libkulina.a $(LINAFILES)
+
+lina/lina	: lib/libgm.a lib/libkulina.a lib/libcrypt.a $(LINAFILES)
 	echo "PREFIX=$(PREFIX)">lina/config.mak
 	echo "KULINA=$(PWD)">>lina/config.mak
 	$(MAKE) -C lina
@@ -79,4 +80,5 @@ clean	:
 	$(MAKE) -C Config clean
 	$(MAKE) -C SetPhoto  clean
 	$(MAKE) -C wireless  clean
+	$(MAKE) -C libcrypt clean
 	rm -f TARBALL/configlina TARBALL/SetPhoto TARBALL/lina TARBALL/wireless lina-1.2.tgz
