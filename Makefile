@@ -46,13 +46,18 @@ lib/libgm.a	: $(GMFILES)
 	$(MAKE) -C OpenSource 
 	$(MAKE) -C OpenSource install
 
-lib/libcrypt.a	: libcrypt/libcrypt.a
-		  cp libcrypt/libcrypt.a lib/
-		  cp libcrypt/crypt.h include/
+lib/libcrypt.a	: libxcrypt-4.4.36.tar.xz
+		  tar xf libxcrypt-4.4.36.tar.xz
+		  echo "KULINA=$(PWD)"> mkcrypt
+		  echo "cd libxcrypt-4.4.36">> mkcrypt
+		  echo "./configure --prefix=$(KULINA) --enable-static">>mkcrypt
+		  echo "make -j4" >>mkcrypt
+		  echo "make install">>mkcrypt
+		  chmod +x mkcrypt
+		  ./mkcrypt
+		  rm -rf libxcrypt-4.4.36
 
 lina/lina	: lib/libgm.a lib/libkulina.a lib/libcrypt.a $(LINAFILES)
-	cp libcrypt/libcrypt.a lib/
-	cp libcrypt/crypt.h include/
 	echo "PREFIX=$(PREFIX)">lina/config.mak
 	echo "KULINA=$(PWD)">>lina/config.mak
 	$(MAKE) -C lina
