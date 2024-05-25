@@ -177,6 +177,7 @@ int linainit(void *Tmp) {
   runjob(buff,NULL);
   sprintf(buff,"amixer set Speaker playback %-d",65536);
   runjob(buff,NULL);
+#if 1
   if(GetWdev()) {
    if(!CheckProcess("wpa_supplicant") ){
      MakeConfigFile();
@@ -193,6 +194,9 @@ int linainit(void *Tmp) {
    printf("%s : %d\n",Wdev,WC);
   }
   else printf("Could not get Wdev\n");
+#else
+  system("wireless -B -o");
+#endif
   return ret;
 }
 int linacleanup(void *Tmp) {

@@ -35,6 +35,7 @@ char TTY[100];
 int red=50,green=100,blue=170;
 float fac = 0.2;
 static struct termios tty;
+int StopServer(void);
 int CheckXserver(void);
 int Wireless(int);
 int WC=0;
@@ -172,11 +173,18 @@ int SearchString(char *s1,char *s2) {
    return ret;
 }
 void User1Signal(int sig) {
-   printf("Got Signal ;%d\n",sig);
+   printf("Usr1: Got Signal ;%d\n",sig);
    fflush(stdout);
+#if 1
+   if(sig == 10){
+           StopServer();
+	   exit(-1);
+   }
+#endif
 }
 void User2Signal(int sig) {
-   printf("Got Signal;%d\n",sig);
+   printf("Usr2: Got Signal;%d\n",sig);
+   if(sig == 10) exit(-1);
 //   Loop=1;
    fflush(stdout);
 }
@@ -1078,6 +1086,7 @@ int lina( void *parent,void **v,void *pt) {
 //     D.StackPos = 1; // you may need it
   }    /*  end of fullscreen mode */
   printf("Calling Ui\n");
+  fflush(stdout);
   ret= kgUi(&D);
   kgFreeImage(Img);
   Img=NULL;
@@ -1429,7 +1438,10 @@ int Runlina(void *arg) {
      Session = GetSessionFromName(&lc,lc.DefSession);
      if(Session==0) Session=1;
      if(UserName==NULL) {UserName=Guest;LoginId=Guest;}
-     if(!StartServer()) printf("Failed to start server\n");
+     if(!StartServer()){
+	     printf("Failed to start server\n");
+	     exit(-1);
+     }
      printf("Started Server\n");
      fflush(stdout);
      cid=fork();

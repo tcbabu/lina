@@ -21,6 +21,7 @@ int main(void) {
 #endif
 //  for(i=0;i<60;i++)printf("\n");
   InitWpa();
+  system("wireless -B -o");
   Runlina(NULL);
   return 1;
 }

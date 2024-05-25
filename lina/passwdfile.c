@@ -1,4 +1,5 @@
-#include <kulina.h>
+#define _GNU_SOURCE
+#include "kulina.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,9 +13,10 @@
 #include "headers.h"
 #include "passwdfile.h"
 #include "uimages.c"
-int WriteSessionsFile(Dlink *Slist);
 int CheckString(char *s1,char *s2);
 int SearchString(char *s1,char *s2);
+int WriteSessionsFile(Dlink *Slist);
+Dlink *ReadSessionsFile(Dlink *);
 void *MakeXsessionList(void);
 #define Isize 42
 #define Tsize 32
@@ -51,6 +53,8 @@ void *MakeXsessionList(void);
   while (*pt==' ')pt++; \
   while(pt[j]>=' ') j++;\
   pt[j]='\0'; \
+	j--; \
+	while((pt[j] <=' ') && (j> 0)) {pt[j]='\0'; j--;} \
 }
 void * MakeMask(int w,int h,float fac) {
    void *fid,*img;
@@ -240,6 +244,82 @@ void ReadUsersInfo(LINACONFIG *lc) {
    FILE *pf=NULL,*sf=NULL;
    char buff[500],*pt,*Pw,sbuff[500],*tmp,*tmp1;
    int UserNo;
+   pf= fopen("/etc/passwd","r");
+   lc->Ulist=Dopen();
+   if(pf!=NULL) {
+     while (fgets(buff,499,pf) != NULL) {
+      if( (pt=GetLoginId(buff))==NULL) continue;
+      Shell=GetUserShell(buff);
+      if(SearchString(Shell,"sh") < 0) { free(Shell);continue;}
+      free(Shell);
+      Shell = NULL;
+#if 1
+      Pw = GetUserPasswd(buff);
+      if(Pw==NULL) continue;
+      if(Pw[0]=='\0') { free(Pw);continue;}
+      if((strlen(Pw)==1)&&(strcmp(Pw,"x")!=0)) {free(Pw);continue;}
+#endif
+      UserNo=GetUserNo(buff);
+      if(((lc->NoRootLogin!=1) &&(UserNo==0))||(UserNo>=100)){
+//      if( (UserNo==0) || (UserNo>=100) ) {
+        Usr= InitUserInfo();
+        Usr->LoginId=pt;
+        Usr->UserNo=UserNo;
+        Usr->gid=GetGrpId(buff);
+        Usr->Passwd=Pw;
+        Usr->Name = GetUserName(buff);
+        Usr->Home = GetUserHome(buff);
+        Shell=GetUserShell(buff);
+        Usr->Shell= Shell;
+        MakeUserImages(lc,Usr);
+        Dadd(lc->Ulist,Usr);
+      }
+      else {free(pt);free(Pw);}
+     }
+     fclose(pf);
+   }
+   pf=NULL;
+   if(kgWhich("ypcat") != NULL) pf = popen("ypcat passwd ","r");
+   if(pf!=NULL) {
+     while (fgets(buff,499,pf) != NULL) {
+      if( (pt=GetLoginId(buff))==NULL) continue;
+      Shell=GetUserShell(buff);
+      if(SearchString(Shell,"sh") < 0) { free(Shell);continue;}
+      free(Shell);
+      Shell = NULL;
+#if 1
+      Pw = GetUserPasswd(buff);
+      if(Pw==NULL) continue;
+      if(Pw[0]=='\0') { free(Pw);continue;}
+      if((strlen(Pw)==1)&&(strcmp(Pw,"x")!=0)) {free(Pw);continue;}
+#endif
+      UserNo=GetUserNo(buff);
+      if(((lc->NoRootLogin!=1) &&(UserNo==0))||(UserNo>=100)){
+//      if( (UserNo==0) || (UserNo>=100) ) {
+        Usr= InitUserInfo();
+        Usr->LoginId=pt;
+        Usr->UserNo=UserNo;
+        Usr->gid=GetGrpId(buff);
+        Usr->Passwd=Pw;
+        Usr->Name = GetUserName(buff);
+        Usr->Home = GetUserHome(buff);
+        Shell=GetUserShell(buff);
+        Usr->Shell= Shell;
+        MakeUserImages(lc,Usr);
+        Dadd(lc->Ulist,Usr);
+      }
+      else {free(pt);free(Pw);}
+     }
+     pclose(pf);
+   } // if != NULL
+   Dsort(lc->Ulist,CompId);
+}
+void ReadUsersInfo_o(LINACONFIG *lc) {
+   USERINFO *Usr;
+   char *Shell=NULL;
+   FILE *pf=NULL,*sf=NULL;
+   char buff[500],*pt,*Pw,sbuff[500],*tmp,*tmp1;
+   int UserNo;
    system("cat /etc/passwd 2>/tmp/.Junk1 >/tmp/.Junk");
    system("ypcat passwd 2>/tmp/.Junk1 >>/tmp/.Junk");
    pf = fopen("/tmp/.Junk","r");
@@ -343,6 +423,14 @@ int  GetSessionFromName(LINACONFIG *lc,char *Name) {
    }
    return Id;
 }
+char *SetIdPasswd(LINACONFIG *lc,int no,char *pw) {
+   USERINFO *Usr;
+   Dposition(lc->Ulist,no);
+   Usr =(USERINFO *)Getrecord(lc->Ulist);
+   Usr->Passwd = (char *)malloc(strlen(pw)+1);
+   strcpy(Usr->Passwd,pw);
+   return Usr->Passwd;
+}
 char *GetUserId(LINACONFIG *lc,int no) {
    USERINFO *Usr;
    Dposition(lc->Ulist,no);
@@ -360,6 +448,16 @@ int GetUid(LINACONFIG *lc,int no) {
    Dposition(lc->Ulist,no);
    Usr =(USERINFO *)Getrecord(lc->Ulist);
    return Usr->UserNo;
+}
+int GetIndexFromUid(LINACONFIG *lc,int uid) {
+   int Index=0,i=0;
+   USERINFO *Usr;
+   Resetlink(lc->Ulist);
+   while ( (Usr =(USERINFO *)Getrecord(lc->Ulist))!= NULL){
+     if( Usr->UserNo == uid) {Index=i+1;break;}
+     i++;
+   }
+   return Index;
 }
 char *GetUserPw(LINACONFIG *lc,int no) {
    USERINFO *Usr;
@@ -455,7 +553,24 @@ char *GetSessionCommand(LINACONFIG *lc,int Index) {
   ses=(SESSIONINFO *)Getrecord(lc->Slist);
   if(ses==NULL) return NULL;
   if(ses->Command[0]=='\0') return NULL;
-  else return ses->Command;
+  else {
+    char *cmd;
+    char *spt;
+    cmd =ses->Command;
+    if(strncmp("exec:",cmd,5) == 0){
+	    int ln;
+	    char *pt;
+	    ln = strlen(cmd+5)+1+8;
+	    pt = (char *)malloc(ln);
+	    sprintf(pt,"openbox %s",cmd+5);
+	    spt = pt;
+    }
+    else {
+            spt = (char *)malloc(strlen(ses->Command)+1);
+            strcpy(spt,ses->Command);
+    }
+    return spt;
+  }
 }
 int ProcessPasswd(char *Passwd) {
   int i,l;
@@ -473,31 +588,31 @@ int CheckLogin(LINACONFIG *lc,int Index,char *password) {
     salt = strdup(correct);
     if (salt == NULL) return 2;
     supplied = crypt(password, salt);
-    if (supplied == NULL) ret= 4; 
-    else{   
+    if (supplied == NULL) ret= 4;
+    else{
        ret= !strcmp(supplied, correct);
+       fprintf(stderr,"Freeing supplied\n");
     }
     free(salt);
     return ret;
 }
-
 int InitConfig(LINACONFIG *lc) {
-  lc->Red=216;
-  lc->Green=226;
-  lc->Blue=216;
-  lc->ButRed=216;
-  lc->ButGreen=226;
-  lc->ButBlue=216;
-  lc->DateRed=216;
-  lc->DateGreen=226;
-  lc->DateBlue=216;
-  lc->FontRed=39;
-  lc->FontGreen=44;
-  lc->FontBlue=39;
-  lc->HighRed=226;
-  lc->HighGreen=255;
-  lc->HighBlue=255;
-  lc->Transparency = 0.1;
+  lc->Red=157;
+  lc->Green=162;
+  lc->Blue=157;
+  lc->ButRed=93;
+  lc->ButGreen=98;
+  lc->ButBlue=93;
+  lc->DateRed=210;
+  lc->DateGreen=220;
+  lc->DateBlue=210;
+  lc->FontRed=49;
+  lc->FontGreen=54;
+  lc->FontBlue=49;
+  lc->HighRed=100;
+  lc->HighGreen=230;
+  lc->HighBlue=210;
+  lc->Transparency = 0.0;
   lc->fac = 0.0;
   lc->Bkgr[0]='\0';
   lc->RootPic[0]='\0';
@@ -509,15 +624,20 @@ int InitConfig(LINACONFIG *lc) {
   lc->Uimg=NULL;
   lc->Mask=NULL;
   strcpy(lc->DefUser,"Guest");
-  strcpy(lc->DefSession,"XFCE");
+  strcpy(lc->DefSession,"KDE");
   lc->Action=1;
   lc->Powerdown=3;
   lc->Session=1;
   lc->NoRootLogin=1;
-  lc->TextMode=1;
-  lc->SafeMode=1;
-  lc->ShowTime=1;
-  lc->DateFont=25;
+  lc->TextMode=0;
+  lc->SafeMode=0;
+  lc->ShowTime=0;
+  lc->DateFont=16;
+}
+#define SkipCommentLine {\
+  i=0;\
+  while(buff[i]==' ')i++;\
+  if(buff[i]=='#') continue;\
 }
 int CompExec(void *tmp1,void *tmp2) {
     char *id1,*id2;
@@ -526,12 +646,8 @@ int CompExec(void *tmp1,void *tmp2) {
     if(strcmp(id1,id2)== 0) return 1;
     else return 0;
 }
-#define SkipCommentLine {\
-  i=0;\
-  while(buff[i]==' ')i++;\
-  if(buff[i]=='#') continue;\
-}
-void *ReadConfig(LINACONFIG *lc) {
+
+void *ReadConfig_lina(LINACONFIG *lc) {
   void *img,*img1;
   FILE *fp;
   struct stat fstat;
@@ -839,6 +955,254 @@ void *ReadConfig(LINACONFIG *lc) {
 #endif
   ReadUsersInfo(lc);
 }
+void *ReadConfig(LINACONFIG *lc) {
+  void *img,*img1;
+  FILE *fp;
+  struct stat fstat;
+  SESSIONINFO *spt;
+  char buff[300],*pt,Field[60],Value[300];
+  int i,j;
+  InitConfig(lc);
+  lc->Mask = MakeMask(Isize*4,Isize*4,0.5);
+  sprintf(buff,"%-s/.vnc/rexrc",getenv("HOME"));
+  fp = fopen(buff,"r");
+  if(fp==NULL) {
+    fp = fopen("/usr/share/config/ReX/rexrc","r");
+    if(fp==NULL){
+      fp = fopen("/etc/xdg/ReX/rexrc","r");
+      if(fp!=NULL) {
+        lstat("/etc/xdg/Rex/rexrc",&fstat);
+        if( (fstat.st_mode&00077)!=0) {
+          printf("Others Got Access To File...\n");
+          fclose(fp);
+          fp=NULL;
+        }
+      }
+    }
+    else {
+      lstat("/usr/share/config/ReX/rexrc",&fstat);
+      if( (fstat.st_mode&00077)!=0) {
+        printf("Others Got Access To File...\n");
+        fclose(fp);
+        fp=NULL;
+      }
+    }
+  }
+
+  if(fp != NULL) {
+    while(fgets(buff,299,fp) != NULL) {
+       SkipCommentLine;
+       pt=strchr(buff,':');
+       if(pt==NULL) continue;
+       pt[0]='\0';
+       pt++;
+       if(sscanf(buff,"%s",Field)<= 0) continue;
+       ProcessValuePointer(pt);
+       if( strcmp(Field,"BackGround")==0 ) {
+         strcpy(lc->Bkgr,pt);
+         continue;
+       }
+       if( strcmp(Field,"RootPicture")==0 ) {
+         strcpy(lc->RootPic,pt);
+         continue;
+       }
+       if( strcmp(Field,"UserPicture")==0 ) {
+//         printf("%s\n",pt);
+//         fflush(stdout);
+         strcpy(lc->UserPic,pt);
+         continue;
+       }
+       if( strcmp(Field,"DefaultUser")==0 ) {
+         strncpy(lc->DefUser,pt,29);
+         continue;
+       }
+       if( strcmp(Field,"DefaultSession")==0 ) {
+         strncpy(lc->DefSession,pt,29);
+         continue;
+       }
+       if( strcmp(Field,"Red")==0 ) {
+         sscanf(pt,"%d",&(lc->Red));
+         if(lc->Red < 0) lc->Red=0;
+         if(lc->Red > 255) lc->Red=255;
+         continue;
+       }
+       if( strcmp(Field,"Green")==0 ) {
+         sscanf(pt,"%d",&(lc->Green));
+         if(lc->Green < 0) lc->Green=0;
+         if(lc->Green > 255) lc->Green=255;
+         continue;
+       }
+       if( strcmp(Field,"Blue")==0 ) {
+         sscanf(pt,"%d",&(lc->Blue));
+         if(lc->Blue < 0) lc->Blue=0;
+         if(lc->Blue > 255) lc->Blue=255;
+         continue;
+       }
+       if( strcmp(Field,"FontRed")==0 ) {
+         sscanf(pt,"%d",&(lc->FontRed));
+         if(lc->FontRed < 0) lc->FontRed=0;
+         if(lc->FontRed > 255) lc->FontRed=255;
+         continue;
+       }
+       if( strcmp(Field,"FontGreen")==0 ) {
+         sscanf(pt,"%d",&(lc->FontGreen));
+         if(lc->FontGreen < 0) lc->FontGreen=0;
+         if(lc->FontGreen > 255) lc->FontGreen=255;
+         continue;
+       }
+       if( strcmp(Field,"FontBlue")==0 ) {
+         sscanf(pt,"%d",&(lc->FontBlue));
+         if(lc->FontBlue < 0) lc->FontBlue=0;
+         if(lc->FontBlue > 255) lc->FontBlue=255;
+         continue;
+       }
+       if( strcmp(Field,"HighRed")==0 ) {
+         sscanf(pt,"%d",&(lc->HighRed));
+         if(lc->HighRed < 0) lc->HighRed=0;
+         if(lc->HighRed > 255) lc->HighRed=255;
+         continue;
+       }
+       if( strcmp(Field,"HighGreen")==0 ) {
+         sscanf(pt,"%d",&(lc->HighGreen));
+         if(lc->HighGreen < 0) lc->HighGreen=0;
+         if(lc->HighGreen > 255) lc->HighGreen=255;
+         continue;
+       }
+       if( strcmp(Field,"HighBlue")==0 ) {
+         sscanf(pt,"%d",&(lc->HighBlue));
+         if(lc->HighBlue < 0) lc->HighBlue=0;
+         if(lc->HighBlue > 255) lc->HighBlue=255;
+         continue;
+       }
+       if( strcmp(Field,"ButRed")==0 ) {
+         sscanf(pt,"%d",&(lc->ButRed));
+         if(lc->ButRed < 0) lc->ButRed=0;
+         if(lc->ButRed > 255) lc->ButRed=255;
+         continue;
+       }
+       if( strcmp(Field,"ButGreen")==0 ) {
+         sscanf(pt,"%d",&(lc->ButGreen));
+         if(lc->ButGreen < 0) lc->ButGreen=0;
+         if(lc->ButGreen > 255) lc->ButGreen=255;
+         continue;
+       }
+       if( strcmp(Field,"ButBlue")==0 ) {
+         sscanf(pt,"%d",&(lc->ButBlue));
+         if(lc->ButBlue < 0) lc->ButBlue=0;
+         if(lc->ButBlue > 255) lc->ButBlue=255;
+         continue;
+       }
+       if( strcmp(Field,"DateRed")==0 ) {
+         sscanf(pt,"%d",&(lc->DateRed));
+         if(lc->DateRed < 0) lc->DateRed=0;
+         if(lc->DateRed > 255) lc->DateRed=255;
+         continue;
+       }
+       if( strcmp(Field,"DateGreen")==0 ) {
+         sscanf(pt,"%d",&(lc->DateGreen));
+         if(lc->DateGreen < 0) lc->DateGreen=0;
+         if(lc->DateGreen > 255) lc->DateGreen=255;
+         continue;
+       }
+       if( strcmp(Field,"DateBlue")==0 ) {
+         sscanf(pt,"%d",&(lc->DateBlue));
+         if(lc->DateBlue < 0) lc->DateBlue=0;
+         if(lc->DateBlue > 255) lc->DateBlue=255;
+         continue;
+       }
+       if( strcmp(Field,"Transparency")==0 ) {
+         sscanf(pt,"%f",&(lc->Transparency));
+         if(lc->Transparency < 0.001) lc->Transparency=0.001;
+         if(lc->Transparency > 1.0) lc->Transparency=1.0;
+         continue;
+       }
+       if( strcmp(Field,"RoundingFac")==0 ) {
+         sscanf(pt,"%f",&(lc->fac));
+         if(lc->fac < 0) lc->fac=0;
+         if(lc->fac > 1.0) lc->fac =1.0;
+         continue;
+       }
+       if( strcmp(Field,"DateFont")==0 ) {
+         sscanf(pt,"%d",&(lc->DateFont));
+         if(lc->DateFont < 0) lc->DateFont=0;
+         if(lc->DateFont > 35) lc->DateFont =35;
+         continue;
+       }
+       if( strcmp(Field,"ShowTime")==0 ) {
+         lc->ShowTime=1;
+         printf("%s :%s:\n",Field,pt);
+         if((strcmp(pt,"yes")==0)||(strcmp(pt,"Yes")==0)||(strcmp(pt,"YES")==0)) {
+          lc->ShowTime=1;
+         }
+         if((strcmp(pt,"no")==0)||(strcmp(pt,"No")==0)||(strcmp(pt,"NO")==0)) {
+          lc->ShowTime=0;
+         }
+         continue;
+       }
+    } // while
+    fclose(fp);
+  }
+  img=NULL;
+  if(img==NULL) {
+       img = kgGetImageCopy(NULL,&rimg_str);
+  }
+  img1 = kgMaskImage(img,lc->Mask);
+  lc->Rimg = kgChangeSizeImage(img1,Isize,Isize);
+  lc->Rthumb = kgChangeSizeImage(img1,Tsize,Tsize);
+  kgFreeImage(img);
+  kgFreeImage(img1);
+  img=NULL;
+  if(lc->UserPic[0]!='\0')  {
+     img = kgGetImage(lc->UserPic);
+  }
+  if(img==NULL) {
+       img = kgGetImageCopy(NULL,&uimg_str);
+  }
+  img1 = kgMaskImage(img,lc->Mask);
+  lc->Uimg = kgChangeSizeImage(img1,Isize,Isize);
+  lc->Uthumb = kgChangeSizeImage(img1,Tsize,Tsize);
+  kgFreeImage(img);
+  kgFreeImage(img1);
+#if 0
+  lc->Slist = ReadSessionsFile();
+#else
+  lc->Slist= (Dlink *)MakeXsessionList();
+  if(lc->Slist==NULL) lc->Slist=Dopen();
+  lc->Slist = ReadSessionsFile(lc->Slist);
+  Drmvdup_cond(lc->Slist,CompExec);
+#endif
+#if 0
+  if(lc->RootPic[0]=='\0') {
+    lc->Rimg = kgGetImageCopy(NULL,&rimg_str);
+iinclude "uimages.c"
+    lc->Rthumb = kgGetImageCopy(NULL,&rthumb_str);
+  }
+  else {
+    img = kgGetImage(lc->RootPic);
+    lc->Rimg = kgChangeSizeImage(img,Isize,Isize);
+    lc->Rthumb = kgChangeSizeImage(lc->Rimg,Tsize,Tsize);
+    kgFreeImage(img);
+  }
+  if(lc->UserPic[0]=='\0') {
+    lc->Uimg = kgGetImageCopy(NULL,&uimg_str);
+    lc->Uthumb = kgGetImageCopy(NULL,&uthumb_str);
+  }
+  else {
+    img = kgGetImage(lc->UserPic);
+    lc->Uimg = kgChangeSizeImage(img,Isize,Isize);
+    lc->Uthumb = kgChangeSizeImage(lc->Uimg,Tsize,Tsize);
+    kgFreeImage(img);
+  }
+#endif
+#if 0  // for linavnc
+  ReadUsersInfo(lc);
+#endif
+}
+/* Basically used to store userinfo */
+void *ReadConfigMinimum(LINACONFIG *lc) {
+  InitConfig(lc);
+  ReadUsersInfo(lc);
+}
 void CleanLinaConfig(LINACONFIG *lc) {
     CleanUsersInfo(lc);
     Dempty(lc->Slist);
@@ -851,9 +1215,11 @@ void CleanLinaConfig(LINACONFIG *lc) {
 
 void WriteConfig(LINACONFIG *lc) {
    FILE *fp;
-   mkdir("/usr/share/config",0755);
-   mkdir("/usr/share/config/lina",0755);
-   fp = fopen("/usr/share/config/lina/linarc","w");
+   char buff[200];
+   sprintf(buff,"%-s/.vnc",getenv("HOME"));
+   mkdir(buff,0700);
+   strcat(buff,"/rexrc");
+   fp = fopen(buff,"w");
    if(fp==NULL) return;
    fprintf(fp,"BackGround :%-s\n",lc->Bkgr);
    fprintf(fp,"Red :%-d\n",lc->Red);
@@ -876,8 +1242,6 @@ void WriteConfig(LINACONFIG *lc) {
    fprintf(fp,"DateFont :%-d\n",(int)(lc->DateFont));
    fprintf(fp,"DefaultUser :%-s\n",(lc->DefUser));
    fprintf(fp,"DefaultSession :%-s\n",(lc->DefSession));
-   if(lc->NoRootLogin) fprintf(fp,"RootLogin :no\n");
-   else  fprintf(fp,"RootLogin :yes\n");
    if(lc->TextMode) fprintf(fp,"TextMode :yes\n");
    else  fprintf(fp,"TextMode :no\n");
    if(lc->SafeMode) fprintf(fp,"SafeMode :yes\n");
@@ -885,8 +1249,6 @@ void WriteConfig(LINACONFIG *lc) {
    if(lc->ShowTime) fprintf(fp,"ShowTime :yes\n");
    else  fprintf(fp,"ShowTime :no\n");
    fclose(fp);
-   chmod("/usr/share/config/lina/linarc",0700);
-   remove("/etc/xdg/lina/linarc");
 }
 int  SetSupGroups(LINACONFIG *lc,int Index) {
    FILE *pf=NULL;
@@ -915,14 +1277,14 @@ int  SetSupGroups(LINACONFIG *lc,int Index) {
           *ipt = GroupNo;
           Dadd(Glist,ipt);
 //          printf("%s : %d\n",pt,*ipt);
-          printf("%d ",*ipt);
+//          printf("%d ",*ipt);
         }
       }
       free(pt);free(Pw);
    }
    count = Dcount(Glist);
-   printf("  :Supp group count = %d\n",count);
-   fflush(stdout);
+//   printf("  :Supp group count = %d\n",count);
+//   fflush(stdout);
    if(count > 0) {
      array = (int *)malloc(sizeof(int)*(count));
      Resetlink(Glist);
@@ -937,24 +1299,81 @@ int  SetSupGroups(LINACONFIG *lc,int Index) {
    Dempty(Glist);
    return count;
 }
-Dlink *ReadSessionsFile(void) {
+Dlink *ReadSessionsFile_org(Dlink *Slist) {
   int i;
-  char buff[500],Field[35];
+  char buff[500],Field[100];
   FILE *fp;
   char *pt;
-  Dlink *Slist=NULL;
   SESSIONINFO *spt;
-  Slist=Dopen();
-  fp = fopen("/usr/share/config/lina/session","r");
-  if(fp==NULL) fp=fopen("/etc/xdg/lina/session","r");
+  if(Slist == NULL) Slist=Dopen();
+  sprintf(buff,"%-s/.vnc/session",getenv("HOME"));
+  fp = fopen(buff,"r");
   if(fp==NULL) {
-    fp = fopen("/usr/share/config/lina/session","w");
+    fp = fopen(buff,"w");
     if(fp != NULL) {
-      fprintf(fp,"KDE : startkde\n");
-      fprintf(fp,"GNOME: gnome-session\n");
-      fprintf(fp,"XFCE: startxfce4\n");
+      if(kgWhich("startkulina")!= NULL) fprintf(fp,"Kulina: startkulina\n");
+      if(kgWhich("openbox-session")!= NULL) fprintf(fp,"Openbox: openbox-session\n");
+      if(kgWhich("execjob")!= NULL)fprintf(fp,"Custom: execjob \n");
+      if(kgWhich("startkde") != NULL) fprintf(fp,"KDE : startkde\n");
+      if(kgWhich("gnome-session") != NULL) fprintf(fp,"GNOME: gnome-session\n");
+      if(kgWhich("startxfce4")!= NULL) fprintf(fp,"XFCE: startxfce4\n");
       fclose(fp);
-      fp = fopen("/usr/share/config/lina/session","r");
+      fp = fopen(buff,"r");
+    }
+  }
+  if(fp != NULL) {
+    while(fgets(buff,299,fp) != NULL) {
+       int i=0;
+       SkipCommentLine;
+       while((buff[i]!='\n')&& (buff[i]!='\0') && (buff[i] != '\r'))i++;
+       buff[i]='\0';
+       pt=strchr(buff,':');
+       pt[0]='\0';
+       pt++;
+       spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
+       ProcessValuePointer(pt);
+       if(pt[0]=='\"') {
+	       pt[98]='\0';
+               strcpy(spt->Command,pt);
+       }
+       else {
+	       strcpy(spt->Command,"\"");
+	       pt[97]='\0';
+               strcat(spt->Command,pt);
+	       strcat(spt->Command,"\"");
+       }
+       spt->Command[99]= '\0';
+       pt = buff;
+       ProcessValuePointer(pt);
+       strncpy(spt->Name,pt,29);
+       spt->Name[29]='\0';
+       if(kgWhich(spt->Command)!= NULL) Dadd(Slist,spt);
+       else free(spt);
+    }
+    fclose(fp);
+  } //if
+  return Slist;
+}
+Dlink *ReadSessionsFile(Dlink *Slist) {
+  int i;
+  char buff[500],Field[100];
+  FILE *fp;
+  char *pt;
+  SESSIONINFO *spt;
+  if(Slist == NULL) Slist=Dopen();
+  sprintf(buff,"%-s/.vnc/session",getenv("HOME"));
+  fp = fopen(buff,"r");
+  if(fp==NULL) {
+    fp = fopen(buff,"w");
+    if(fp != NULL) {
+      if(kgWhich("startkulina")!= NULL) fprintf(fp,"Kulina: startkulina\n");
+      if(kgWhich("openbox-session")!= NULL) fprintf(fp,"Openbox: openbox-session\n");
+      if(kgWhich("execjob")!= NULL)fprintf(fp,"Custom: execjob \n");
+      if(kgWhich("startkde") != NULL) fprintf(fp,"KDE : startkde\n");
+      if(kgWhich("gnome-session") != NULL) fprintf(fp,"GNOME: gnome-session\n");
+      if(kgWhich("startxfce4")!= NULL) fprintf(fp,"XFCE: startxfce4\n");
+      fclose(fp);
+      fp = fopen(buff,"r");
     }
   }
   if(fp != NULL) {
@@ -963,18 +1382,22 @@ Dlink *ReadSessionsFile(void) {
        pt=strchr(buff,':');
        pt[0]='\0';
        pt++;
-//       while(*pt==' ') pt++;
-//       j=0;while(pt[j]>= ' ')j++;
-//       pt[j]='\0';
+       if(sscanf(buff,"%s",Field)<= 0) continue;
        ProcessValuePointer(pt);
-       sscanf(buff,"%s",Field);
-//       sscanf(pt,"%s",Value);
        spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
        strncpy(spt->Name,Field,29);
        strncpy(spt->Command,pt,99);
-       Dadd(Slist,spt);
+       if(kgWhich(spt->Command)!=NULL) Dadd(Slist,spt);
+       else free(spt);
     }
     fclose(fp);
+  } //if
+  if(Dcount(Slist)==0 ){
+    spt = (SESSIONINFO *)malloc(sizeof(SESSIONINFO));
+    strcpy(spt->Name,"KulinaSession");
+    strcpy(spt->Command,"execjob");
+    if(kgWhich(spt->Command) != NULL) Dadd(Slist,spt);
+    else free(spt);
   } //if
   return Slist;
 }
@@ -983,7 +1406,8 @@ int WriteSessionsFile(Dlink *Slist) {
   FILE *fp;
   char *pt;
   SESSIONINFO *spt;
-  fp = fopen("/usr/share/config/lina/session","w");
+  sprintf(buff,"%-s/.vnc/session",getenv("HOME"));
+  fp = fopen(buff,"w");
   if(fp != NULL) {
     Resetlink(Slist);
     while( (spt= (SESSIONINFO *)Getrecord(Slist)) != NULL){
@@ -991,8 +1415,8 @@ int WriteSessionsFile(Dlink *Slist) {
     }
     fclose(fp);
   } //if
-  chmod("/usr/share/config/lina/session",0700);
-  remove("/etc/xdg/lina/session");
+  chmod(buff,0700);
+  return 1;
 }
 ThumbNail **MakeSessionFileThumbNails(Dlink *Slist) {
   ThumbNail **th=NULL;
@@ -1019,4 +1443,32 @@ ThumbNail **MakeSessionFileThumbNails(Dlink *Slist) {
   }
   th[n-1]=NULL;
   return th;
+}
+void ChangetoUser(int Index) {
+  char buff[200];
+  int uid,gid;
+#if 1
+  LINACONFIG lc;
+  ReadConfigMinimum(&lc);
+#endif
+  printf("PATH=%s\n",getenv("PATH"));
+//  signal(SIGHUP,HangupSignal);
+  setsid();
+  setpgid(0,0); //0 means setting setting process groupid to current pid;
+  uid = GetUid(&lc,Index);
+  gid = GetGid(&lc,Index);
+//  printf("calling SetSupGroups\n");
+  SetSupGroups(&lc,Index);
+
+  setresgid(gid,gid,gid);
+  setresuid(uid,uid,uid);
+//  setgid(gid);
+//  setuid(uid);
+//  setenv("DISPLAY",":0.0",1);
+  chdir(GetHomeDir(&lc,Index));
+  setenv("HOME",GetHomeDir(&lc,Index),1);
+  setenv("SHELL",GetShell(&lc,Index),1);
+  setenv("USER",GetRealName(&lc,Index),1);
+  setenv("LOGNAME",GetRealName(&lc,Index),1);
+  fprintf(stderr,"Changed to User: %s \n",getenv("USER"));
 }

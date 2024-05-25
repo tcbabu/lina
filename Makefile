@@ -8,6 +8,7 @@
 # local fallbacks for missing operating system features
 SHELL	:= /bin/bash
 PREFIX=/usr
+KULINA=$(PWD)
 export CFLAGS=-I$(PWD)/include
 export LDFLAGS=-L$(PWD)/lib
 X11_CFLAGS	="-I$(PWD)/include $(shell pkg-config --cflags x11)"
@@ -48,7 +49,7 @@ lib/libgm.a	: $(GMFILES)
 
 lib/libcrypt.a	: libxcrypt-4.4.36.tar.xz
 		  tar xf libxcrypt-4.4.36.tar.xz
-		  echo "KULINA=$(PWD)"> mkcrypt
+		  echo "export KULINA=$(PWD)"> mkcrypt
 		  echo "cd libxcrypt-4.4.36">> mkcrypt
 		  echo "./configure --prefix=$(KULINA) --enable-static">>mkcrypt
 		  echo "make -j4" >>mkcrypt

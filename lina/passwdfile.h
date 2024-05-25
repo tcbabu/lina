@@ -22,4 +22,13 @@ void *GetUserImage(LINACONFIG *lc,int no);
 int  GetSessionFromName(LINACONFIG *lc,char *Name);
 void *kgMaskImage(void *png,void *mask);
 int  SetSupGroups(LINACONFIG *lc,int Index);
+char *SetIdPasswd(LINACONFIG *lc,int no,char *pw);
+USERINFO * InitUserInfo(void);
+int InitConfig(LINACONFIG *lc);
+int  GetIndexFromLogin(LINACONFIG *lc,char *LoginId) ;
+int  GetSessionFromName(LINACONFIG *lc,char *Name);
+void *ReadConfig(LINACONFIG *lc);
+int GetIndexFromUid(LINACONFIG *lc,int uid);
+void CleanLinaConfig(LINACONFIG *lc);
+
 #endif
