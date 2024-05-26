@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <string.h>
 
 int  ConnectSSID(char *ssid);
 int  ScanSSID();
@@ -38,7 +39,9 @@ int main(int argc,char *argv[]){
   int i;
   int OK=0;
   int sid,status;
+  char Lastssid[200];
   char *spt;
+  FILE *fp;
   
   
   if(argc<2) {
@@ -133,6 +136,19 @@ int main(int argc,char *argv[]){
          i++;
        }
        ConnectSSID(SSID);
+       fp = fopen("/usr/share/config/lina/wireless/default","w");
+       if(fp != NULL) {
+	    fprintf(fp,"%s\n",SSID);
+	    fclose(fp);
+       }
+       OK=1;
+       break;
+    case 'o':
+       fp = fopen("/usr/share/config/lina/wireless/default","r");
+       if(fp == NULL) break;
+       fscanf(fp,"%s",Lastssid);
+       fclose(fp);
+       ConnectSSID(Lastssid);
        OK=1;
        break;
      case 'i':

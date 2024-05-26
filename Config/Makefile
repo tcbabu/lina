@@ -8,7 +8,7 @@ configlina	: configlina.o configlinaCallbacks.o main.o passwdfile.o \
 		  main.o passwdfile.o \
 		  GetSessionDia.o GetSessionDiaCallbacks.o \
 		  AddDelSession.o AddDelSessionCallbacks.o GetXsessions.o \
-		  -I$(KULINA)/include $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread  -lcrypt
+		  -I$(KULINA)/include $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a $(KULINA)/lib/libcrypt.a -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread
 	 cp configlina $(KULINA)/TARBALL/
 configlina.o	: configlina.c 
 	 $(CC) -c configlina.c

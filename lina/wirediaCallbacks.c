@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include <kulina.h>
 #include "netlist.h"
 extern char *Wdev;
@@ -198,10 +200,18 @@ int  wirediasplbutton2callback(int butno,int i,void *Tmp) {
       }
       kgPrintf(Tmp,1," ");
       if(OK) {
+	FILE *fp;
+	char def[300];
 //        kgPrintf(Tmp,1,"!z43!c06Connected Wireless");
         sprintf(buff,"!z43Wireless Connected to %s",nt->ssid);
         kgPrintf(Tmp,1,buff);
         kgUpdateOn(Tmp);
+	strcpy(def,"/usr/share/config/lina/wireless/default");
+	fp = fopen(def,"w");
+	if(fp != NULL){
+		fprintf(fp,"%s\n",nt->ssid);
+		fclose(fp);
+	}
         sleep(1);
       }
       else  {

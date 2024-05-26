@@ -7,6 +7,8 @@ int Systemd;
 char Image[300];
 int ir=255,ig=255,ib=255;
 void *AddDelSession(void *);
+void *RunAddDelSession(void *arg);
+void WriteConfig(LINACONFIG *lc);
 void * kgColorImage(int size,int red,int green,int blue);
 int SearchString(char *s1,char *s2);
 int CheckProcess(char *procname) {
