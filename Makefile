@@ -8,7 +8,6 @@
 # local fallbacks for missing operating system features
 SHELL	:= /bin/bash
 PREFIX=/usr
-KULINA=$(PWD)
 export CFLAGS=-I$(PWD)/include
 export LDFLAGS=-L$(PWD)/lib
 X11_CFLAGS	="-I$(PWD)/include $(shell pkg-config --cflags x11)"
@@ -29,7 +28,7 @@ LINAFILES = $(foreach part, lina, $(wildcard $(addprefix $(part)/,*.[ch])))
 CONFIGFILES = $(foreach part, Config, $(wildcard $(addprefix $(part)/,*.[ch])))
 SETPHOTOFILES = $(foreach part, SetPhoto, $(wildcard $(addprefix $(part)/,*.[ch])))
 
-all	: lina/lina SetPhoto/SetPhoto Config/configlina wireless/wireless lib/libcrypt.a
+all	: lina/lina SetPhoto/SetPhoto Config/configlina wireless/wireless
 
 lib/libkulina.a	: lib/libgm.a $(KGLIBFILES) 
 	echo "PREFIX=$(PWD)">kglib/config.mak
@@ -46,19 +45,7 @@ lib/libgm.a	: $(GMFILES)
 	echo "export PKG_CONFIG_PATH=$(PWD)/lib/pkgconfig:/usr/X11R76/lib/pkgconfig">>OpenSource/config.mak
 	$(MAKE) -C OpenSource 
 	$(MAKE) -C OpenSource install
-
-lib/libcrypt.a	: libxcrypt-4.4.36.tar.xz
-		  tar xf libxcrypt-4.4.36.tar.xz
-		  echo "export KULINA=$(PWD)"> mkcrypt
-		  echo "cd libxcrypt-4.4.36">> mkcrypt
-		  echo "./configure --prefix=$(KULINA) --enable-static">>mkcrypt
-		  echo "make -j4" >>mkcrypt
-		  echo "make install">>mkcrypt
-		  chmod +x mkcrypt
-		  ./mkcrypt
-		  rm -rf libxcrypt-4.4.36
-
-lina/lina	: lib/libgm.a lib/libkulina.a lib/libcrypt.a $(LINAFILES)
+lina/lina	: lib/libgm.a lib/libkulina.a $(LINAFILES)
 	echo "PREFIX=$(PREFIX)">lina/config.mak
 	echo "KULINA=$(PWD)">>lina/config.mak
 	$(MAKE) -C lina
@@ -66,7 +53,7 @@ SetPhoto/SetPhoto	: lib/libgm.a lib/libkulina.a $(SETPHOTOFILES)
 	echo "PREFIX=$(PREFIX)">SetPhoto/config.mak
 	echo "KULINA=$(PWD)">>SetPhoto/config.mak
 	$(MAKE) -C SetPhoto
-Config/configlina	: lib/libgm.a lib/libkulina.a lib/libcrypt.a $(CONFIGFILES)
+Config/configlina	: lib/libgm.a lib/libkulina.a $(CONFIGFILES)
 	echo "PREFIX=$(PREFIX)">Config/config.mak
 	echo "KULINA=$(PWD)">>Config/config.mak
 	$(MAKE) -C Config
@@ -92,5 +79,4 @@ clean	:
 	$(MAKE) -C Config clean
 	$(MAKE) -C SetPhoto  clean
 	$(MAKE) -C wireless  clean
-	$(MAKE) -C libcrypt clean
 	rm -f TARBALL/configlina TARBALL/SetPhoto TARBALL/lina TARBALL/wireless lina-1.2.tgz

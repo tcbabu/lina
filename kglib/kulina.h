@@ -96,23 +96,27 @@ typedef struct {
   int info_char;    /* character colour for info box */
   int but_char;     /* character colour for button title */
   int menu_char;    /* Color for menu item */
-  int c_bound;
-  int GuiFontSize;
-  int MenuFont;
-  int PromptFont;
-  int ButtonFont;
-  int MsgFont;
-  int Font;   //internal use
-  int FontSize;   //internal use
-  int SplashFont;
   int SplashFillColor;
   int SplashBodrColor;
   int SplashCharColor;
   int ProgFillColor;
   int ProgBodrColor;
   int ProgColor;
+  int scroll_fill;
+  int scroll_bright;
+  int scroll_vbright;
+  int scroll_dim;
   int ItemHighColor;
+  int c_bound;
+  int GuiFontSize;
+  int MenuFont;
+  int PromptFont;
+  int ButtonFont;
+  int MsgFont;
+  int FontSize;   //internal use
+  int SplashFont;
   int InputFontSize;
+  int Font;   //internal use
 } Gclr;
 
 typedef struct dia_msg_str {
@@ -932,6 +936,12 @@ char **fontnames(void);
 typedef int (*CALLBACK)(int,int,void *);
 
 int  kgGetVersion(void);
+int kgStartX(char *logfile);  // arg can be NULL
+int kgCloseX(void);
+int kgRunJob(char *job,int (*ProcessOut)(int,int,int));
+int kgChangeJob(char *job);
+
+
 int  kgUi(DIALOG *D);
 void kgInitUi(void *Tmp);
 void kgCleanUi(void *tmp);
@@ -948,12 +958,15 @@ int  kgShiftWidget(void *Tmp,int item,int xsh,int ysh);
 int  kgResizeWidget(void *Tmp,int item,int xl,int yl);
 void *kgGetWidget(void *Tmp,int id);
 void * kgGetNamedWidget(void *Tmp,char *name);
+int  kgCheckWidgetName(void *wid,char *name);
 int  kgGetWidgetId(DIALOG *D,void *Widget);
 void * kgGetWidgetName(void *Tmp,int id);
 void * kgGetCurrentWidgetName(void *Tmp);
 void * kgGetCurrentWidget(void *Tmp);
 void * kgGetClickedWidget(void *Dtmp);
+void  kgGetClickedPosition(void *Dtmp,int *x,int *y);
 void * kgGetLocationWidget(void *Dtmp,int x1,int y1);
+int  kgGetWidgetLocation(void *wid,int *x1,int *y1);
 int  kgSetCurrentWidget(void *Tmp,int Wid);
 int  kgSetDefaultWidget(void *Tmp,int Wid); // to be used only in Ui init function
 int  kgSetWidgetVisibility(void *Widget,int vis);
@@ -990,7 +1003,13 @@ long   kgGetLong(void *Widget,int item) ;
 long   kgSetLong(void *Widget,int item,long val) ;
 char * kgGetString(void *Widget,int item) ;
 char * kgSetString(void *Widget,int item,char * val) ;
+void * kgSetWidgetImage(void *Widget,void *img);
+void * kgGetWidgetImage(void *Widget);
 void kgSetTextItemEcho(void *Tmp,int item, int echo);
+void kgSetScrollLength(void *widget,int percent);
+void kgSetScrollPos(void *widget,int percent);
+int  kgGetScrollPos(void *widget);
+int  kgGetScrollLength(void *widget);
 int    kgWrite(void *Widget, char *str) ;
 int    kgPrintf(void *Tmp, int infob,char *str) ;
 int    kgSplash(void *Tmp,int item,char *msg);
@@ -1002,9 +1021,22 @@ int    kgSetSwitch(void *Widget,int item, int val);
 int    kgGetSwitch(void *Widget,int item);
 void **kgSetList(void *Widget,void **list);
 void **kgGetList(void *Widget);
+int    kgAddThumbNail(void *Widget,void *th,int pos);
+int    kgDeleteThumbNail(void *Widget,int pos);
+void *    kgPickThumbNail(void *Widget,int pos);
+int    kgInsertThumbNail(void *Widget,void *th,int pos);
+int kgMoveThumbNail(void *wid,int item,int pos);
+int    kgSortList(void *Widget);
+void **kgCopyList(void *Widget);
+int kgListRemoveDup(void *Wid);
+void *kgCopyThumbNail(void *th);
 void   kgSetProgressBar(void *Widget,int val);
 int kgGetSlideValue(void *tmp);
 int kgSetSlideValue(void *tmp,int val);
+int kgGetDslideValue(void *tmp);
+int kgSetDslideValue(void *tmp,int val);
+float kgGetFslideValue(void *tmp);
+float kgSetFslideValue(void *tmp,float val);
 int kgChangeButtonColor(void *Widget,int butno,int red,int green,int blue) ;
 void  kgChangeButtonTitle(void *Widget,int butno,char *title);
 char *  kgGetButtonTitle(void *Widget,int butno);
@@ -1048,21 +1080,28 @@ int kgGetThumbNailItemRectangle(DIY *Y,int item,int *x1,int *y1,int *x2,int *y2)
 int kgDragImage(void *Tmp,void *Itmp,int xl,int yl,int xmin,int ymin,int xmax,int ymax,int *x,int *y);
 int kgScrollDownThumbNails (DIY *y);
 int kgScrollUpThumbNails (DIY *y);
-int kgDragThumbNail(DIY *Y,int item,int *x,int *y);
+int kgDragThumbNail(void *Y,int item,int *x,int *y);
 int kgPickImage( void *parent,int xo,int yo,void *pt);
 int kgSelectImage( void *parent,int xo,int yo,int ThSize,void *pt);
 int kgRedrawDialog(DIALOG *Dialog);
 int kgDrawDialog(DIALOG *D);
+void *kgGetThumbNail(void *Wid,int item);
+char *kgGetThumbNailName(void *Wid,int item);
+void *kgGetThumbNailImage(void *Wid,int item);
+void *kgSetThumbNailImage(void *Wid,int item,void *img);
+void kgSetThumbNailName(void *wid,int item,char *name);
 ThumbNail ** kgMakeThumbNails(char *dir,int size);
 ThumbNail **kgStringToThumbNails(char **menu);
 ThumbNail ** kgFolderThumbNails(char *dir);
 ThumbNail ** kgFileThumbNails(char *dir,char *filter);
 void kgFreeThumbNails(ThumbNail **tb);
+void kgFreeThumbNail(ThumbNail *tb);
 void * kgOpenBusy(void *arg,int xo,int yo);
 void kgCloseBusy(void * id);
 void kgAddSearchDir(void *Tmp,char *Dir);
 void kgColorTheme(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue);
 void kgColorTheme1(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue);
+void kgColorTheme2(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue);
 void kgResetColor(void *D,int no,int ir,int ig,int ib); // redefines a color; but will not affect hardcopy
 
 /* Default definitions of color */
@@ -1163,9 +1202,13 @@ void *kgEmbossImage(void *img);
 void *kgSharpenImage(void *img);
 void *kgSpreadImage(void *img);
 void *kgEnhanceImage(void *img);
+void *kgImagetoGray(void *img);
+void *kgImageModifyColor(void *img,float rfac,float gfac,float bfac);
+void *kgModifyImageHSV(void *Img,float hfac,float sfac,float vfac);
 void *kgShadowImage(void* img,int xoffset,int yoffset,void *shimg);
 void *kgMergeImages(void  *img1,void  *img2,int Xshft,int Yshft); /* second on first */
 void *kgMergeTransparentImage(void  *img1,void  *img2,int Xshft,int Yshft); /* second on first */
+int  kgGetImageSize(void *img,int *xsize,int *ysize);
 void *kgMaskImage(void *png,void *mask);
 void *kgCopyImage(void *img);
 void *kgCreateImage(int xzise,int ysize);
@@ -1244,6 +1287,7 @@ void kgDraw2f(DIG *G,float x,float y);
 void kgMarker2f(DIG *G,float x,float y);
 void kgDefaultGuiTheme(Gclr *Gc);
 void kgGrayGuiTheme(Gclr *Gc);
+void kgMkgclr(void *dianame,void *Dia); // second arg can be NULL
 void kgSetGouraudParams(DIG *G,float p2, float p1, int n, int ib);
 void kgGouraudFill(DIG *G,int n, float *x, float *y,float *v);
 void kgWriteText( DIG *G,char *c);
@@ -1271,6 +1315,7 @@ void kgPointerZoom(DIG *G);
 void kgPointerAntialiasedZoom(DIG *G);
 void kgBackupGph(DIG *G,char *flname);
 void kgHardCopy(DIG *G,char *flname);
+void kgSaveAsPng(DIG *G,char *flname);
 void kgA4Copy(DIG *G,char *flname);
 void kgLandscapeCopy(DIG *G,char *flname);
 void kgOpenObject(DIG *G,int obj);
@@ -1438,6 +1483,7 @@ DID * kgCreateIntSlide(int xo,int yo,int length,int min,int max,int val,char *na
 DIF * kgCreateDoubleSlide(int xo,int yo,int length,double min,double max,double val,char *name);
 /* end of create widgets */
 void kgPrintWidgetData(void *W,FILE *fp1); // prints widget data
+int kgGetWidgetSize(void *wid,int *xsize,int *ysize);
 /***********************************/
 
 /* String Manupulation       */

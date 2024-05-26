@@ -771,7 +771,7 @@ void *ReadConfig(LINACONFIG *lc) {
   lc->Uthumb = kgChangeSizeImage(img1,Tsize,Tsize);
   kgFreeImage(img);
   kgFreeImage(img1);
-  //lc->Slist=Dopen();
+//  lc->Slist=Dopen();
   lc->Slist= (Dlink *)MakeXsessionList();
   if(lc->Slist==NULL) lc->Slist=Dopen();
   fp = fopen("/usr/share/config/lina/session","r");

@@ -1,6 +1,6 @@
 #ifndef D_PASSWDFILE
 #define D_PASSWDFILE
-#include <kulina.h>
+#include "kulina.h"
 #include "headers.h"
 void ReadUsersInfo(LINACONFIG *lc);
 void PrintUsersInfo(LINACONFIG *lc);

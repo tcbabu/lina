@@ -1,6 +1,6 @@
 #ifndef D_HEADERS
 #define D_HEADERS
-#include "kulina.h"
+#include <kulina.h>
 typedef struct _lina_config {
   int Red;    // 0 to 255 red of theme
   int Green;    // 0 to 255 green of theme
