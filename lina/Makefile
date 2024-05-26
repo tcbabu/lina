@@ -16,7 +16,7 @@ lina	: lina.o linaCallbacks.o main.o SessionDia.o SessionDiaCallbacks.o \
 	 wiredia.o wirediaCallbacks.o addnetdia.o addnetdiaCallbacks.o \
 	 pskdia.o pskdiaCallbacks.o DateTime.o    hdmi.o \
 	 msgbox.o msgboxCallbacks.o GetXsessions.o \
- 	-I$(KULINA)/include $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread  -lcrypt
+ 	-I$(KULINA)/include $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a $(KULINA)/lib/libcrypt.a -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread 
 	 cp lina $(KULINA)/TARBALL
 lina.o	: lina.c images.c
 	 $(CC) -c lina.c

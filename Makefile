@@ -45,15 +45,27 @@ lib/libgm.a	: $(GMFILES)
 	echo "export PKG_CONFIG_PATH=$(PWD)/lib/pkgconfig:/usr/X11R76/lib/pkgconfig">>OpenSource/config.mak
 	$(MAKE) -C OpenSource 
 	$(MAKE) -C OpenSource install
-lina/lina	: lib/libgm.a lib/libkulina.a $(LINAFILES)
+lina/lina	: lib/libgm.a lib/libkulina.a lib/libcrypt.a $(LINAFILES)
 	echo "PREFIX=$(PREFIX)">lina/config.mak
 	echo "KULINA=$(PWD)">>lina/config.mak
 	$(MAKE) -C lina
+
+lib/libcrypt.a  : libxcrypt-4.4.36.tar.xz
+		  tar xf libxcrypt-4.4.36.tar.xz
+		  echo "export KULINA=$(PWD)"> mkcrypt
+		  echo "cd libxcrypt-4.4.36">> mkcrypt
+		  echo "./configure --prefix=$(PWD) --enable-static">>mkcrypt
+		  echo "make -j4" >>mkcrypt
+		  echo "make install">>mkcrypt
+		  chmod +x mkcrypt
+		  ./mkcrypt
+		  rm -rf libxcrypt-4.4.36
+
 SetPhoto/SetPhoto	: lib/libgm.a lib/libkulina.a $(SETPHOTOFILES)
 	echo "PREFIX=$(PREFIX)">SetPhoto/config.mak
 	echo "KULINA=$(PWD)">>SetPhoto/config.mak
 	$(MAKE) -C SetPhoto
-Config/configlina	: lib/libgm.a lib/libkulina.a $(CONFIGFILES)
+Config/configlina	: lib/libgm.a lib/libkulina.a lib/libcrypt.a $(CONFIGFILES)
 	echo "PREFIX=$(PREFIX)">Config/config.mak
 	echo "KULINA=$(PWD)">>Config/config.mak
 	$(MAKE) -C Config
