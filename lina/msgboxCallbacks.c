@@ -25,6 +25,7 @@ static int AddtoList1(char *buff) {
   pt = (char *)malloc(ln);
   strcpy(pt,"!g   ");
   strcpy(pt+5,buff);
+  if(ln>40) pt[39]='\0';
   Dadd(Mslist,pt);
   return 1;
 }
@@ -215,7 +216,7 @@ static int WirelessStatus(void) {
 //            printf("  %s connected: IP Addr: %s\n",Wdev,ipaddr);
             sprintf(buff,"!z43!w54 %s Connected" ,Wdev);
             AddtoList(buff);
-            sprintf(buff,"!g   IP Addr: %s\n",ipaddr);
+            sprintf(buff,"!g !f02  IP Addr: %s\n",ipaddr);
             AddtoList(buff);
             break;
           }
