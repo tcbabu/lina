@@ -75,6 +75,7 @@
 #if 1 
 #else 
       D.xl = 400; /* Length of Dialog */ D.yl = 400; /* Width of Dialog */ D.Initfun = msgboxinit;
+          
            /* init fuction for Dialog */ D.Cleanupfun = msgboxcleanup; /* init fuction for Dialog */ D.kbattn = 0;
            /* 1 for drawing keyborad attention */ D.butattn = 0; /* 1 for drawing button attention */ D.fullscreen = 0;
            /* 1 for for fullscreen mode */ D.Deco = 1; /* 1 for Window Decorration */ D.transparency = 0.000000;
@@ -89,12 +90,13 @@
 #endif
 //  strcpy(D.name,"Kulina Designer ver 1.0");    /*  Dialog name you may change */
       D.ResizeCallback = msgboxResizeCallBack; /* Resize callback */ D.WaitCallback = NULL;
+          
            /* Wait callback */ D.WaitCallback = msgboxWaitCallBack; /* Wait callback */ D.Fixpos = 1;
            /* 1 for Fixing Position */ D.NoTaskBar = 0; /* 1 for not showing in task bar*/ D.NoWinMngr = 0;
            /* 1 for no Window Manager*/ D.StackPos = 0; /* -1 , 0 , 1 for for Stack Position -1:below 0:normal 1:above*/ D.Shapexpm = NULL;
            /* PNG/jpeg file for window shape;Black color will not be drawn */ D.parent = parent;
            /* 1 for not showing in task bar*/ D.pt = pt; /* any data to be passed by user*/ if 
-          ( D.fullscreen != 1 ) { /* if not fullscreen mode */ int xres , yres;
+       ( D.fullscreen != 1 ) { /* if not fullscreen mode */ int xres , yres;
           kgDisplaySize ( & xres , & yres ) ;
       // D.xo=D.yo=0; D.xl = xres-10; D.yl=yres-80;
       }
