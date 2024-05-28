@@ -1,6 +1,9 @@
 #include "headers.h"
 #include <kulina.h>
+#include "passwdfile.h"
 #include "configlinaCallbacks.h"
+void *ReadConfig(LINACONFIG *lc);
+
 int Enabled=0;
 
 LINACONFIG lc;

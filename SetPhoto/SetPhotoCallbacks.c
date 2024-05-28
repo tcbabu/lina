@@ -1,4 +1,6 @@
 #include <kulina.h>
+#include <sys/stat.h>
+
 char Image[500],buff[1000],buff1[1000];
 int  SetPhototextbox1callback(int cellno,int i,void *Tmp) {
   /************************************************* 
