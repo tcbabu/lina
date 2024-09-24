@@ -12,9 +12,11 @@
    gc->but_char  =101;
    gc->txt_char  =101;
    gc->char_clr = 101;
-   gc->FontSize =8;
+   gc->FontSize =9;
    gc->Font=23;
 */
+   gc->FontSize =9;
+   gc->Font=23;
   }
   int SessionDiaGroup ( DIALOG *D , void **v , void *pt ) {
       int GrpId = 0 , oitems = 0 , i , j;

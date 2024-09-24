@@ -37,23 +37,23 @@
       butn1 [ 0 ] .xpmp = NULL;
       butn1 [ 0 ] .xpmh = NULL;
       butn1 [ 0 ] .bkgr = -180180180;
-      butn1 [ 0 ] .butncode = '';
+      butn1 [ 0 ] .butncode = 127;
       butn1 [ 1 ] .sw = 1;
       strcpy ( butn1 [ 1 ] .title , ( char * ) "Reboot" ) ;
       butn1 [ 1 ] .xpmn = ( void * ) & reboot_str;
       butn1 [ 1 ] .xpmp = NULL;
       butn1 [ 1 ] .xpmh = NULL;
       butn1 [ 1 ] .bkgr = -180180180;
-      butn1 [ 1 ] .butncode = '';
+      butn1 [ 1 ] .butncode = 127;
       butn1 [ 2 ] .sw = 1;
       strcpy ( butn1 [ 2 ] .title , ( char * ) "Cancel" ) ;
       butn1 [ 2 ] .xpmn = ( void * ) & cancel_str;
       butn1 [ 2 ] .xpmp = NULL;
       butn1 [ 2 ] .xpmh = NULL;
       butn1 [ 2 ] .bkgr = -180180180;
-      butn1 [ 2 ] .butncode = '';
+      butn1 [ 2 ] .butncode = 127;
       DIL h1 = {
-          'h' , 9 , 14 , 256 , 76 , 38 , 18 , 46 , 46 , 3 , 1 , 0 , 0.500000 , 0 , 0 , 0 , 1 , /* button type and roundinfg factor 
+          'h' , 9 , 14 , 256 , 76 , 38 , 18 , 46 , 46 , 0 , 0 , 0 , 0.500000 , 0 , 0 , 0 , 1 , /* button type and roundinfg factor 
               ( 0-0.5 ) , bordr , hide , nodrawbkgr*/
           butn1 , PdDiasplbutton1callback , /* Callbak */
           NULL /* any args */

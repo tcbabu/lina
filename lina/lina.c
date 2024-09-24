@@ -548,10 +548,10 @@
       gc-> char_clr = 101;
       gc-> cur_clr = 102;
       gc-> ItemHighColor = 102;
-      gc-> MsgFont = 8;
-      gc-> MenuFont = 8;
-      gc-> PromptFont = 8;
-      gc-> ButtonFont = 16;
+      gc-> MsgFont = 9;
+      gc-> MenuFont = 40;
+      gc-> PromptFont = 40;
+      gc-> ButtonFont = 40;
       gc-> GuiFontSize = 10;
   }
   void * kgSessionImage ( int size , int red , int green , int blue ) {
@@ -742,7 +742,7 @@
       t1.pt = NULL;
       DIM m2 = {
       'm' , 480 , 231 , 700 , 266 , -1 , 0 };
-      strncpy ( m2.msg , ( char * ) "!z21!f01" , 499 ) ;
+      strncpy ( m2.msg , ( char * ) "!w32!f23" , 499 ) ;
       strcat ( m2.msg , GetRealName ( & lc , Index ) ) ;
       strcpy ( m2.Wid , ( char * ) "UserMsg" ) ;
        char *xpm3;// Pixmap info
@@ -766,7 +766,7 @@
       butn4 [ 0 ] .xpmp = NULL;
       butn4 [ 0 ] .xpmh = NULL;
       butn4 [ 0 ] .bkgr = -200200200;
-      butn4 [ 0 ] .butncode = '';
+      butn4 [ 0 ] .butncode = 127;
       DIL h4 = {
           'h' , 645 , 263 , 675 , 313 , 2 , 4 , 28 , 42 , 1 , 1 , 0 , 0.500000 , 0 , 0 , 0 , 1 , /* button type and roundinfg factor 
               ( 0-0.5 ) , bordr , hide , nodrawbkgr*/
@@ -783,7 +783,7 @@
       butn5 [ 0 ] .xpmp = NULL;
       butn5 [ 0 ] .xpmh = NULL;
       butn5 [ 0 ] .bkgr = -1;
-      butn5 [ 0 ] .butncode = '';
+      butn5 [ 0 ] .butncode= 127;
       DIN b5 = {
 //    488,236,  
 //    718,278,
@@ -801,7 +801,7 @@
       butn6 [ 0 ] .xpmp = NULL;
       butn6 [ 0 ] .xpmh = NULL;
       butn6 [ 0 ] .bkgr = -1;
-      butn6 [ 0 ] .butncode = '';
+      butn6 [ 0 ] .butncode= 127;
       butn6 [ 1 ] .sw = 1;
       strcpy ( butn6 [ 1 ] .title , ( char * ) "" ) ;
       butn6 [ 1 ] .xpmn = imgs [ 2 ] ;
@@ -811,7 +811,7 @@
 //  strcpy(butn6[1].xpmn,(char *)"##stop.png");
 //  butn6[1].xpmn= (void *)kgPowerdownImage(48,220,220,210);
       butn6 [ 1 ] .bkgr = -1;
-      butn6 [ 1 ] .butncode = '';
+      butn6 [ 1 ] .butncode= 127;
       butn6 [ 2 ] .sw = 1;
       strcpy ( butn6 [ 2 ] .title , ( char * ) "" ) ;
       butn6 [ 2 ] .xpmn = imgs [ 3 ] ;
@@ -821,14 +821,14 @@
 //  strcpy(butn6[1].xpmn,(char *)"##stop.png");
 //  butn6[2].xpmn= (void *)&wireless1_str;
       butn6 [ 2 ] .bkgr = -1;
-      butn6 [ 2 ] .butncode = '';
+      butn6 [ 2 ] .butncode= 127;
       butn6 [ 3 ] .sw = 1;
       strcpy ( butn6 [ 3 ] .title , ( char * ) "" ) ;
       butn6 [ 3 ] .xpmn = imgs [ 4 ] ;
       butn6 [ 3 ] .xpmp = NULL;
       butn6 [ 3 ] .xpmh = NULL;
       butn6 [ 3 ] .bkgr = -1;
-      butn6 [ 3 ] .butncode = '';
+      butn6 [ 3 ] .butncode= 127;
       DIL h6 = {
           'h' , 1142 , 590 , 1460 , 636 , 30 , 3 , 44 , 44 , 4 , 1 , 0 , 0.500000 , 0 , 0 , 0 , 1 , /* button type and roundinfg factor 
               ( 0-0.5 ) , bordr , hide , nodrawbkgr*/
@@ -921,7 +921,7 @@
       D.d = d;
       TextBox = 1;
 //  kgColorTheme(&D,(int)lc.Red,(int)lc.Green,(int)lc.Blue);
-//  ModifylinaGc(&(D.gc));    /*  set colors for gui*/
+    ModifylinaGc(&(D.gc));    /*  set colors for gui*/
       d = D.d;
       D.bkup = 1; /* set to 1 for backup */
       D.bor_type = 0;
@@ -1014,11 +1014,13 @@
               ( unsigned char ) lc.Blue ) ;
           kgInitKbinfo ( & Ki ) ;
           Ki.kbtype = 4;
+#if 1
           kgKeybrd ( & D , lc.KbVis , & Ki ) ;
 //     kgMakeKeybrd(&D,Kbtype,lc.KbVis,1,25,-40045040,501,201,0.0,lc.Transparency);
           kgGetKeybrdSize ( & D , & xkb , & ykb ) ;
           kgShiftKeybrd ( & D , ( xres - xkb ) /2 , yres-50 -ykb ) ;
           kgSetKeybrdWidget ( & D , 1 ) ;
+#endif
 //     D.StackPos = 1; // you may need it
       } /* end of fullscreen mode */
       printf ( "Calling Ui\n" ) ;

@@ -806,7 +806,7 @@ typedef struct _GboxInfo {
 typedef union dia_u { DIT *t;DIB *b;DIN *N;DIF *f;DID *d;DIBN *n;DIO *o;
                       DIV *v;DIZ *z; DIW *w;DIM *m;DIX *x;DIY *y;DIL *h;
                       DILN *H;DIP *p; DIG *g;DII *i;DIE *e;DIS *s;DIHB *B;
-                      DICH *c;DIRA *r; 
+                      DICH *c;DIRA *r;
 } DIA;
 typedef struct _kbevent {
  int event; /* 0:mouse movement,1:button press,2:button release,3:mouse move+button press,
@@ -873,6 +873,7 @@ typedef struct Dia_str {
   void *ThInfo;  // internal
   void *Kbrd; //for keyboard 
   int InputWid;
+  int NoTabProcess;
 } DIALOG;
 
 typedef struct _WidgetGroup {
@@ -968,7 +969,9 @@ void  kgGetClickedPosition(void *Dtmp,int *x,int *y);
 void * kgGetLocationWidget(void *Dtmp,int x1,int y1);
 int  kgGetWidgetLocation(void *wid,int *x1,int *y1);
 int  kgSetCurrentWidget(void *Tmp,int Wid);
+int  kgSetAttnWidget(void *Tmp,void *Widget);
 int  kgSetDefaultWidget(void *Tmp,int Wid); // to be used only in Ui init function
+int  kgSetDefaultAttnWidget(void *Tmp,void *Widget); // to be used only in Ui init function
 int  kgSetWidgetVisibility(void *Widget,int vis);
 int  kgGetWidgetVisibility(void *Widget);
 int  kgUpdateTextBox(void *tmp,int no);
@@ -1003,13 +1006,25 @@ long   kgGetLong(void *Widget,int item) ;
 long   kgSetLong(void *Widget,int item,long val) ;
 char * kgGetString(void *Widget,int item) ;
 char * kgSetString(void *Widget,int item,char * val) ;
+int kgSetOffTableCell(void *Tmp,int cell);
+int kgSetOnTableCell(void *Tmp,int cell);
+int kgGetTableColumn(void *Tmp);
+int kgGetTableRow(void *Tmp);
+int kgGetTableCell(void *Tmp);
+int kgSetTableCursor(void * Tmp,int cell);
+int kgSetTableCursorPos ( void * Tmp , int cell,int pos);
+int kgGetTableCurpos ( void *Tmp );
+int kgGetTableStartChar ( void *Tmp );
+int kgScrollDownTable(void *Tmp,int row) ;
+int kgScrollUpTable(void *Tmp,int row) ;
 void * kgSetWidgetImage(void *Widget,void *img);
 void * kgGetWidgetImage(void *Widget);
 void kgSetTextItemEcho(void *Tmp,int item, int echo);
-void kgSetScrollLength(void *widget,int percent);
-void kgSetScrollPos(void *widget,int percent);
-int  kgGetScrollPos(void *widget);
-int  kgGetScrollLength(void *widget);
+void kgSetScrollLength(void *widget,double percent);
+void kgSetScrollPos(void *widget,double percent);
+int kgSetScrollMovement ( void *Tmp , double mvnt) ;
+double  kgGetScrollPos(void *widget);
+double  kgGetScrollLength(void *widget);
 int    kgWrite(void *Widget, char *str) ;
 int    kgPrintf(void *Tmp, int infob,char *str) ;
 int    kgSplash(void *Tmp,int item,char *msg);
@@ -1094,6 +1109,18 @@ ThumbNail ** kgMakeThumbNails(char *dir,int size);
 ThumbNail **kgStringToThumbNails(char **menu);
 ThumbNail ** kgFolderThumbNails(char *dir);
 ThumbNail ** kgFileThumbNails(char *dir,char *filter);
+//Added 28 th June
+char **kgGetMediaFiles(void *arg); // multiple media files
+char **kgGetImageFiles(void *arg); // multiple Audio files
+char **kgGetAudioFiles(void *arg); // multiple Video files
+char **kgGetVideoFiles(void *arg); // multiple Image files
+char **kgGetFiles(void *arg); // multiple files
+char *kgGetMediaFile(void *arg); // single media files
+char *kgGetImageFile(void *arg); // single Audio files
+char *kgGetAudioFile(void *arg); // single Video files
+char *kgGetVideoFile(void *arg); // single Image files
+char *kgGetFile(void *arg); // single files
+//Over
 void kgFreeThumbNails(ThumbNail **tb);
 void kgFreeThumbNail(ThumbNail *tb);
 void * kgOpenBusy(void *arg,int xo,int yo);
@@ -1207,11 +1234,16 @@ void *kgImageModifyColor(void *img,float rfac,float gfac,float bfac);
 void *kgModifyImageHSV(void *Img,float hfac,float sfac,float vfac);
 void *kgShadowImage(void* img,int xoffset,int yoffset,void *shimg);
 void *kgMergeImages(void  *img1,void  *img2,int Xshft,int Yshft); /* second on first */
+void *kgAddImages(void  *img1,void  *img2,int Xshft,int Yshft); /* second on first */
+void *kgReplaceImage(void  *img1,void  *img2,int Xshft,int Yshft); /* second on first */
 void *kgMergeTransparentImage(void  *img1,void  *img2,int Xshft,int Yshft); /* second on first */
+void *kgAddTransparentImage ( void *png1 , void *png2 , int Xshft , int Yshft );
 int  kgGetImageSize(void *img,int *xsize,int *ysize);
 void *kgMaskImage(void *png,void *mask);
 void *kgCopyImage(void *img);
 void *kgCreateImage(int xzise,int ysize);
+int kgSetImageColor(void *img,int r,int g,int b);
+int kgSetPixelAlpha(void *img,int col, int row,int alpha);
 void *kgCleanImage(void *img);
 void *kgFlipImage(void *img); // About X refledction overwrites img
 void *kgFlopImage(void *img); // About Y refledction overwrites img
@@ -1284,6 +1316,7 @@ void kgClearBuffer(DIG *G);
 void kgMove2f(DIG *G,float x,float y);
 void kgMarkerType(DIG *G,int mtype);
 void kgDraw2f(DIG *G,float x,float y);
+int  kgImagePixel(DIG *G,int col,int row,int r,int g,int b,int a);
 void kgMarker2f(DIG *G,float x,float y);
 void kgDefaultGuiTheme(Gclr *Gc);
 void kgGrayGuiTheme(Gclr *Gc);
@@ -1403,6 +1436,13 @@ void *kgFreeDouble(void **mem);
 void kgCleanDir(char *folder);
 void kgCheckAndRemoveParent(char *dir);
 char *kgWhich(char *pgr);
+ char *kgWhichFont ( char *pgr );
+int kgAddFixedFont(char *);
+int kgAddFont(char *);
+char **kgGetFixedFontList();
+char **kgGetFontList();
+char *kgGetMonoFont(int);
+char *kgGetOthFont(int);
 int kgSearchString(char *s1,char *s2);
 char *kgGetIcon(char *pgr,char *theme);
 void *kgSearchIcon(char *IconName);
@@ -1484,6 +1524,7 @@ DIF * kgCreateDoubleSlide(int xo,int yo,int length,double min,double max,double 
 /* end of create widgets */
 void kgPrintWidgetData(void *W,FILE *fp1); // prints widget data
 int kgGetWidgetSize(void *wid,int *xsize,int *ysize);
+void *kgGetArgPointer(void *Tmp);
 /***********************************/
 
 /* String Manupulation       */
@@ -1491,6 +1532,13 @@ int kgGetWidgetSize(void *wid,int *xsize,int *ysize);
 void kgTruncateString(char *m,int size);
 void kgRestoreString(char *m,int size);
 void gphUserFrame(int fid,float x1,float y1, float x2, float y2);
+void *RunkgGetStrings(void *parent ,void *args); // Dialog to get Strings
+/*
+   Version 3.0
+   Dated 27/05/2024
+*/
+
+
 /*
    Version 2.1
    Dated 12/07/97
@@ -1501,6 +1549,8 @@ void gphUserFrame(int fid,float x1,float y1, float x2, float y2);
 #include <stdio.h>
 #include <ctype.h>
 #include <malloc.h>
+#include <string.h>
+
 typedef  struct d_l {
          void  *bf;
          struct d_l *nx;
@@ -1511,6 +1561,15 @@ typedef  struct l_L {
          D_l *cr;
          D_l *en;
 } Dlink;
+
+typedef struct _ArgStruct {
+        char *flag;
+        void *pt;
+        int code;
+        int nvals;
+        void (*Callback)(void *);
+        void *arg;
+} DARGS;
 
 
 
@@ -1530,6 +1589,37 @@ void Dadd(Dlink *F,void  *buf) ;
 Dlink *Dcopy(Dlink *LN) ;
 Dlink *Dsublist(Dlink *LN,void *s,int Dcondition(void *,void *)) ;
 Dlink *Dnewlist(Dlink *LN,void * Dnewrule(void *)) ;
+int Dcomplist ( Dlink *L1 , Dlink *L2 , int comprecord
+      ( void *tmp1 , void *tmp2 ) ) ;
+
+/*
+  The comparison return 1 if the criteria satisfied
+  and repositioning is done
+  the first arg(the current value,ie the one coming first in the
+  current order) is compared with the
+  second( ie the one coming later).
+  Example:
+    To compare an array of numbers is in increasing order
+    int compno(void *first,void *second) {
+      int ret = -1;
+      if ( *((int *)first > *((int *)second) ) ret =1;
+      return ret;
+    }
+    String based sort in ascenting order
+int SortVars(void *p1,void *p2) {
+	int val =0;
+	val =  strcmp(((VARS *)p1)->name,((VARS*)p2)->name);
+	if(val > 0) return 1;
+	else return 0;
+}
+
+*/
+void Dsort(Dlink *LN , int Dcmpitems(void *,void *)) ;
+// order = 0 ascenting
+// else decenting
+// field is counted from 1
+void Dstringsort(Dlink *LN , int field,int order);
+void Dnumbersort(Dlink *LN , int field,int order);
 void Dsort(Dlink *LN , int Dcmpitems(void *,void *)) ;
 int Dcount(Dlink *F) ;
 void Dposition(Dlink *F,int n) ;
@@ -1551,8 +1641,55 @@ void *Resetlink(Dlink *L);
 void *Getrecord(Dlink *L);
 void *Getrecordrev(Dlink *L);
 void* Dpick(Dlink *LN) ; /* like Ddelete but does not free */
-#endif /* end of dlink.h */
+//
+// New ones with position starting from 0
+//
+int Dlocation(Dlink *L,int pos) ; // pos starts from 0
+int Dremove(Dlink *L,int pos); // pos counted from 0 ; deletes item and free
+void * Dtake(Dlink *L,int pos); // pos counted from 0; delete item and retuns record
+void *Drecord(Dlink *L,int position); 
+void Dtravel(Dlink *L,void (*action) (void *));
+Dlink * DgetFlags(char **argv);
+Dlink * DgetArgs(char **argv);
+char * DgetFlagArg(Dlink *Alist,char **argv,char *flag,int nv); //Alist from DgetArgs
+char **  DprocessFlags(char *argv[],DARGS fargpt[]);
+Dlink *Dreadfile(char *flname);
+int Dwritefile(Dlink *L,char *flname);
+int Dpush(Dlink *L,void *bf);
+void * Dpop(Dlink *L);
+int Dfifoin(Dlink *L,void *bf);
+void * Dfifoout(Dlink *L);
+int  Dreplace(Dlink *L,void *bf,int pos);
+#if 0
+/ *
+ * Sample code for compare function
+ * LINK MUST BE IN ASCENTING ORDER
+ */
 
+int CompareAction(void *rec, char *name) {
+	/* 
+	 * return -1 if rec field < name
+	 * return  1 if rec field > name
+	 * return  0 if rec field = name
+	 *
+	 */
+	PACTION  *recv = ((PACTION  *)rec);
+//	int val = *((int *) name);
+	char *field = recv->Flag;;
+	// field = ...
+	return strcmp(field,(char *)name);
+//	return (recv - val);
+}
+ 
+#endif
+void *Dsearch(Dlink *L, char *val  ,int (*Compare)(void *,char *));
+/* You may Dfree link if link is no more needed */
+Dlink *Darraytolink(void **Array);
+/* you may free Array is its no more needed */
+void **Dlinktoarray(Dlink *L);
+
+
+#endif /* end of dlink.h */
 typedef  struct f_L {
          Dlink *L;
          int C_pos;

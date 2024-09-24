@@ -15,6 +15,8 @@
    gc->FontSize =8;
    gc->Font=23;
 */
+   gc->FontSize =9;
+   gc->Font=23;
   }
   int UserDiaGroup_o ( DIALOG *D , void **v , void *pt ) {
       int GrpId = 0 , oitems = 0 , i , j;

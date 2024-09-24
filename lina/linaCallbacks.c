@@ -93,7 +93,7 @@
       n = B-> nx*B-> ny;
       RunUserDia ( Tmp ) ;
       UserName = GetRealName ( & lc , Index ) ;
-      sprintf ( buff , "!z21!f01%-s" , UserName ) ;
+      sprintf ( buff , "!w32!f23%-s" , UserName ) ;
       kgUpdateWidget ( kgGetWidget ( Tmp , 0 ) ) ;
       kgChangePixmapImage ( kgGetWidget ( Tmp , 3 ) , GetUserImage 
           ( & lc , Index ) ) ;
@@ -242,7 +242,7 @@
 //       if((strcmp(p3->Wid,"UserPic")==0)) {
                       RunUserDia ( Tmp ) ;
                       UserName = GetRealName ( & lc , Index ) ;
-                      sprintf ( buff , "!z21!f01%-s" , UserName ) ;
+                      sprintf ( buff , "!w32!f23%-s" , UserName ) ;
                       kgUpdateWidget ( kgGetWidget ( Tmp , 0 ) ) ;
                       kgChangePixmapImage ( kgGetWidget ( Tmp , 3 ) , GetUserImage 
                           ( & lc , Index ) ) ;

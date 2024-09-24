@@ -156,16 +156,12 @@ void kgDefaultGuiTheme(Gclr *Gc) {
   Gc->menu_char=49;
   Gc->c_bound = 46;
   Gc->GuiFontSize =9;
-  Gc->MenuFont = 8;
-  Gc->PromptFont = 32;
-  Gc->ButtonFont = 23;
-  Gc->MsgFont = 23;
-  Gc->MenuFont = 8;
-  Gc->PromptFont = 32;
-  Gc->ButtonFont = 8;
-  Gc->FontSize =9;
-  Gc->Font=23;
-  Gc->SplashFont=4;
+  Gc->MenuFont = 22;
+  Gc->PromptFont = 22;
+  Gc->ButtonFont = 22;
+  Gc->MsgFont = 22;
+  Gc->Font=22;
+  Gc->SplashFont=23;
   Gc->SplashFillColor=40;
   Gc->SplashBodrColor=46;
   Gc->SplashCharColor=26;
@@ -265,14 +261,6 @@ void kgColorTheme2(DIALOG *D,unsigned char red,unsigned char green, unsigned cha
   Gc->menu_char=49;
   Gc->c_bound = 46;
   Gc->GuiFontSize =9;
-  Gc->MenuFont = 8;
-  Gc->PromptFont = 23;
-  Gc->ButtonFont = 23;
-  Gc->MsgFont = 24;
-  Gc->MenuFont = 8;
-  Gc->PromptFont = 32;
-  Gc->ButtonFont = 8;
-  Gc->MsgFont = 8;
   Gc->FontSize =9;
   Gc->Font=23;
   Gc->SplashFont=4;
@@ -285,6 +273,13 @@ void kgColorTheme2(DIALOG *D,unsigned char red,unsigned char green, unsigned cha
   Gc->scroll_dim= Gc->dim;
   Gc->scroll_bright= Gc->bright;
   Gc->scroll_vbright= Gc->vbright;
+  Gc->GuiFontSize =9;
+  Gc->MenuFont = 22;
+  Gc->PromptFont = 22;
+  Gc->ButtonFont = 22;
+  Gc->MsgFont = 22;
+  Gc->Font=22;
+  Gc->SplashFont=23;
   return ;
 }
 void kgColorTheme(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue) {
@@ -387,13 +382,7 @@ void kgColorTheme(DIALOG *D,unsigned char red,unsigned char green, unsigned char
   Gc->menu_char=56;
   Gc->c_bound = 58;
   Gc->GuiFontSize =9;
-  Gc->MenuFont = 8;
-  Gc->PromptFont = 24;
-  Gc->ButtonFont = 16;
-  Gc->MsgFont = 1;
   Gc->FontSize =9;
-  Gc->Font=16;
-  Gc->SplashFont=24;
   Gc->SplashFillColor=55;
   Gc->SplashBodrColor=58;
   Gc->SplashCharColor=56;
@@ -405,6 +394,13 @@ void kgColorTheme(DIALOG *D,unsigned char red,unsigned char green, unsigned char
   Gc->scroll_dim= Gc->dim;
   Gc->scroll_bright= Gc->bright;
   Gc->scroll_vbright= Gc->vbright;
+  Gc->GuiFontSize =9;
+  Gc->MenuFont = 22;
+  Gc->PromptFont = 22;
+  Gc->ButtonFont = 22;
+  Gc->MsgFont = 22;
+  Gc->Font=22;
+  Gc->SplashFont=23;
   return ;
 }
 void kgColorTheme1(DIALOG *D,unsigned char red,unsigned char green, unsigned char blue) {
@@ -503,7 +499,6 @@ void kgColorTheme1(DIALOG *D,unsigned char red,unsigned char green, unsigned cha
   Gc->MenuFont = 8;
   Gc->PromptFont = 24;
   Gc->ButtonFont = 16;
-  Gc->MsgFont = 1;
   Gc->FontSize =9;
   Gc->Font=16;
   Gc->SplashFont=24;
@@ -518,6 +513,13 @@ void kgColorTheme1(DIALOG *D,unsigned char red,unsigned char green, unsigned cha
   Gc->scroll_dim= Gc->dim;
   Gc->scroll_bright= Gc->bright;
   Gc->scroll_vbright= Gc->vbright;
+  Gc->GuiFontSize =9;
+  Gc->MenuFont = 22;
+  Gc->PromptFont = 22;
+  Gc->ButtonFont = 22;
+  Gc->MsgFont = 22;
+  Gc->Font=22;
+  Gc->SplashFont=23;
   return ;
 }
 void kgGrayGuiTheme(Gclr *Gc) {
@@ -569,6 +571,13 @@ void kgGrayGuiTheme(Gclr *Gc) {
   Gc->scroll_dim= Gc->dim;
   Gc->scroll_bright= Gc->bright;
   Gc->scroll_vbright= Gc->vbright;
+  Gc->GuiFontSize =9;
+  Gc->MenuFont = 22;
+  Gc->PromptFont = 22;
+  Gc->ButtonFont = 22;
+  Gc->MsgFont = 22;
+  Gc->Font=22;
+  Gc->SplashFont=23;
   return ;
 }
 #if 0
@@ -13288,7 +13297,7 @@ void *kgPressedRectangle(int width,int height,int fillclr,float rfac) {
   if(height<100) small=1;
   fid = kgInitImage(width,height,RESIZE);
    if(fid != NULL ) {
-      kgUserFrame(fid,-3.0,-3.0,(float)l+3,(float)w+3);
+      kgUserFrame(fid,-0.5,-0.5,(float)l+0.5,(float)w+0.5);
       if(fillclr>0)
           kgGetRGB((DIG *)fid,fillclr,&r,&g,&b);
       else {
@@ -13298,22 +13307,26 @@ void *kgPressedRectangle(int width,int height,int fillclr,float rfac) {
          r = fillclr;
       }
       RGBtoHSV((float)r,(float)g,(float)b,&h,&s,&v);
-      Vb = 1.5*v;
+      Vb = 2.0*v;
       if(Vb >1.) Vb=1.;
       HSVtoRGB(&rf,&gf,&bf,h,s,Vb);
-      kgChangeColor(fid,252,(int)rf,(int)gf,(int)bf);
-      HSVtoRGB(&rf,&gf,&bf,h,s,0.4*v);
       kgChangeColor(fid,253,(int)rf,(int)gf,(int)bf);
+      HSVtoRGB(&rf,&gf,&bf,h,s,0.7*Vb);
+      kgChangeColor(fid,252,(int)rf,(int)gf,(int)bf);
       kgChangeColor(fid,251,(int)r,(int)g,(int)b);
       if(small) {
-      kgSmallRectangleFill(fid,xo,yo,(float)l+2,(float)w+2,0,252,rfac);
-      kgSmallRectangleFill(fid,xo,yo,(float)l+1,(float)w+1,0,253,rfac);
-      kgSmallRectangleFill(fid,xo,yo,(float)l,(float)w,0,251,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l,(float)w,0,252,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l-1.5,(float)w-1.5,0,253,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l-1.0,(float)w-1.0,0,253,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l-0.5,(float)w-0.5,0,253,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l-2,(float)w-2,0,251,rfac);
       }
       else {
-      kgRoundedRectangleFill(fid,xo,yo,(float)l+2,(float)w+2,0,252,rfac);
-      kgRoundedRectangleFill(fid,xo,yo,(float)l+1,(float)w+1,0,253,rfac);
-      kgRoundedRectangleFill(fid,xo,yo,(float)l,(float)w,0,251,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l,(float)w,0,252,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l-1.5,(float)w-1.5,0,253,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l-1.0,(float)w-1.0,0,253,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l-0.5,(float)w-0.5,0,253,rfac);
+      kgSmallRectangleFill(fid,xo,yo,(float)l-2,(float)w-2,0,251,rfac);
       }
 //      kgRoundedRectangle(fid,xo,yo,(float)l,(float)w,bodrclr,0.5,1);
 //      img=kgGetSharpImage(fid);
