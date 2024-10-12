@@ -53,7 +53,7 @@
       butn1 [ 2 ] .bkgr = -180180180;
       butn1 [ 2 ] .butncode = 127;
       DIL h1 = {
-          'h' , 9 , 14 , 256 , 76 , 38 , 18 , 46 , 46 , 3 , 1 , 0 , 0.500000 , 0 , 0 , 0 , 1 , /* button type and roundinfg factor 
+          'h' , 9 , 14 , 256 , 76 , 38 , 24 , 46 , 46 , 3 , 1 , 0 , 0.500000 , 0 , 0 , 0 , 1 , /* button type and roundinfg factor 
               ( 0-0.5 ) , bordr , hide , nodrawbkgr*/
           butn1 , PdDiasplbutton1callback , /* Callbak */
           NULL /* any args */

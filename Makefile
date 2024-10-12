@@ -78,6 +78,7 @@ install	: lina/lina SetPhoto/SetPhoto Config/configlina wireless/wireless
 	  $(MAKE) -C Config install
 	  $(MAKE) -C SetPhoto install
 	  $(MAKE) -C wireless install
+	  tar xzvf fonts.tar -C /usr/share/fonts
 
 tarball : TARBALL/lina TARBALL/SetPhoto TARBALL/configlina TARBALL/wireless
 	  mv TARBALL lina-1.2

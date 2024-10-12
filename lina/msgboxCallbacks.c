@@ -212,9 +212,9 @@
                           sscanf ( pt , "%s" , ipaddr ) ;
                           Connected = 1;
 //            printf("  %s connected: IP Addr: %s\n",Wdev,ipaddr);
-                          sprintf ( buff , "!z43!w54 %s Connected" , Wdev ) ;
+                          sprintf ( buff , " %s Connected" , Wdev ) ;
                           AddtoList ( buff ) ;
-                          sprintf ( buff , "!g !f02  IP Addr: %s\n" , ipaddr ) ;
+                          sprintf ( buff , "!f02   IP Addr: %s\n" , ipaddr ) ;
                           AddtoList ( buff ) ;
                           break;
                       }

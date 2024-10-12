@@ -548,8 +548,8 @@
       gc-> char_clr = 101;
       gc-> cur_clr = 102;
       gc-> ItemHighColor = 102;
-      gc-> MsgFont = 9;
-      gc-> MenuFont = 40;
+      gc-> MsgFont = 28;
+      gc-> MenuFont = 28;
       gc-> PromptFont = 40;
       gc-> ButtonFont = 40;
       gc-> GuiFontSize = 10;

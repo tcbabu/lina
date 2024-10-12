@@ -73,7 +73,7 @@
           case 3:
           if ( ( Scanlist == NULL ) || ( Dcount ( Scanlist ) == 0 ) ) {
               RetVal = 0;
-              kgPrintf ( Tmp , 1 , "!z43No Wireless Network" ) ;
+              kgPrintf ( Tmp , 1 , "No Wireless Network" ) ;
               kgUpdateOn ( Tmp ) ;
               break;
           }
@@ -83,7 +83,7 @@
           sprintf ( buff , "/usr/share/config/lina/Wireless/%-s" , nt-> ssid ) ;
           remove ( buff ) ;
           kgPrintf ( Tmp , 1 , " " ) ;
-          sprintf ( buff , "!z43REMOVED %-s" , nt-> ssid ) ;
+          sprintf ( buff , "REMOVED %-s" , nt-> ssid ) ;
           kgPrintf ( Tmp , 1 , buff ) ;
           kgUpdateOn ( Tmp ) ;
           Dposition ( Scanlist , id ) ;
@@ -121,7 +121,7 @@
           while ( ( n = read ( pp2 , buff , 100 ) ) == 100 ) {
           }
           kgPrintf ( Tmp , 1 , " " ) ;
-          kgPrintf ( Tmp , 1 , "!z43Disonnected Wireless" ) ;
+          kgPrintf ( Tmp , 1 , "Disonnected Wireless" ) ;
           kgUpdateOn ( Tmp ) ;
           sleep ( 2 ) ;
           RetVal = 1;
@@ -157,7 +157,7 @@
           case 2:
           if ( ( Scanlist == NULL ) || ( Dcount ( Scanlist ) == 0 ) ) {
               RetVal = 0;
-              kgPrintf ( Tmp , 1 , "!z43No Wireless Network" ) ;
+              kgPrintf ( Tmp , 1 , "No Wireless Network" ) ;
               kgUpdateOn ( Tmp ) ;
               break;
           }
@@ -165,7 +165,7 @@
           Dposition ( Scanlist , id ) ;
           nt = ( NETLIST * ) Getrecord ( Scanlist ) ;
           id = nt-> id;
-          sprintf ( buff , "!z43Trying to Connect: %s" , nt-> ssid ) ;
+          sprintf ( buff , "Trying to Connect: %s" , nt-> ssid ) ;
           kgPrintf ( Tmp , 1 , buff ) ;
           kgUpdateOn ( Tmp ) ;
           if ( nt-> sec < 0 ) {
@@ -204,8 +204,8 @@
           if ( OK ) {
               FILE *fp;
               char def [ 300 ] ;
-//        kgPrintf(Tmp,1,"!z43!c06Connected Wireless");
-              sprintf ( buff , "!z43Wireless Connected to %s" , nt-> ssid ) ;
+//        kgPrintf(Tmp,1,"!c06Connected Wireless");
+              sprintf ( buff , "Wireless Connected to %s" , nt-> ssid ) ;
               kgPrintf ( Tmp , 1 , buff ) ;
               kgUpdateOn ( Tmp ) ;
               strcpy ( def , "/usr/share/config/lina/wireless/default" ) ;
@@ -217,7 +217,7 @@
               sleep ( 1 ) ;
           }
           else {
-              kgPrintf ( Tmp , 1 , "!z43!c03Failed Wireless" ) ;
+              kgPrintf ( Tmp , 1 , "!c03Failed Wireless" ) ;
               kgUpdateOn ( Tmp ) ;
           }
           ret = OK;
@@ -265,15 +265,15 @@
       X = ( DIX * ) kgGetWidget ( Tmp , 5 ) ;
       RetVal = 0;
       if ( Connected ) {
-          sprintf ( buff , "!z43Wireless Connected to %s" , Curssid ) ;
+          sprintf ( buff , "Wireless Connected to %s" , Curssid ) ;
           kgPrintf ( Tmp , 1 , buff ) ;
       }
       else {
           if ( Scanlist == NULL ) {
-              kgPrintf ( Tmp , 1 , "!z43Not Connected... Scanning PL. WAIT" ) ;
+              kgPrintf ( Tmp , 1 , "Not Connected... Scanning PL. WAIT" ) ;
               kgUpdateOn ( Tmp ) ;
               AddNetworks ( ) ;
-              if ( Scanlist == NULL ) kgPrintf ( Tmp , 1 , "!z43No Scanned Wireless. Adding Old" ) ;
+              if ( Scanlist == NULL ) kgPrintf ( Tmp , 1 , "No Scanned Wireless. Adding Old" ) ;
                   
               kgUpdateOn ( Tmp ) ;
               AddOldNetworks ( ) ;
@@ -282,11 +282,11 @@
               printf ( "Adding List %d\n" , Dcount ( Scanlist ) ) ;
               kgSetList ( X , ( void ** ) MakeScanThumbnails ( Scanlist ) ) ;
               kgUpdateWidget ( X ) ;
-              kgPrintf ( Tmp , 1 , "!z65 SELECT AND CONNECT" ) ;
+              kgPrintf ( Tmp , 1 , " SELECT AND CONNECT" ) ;
               kgUpdateOn ( Tmp ) ;
               kgUpdateOn ( Tmp ) ;
           }
-          else kgPrintf ( Tmp , 1 , "!z43Not Connected, Select and Connect" ) ;
+          else kgPrintf ( Tmp , 1 , "Not Connected, Select and Connect" ) ;
       }
       return ret;
   }

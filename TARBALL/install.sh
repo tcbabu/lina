@@ -10,3 +10,4 @@ install -m 644 configlina.desktop /usr/share/applications/
 install -m 755 lina /usr/sbin/lina
 install -m 644 lina.init  /usr/share/lina
 install -m 755 wireless  /usr/sbin/
+tar xzvf fonts.tar -C /usr/share/fonts
